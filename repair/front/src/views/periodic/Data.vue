@@ -34,7 +34,7 @@
       <template #default="scope">
         <div v-if="scope.row.filename != ''">
           <el-image v-for="(item, index) in scope.row.filename.split(',')" style="width: 20px; height: 20px; top:4px;left:0px;position:relative;margin-right:5px;"
-                    :src="util.getImagePath(item)"                    
+                    :src="util.getImagePath(item)"                   
                     fit="cover"
                     @click="clickPreviews(scope.row.filename, index)"
           />

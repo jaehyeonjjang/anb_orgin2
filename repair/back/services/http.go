@@ -46,7 +46,7 @@ func Http() {
 	r.Handle("WSS", "/socket.io/", gin.WrapH(c.Server))
 
 	r.Static("/assets", "./dist/assets")
-	r.Static("/webdata", "./webdata")
+	r.Static("/webdata", config.UploadPath)
 	r.NoRoute(func(c *gin.Context) {
 		c.File("./dist/index.html")
 	})
