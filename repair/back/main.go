@@ -27,8 +27,7 @@ func main() {
 	os.MkdirAll(fmt.Sprintf("%v/detail", config.UploadPath), 0755)
 
 	go services.Cron()
-	//go services.Fcm()	cd /Users/seongjaehyeon/anb_origin2/repair/back
-	scp .env.yml root@141.164.54.133:~/repair/back/
+	//go services.Fcm()
 	go services.Notify()
 	services.Http()
 }
