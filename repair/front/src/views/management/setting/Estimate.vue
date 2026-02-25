@@ -1,81 +1,28 @@
 <template>
   <Title title="견적 기본값 관리" />
 
-  <div v-for="item in data.items" :key="item.id" style="margin-bottom: 30px;">
-    <h3 style="margin-bottom: 10px; padding: 10px; background-color: #f5f5f5; border-left: 4px solid #409EFF;">
-      {{ item.date.substring(0, 4) }}년 단가
-    </h3>
-    <y-table>
-      <y-tr>
-        <y-th>기술사</y-th>
-        <y-td>{{util.money(item.person1)}}</y-td>
-      </y-tr>
-      <y-tr>
-        <y-th>특급기술자</y-th>
-        <y-td>{{util.money(item.person2)}}</y-td>
-      </y-tr>
-      <y-tr>
-        <y-th>고급기술자</y-th>
-        <y-td>{{util.money(item.person3)}}</y-td>
-      </y-tr>
-      <y-tr>
-        <y-th>중급기술자</y-th>
-        <y-td>{{util.money(item.person4)}}</y-td>
-      </y-tr>
-      <y-tr>
-        <y-th>초급기술자</y-th>
-        <y-td>{{util.money(item.person5)}}</y-td>
-      </y-tr>
-      <y-tr>
-        <y-th>기술비1</y-th>
-        <y-td>{{util.money(item.techprice1)}}</y-td>
-      </y-tr>
-      <y-tr>
-        <y-th>기술비2</y-th>
-        <y-td>{{util.money(item.techprice2)}}</y-td>
-      </y-tr>
-      <y-tr>
-        <y-th>기술비3</y-th>
-        <y-td>{{util.money(item.techprice3)}}</y-td>
-      </y-tr>
-      <y-tr>
-        <y-th>기술비4</y-th>
-        <y-td>{{util.money(item.techprice4)}}</y-td>
-      </y-tr>
-      <y-tr>
-        <y-th>재무비1(%)</y-th>
-        <y-td>{{item.financialprice1}}</y-td>
-      </y-tr>
-      <y-tr>
-        <y-th>재무비2(%)</y-th>
-        <y-td>{{item.financialprice2}}</y-td>
-      </y-tr>
-      <y-tr>
-        <y-th>직접비</y-th>
-        <y-td>{{util.money(item.directprice)}}</y-td>
-      </y-tr>
-      <y-tr>
-        <y-th>인쇄비1</y-th>
-        <y-td>{{util.money(item.printprice1)}}</y-td>
-      </y-tr>
-      <y-tr>
-        <y-th>인쇄비2</y-th>
-        <y-td>{{util.money(item.printprice2)}}</y-td>
-      </y-tr>
-      <y-tr>
-        <y-th>손실비</y-th>
-        <y-td>{{util.money(item.lossprice)}}</y-td>
-      </y-tr>
-      <y-tr>
-        <y-th>유류비</y-th>
-        <y-td>{{util.money(item.gasprice)}}</y-td>
-      </y-tr>
-      <y-tr>
-        <y-th>여비</y-th>
-        <y-td>{{util.money(item.travelprice)}}</y-td>
-      </y-tr>
-    </y-table>
-  </div>
+  <y-table>
+    <y-tr>
+      <y-th>기술사</y-th>
+      <y-td>{{util.money(data.item.person1)}}</y-td>
+    </y-tr>
+    <y-tr>
+      <y-th>특급기술자</y-th>
+      <y-td>{{util.money(data.item.person2)}}</y-td>
+    </y-tr>
+    <y-tr>
+      <y-th>고급기술자</y-th>
+      <y-td>{{util.money(data.item.person3)}}</y-td>
+    </y-tr>
+    <y-tr>
+      <y-th>중급기술자</y-th>
+      <y-td>{{util.money(data.item.person4)}}</y-td>
+    </y-tr>
+    <y-tr>
+      <y-th>초급기술자</y-th>
+      <y-td>{{util.money(data.item.person5)}}</y-td>
+    </y-tr>
+  </y-table>
   
   <el-dialog
     v-model="data.visible"
@@ -153,11 +100,9 @@ async function initData() {
 }
 
 async function getItems(reset) {
-  let res = await model.index(1, 100, {
-    orderby: 'date desc'
-  })
+  let res = await model.get(1)
 
-  data.items = res.items || []
+  data.item = res.item  
 }
 
 function clickInsert() {  
