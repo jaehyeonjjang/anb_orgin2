@@ -2,6 +2,9 @@ package api
 
 import (
 	"fmt"
+	"image"
+	_ "image/jpeg"
+	_ "image/png"
 	"image/jpeg"
 	"log"
 	"os"
@@ -13,7 +16,7 @@ import (
 
 	"repair/models"
 
-	"github.com/karmdip-mi/go-fitz"
+	"github.com/pdfcpu/pdfcpu/pkg/api"
 )
 
 type ManagebookController struct {
@@ -70,14 +73,44 @@ func (c *ManagebookController) Process(id int64, name string, order int, filenam
 	}
 
 	fullFilename := fmt.Sprintf("%v/%v", config.UploadPath, filename)
-	doc, err := fitz.New(fullFilename)
+	
+	// PDF 페이지 수 확인
+	pageCount, err := api.PageCountFile(fullFilename)
 	if err != nil {
 		log.Println(err)
 		return
 	}
 
-	for i := 0; i < doc.NumPage(); i++ {
-		img, err := doc.Image(i)
+	// 임시 디렉토리 생성
+	tmpDir := fmt.Sprintf("%v/tmp-%v", config.UploadPath, global.UniqueId())
+	os.Mkdir(tmpDir, 0755)
+	defer os.RemoveAll(tmpDir)
+
+	for i := 1; i <= pageCount; i++ {
+		// PDF 페이지를 이미지로 추출
+		err := api.ExtractImagesFile(fullFilename, tmpDir, []string{fmt.Sprintf("%d", i)}, nil)
+		if err != nil {
+			log.Println(err)
+			continue
+		}
+
+		// 추출된 이미지 파일 찾기
+		files, _ := os.ReadDir(tmpDir)
+		if len(files) == 0 {
+			continue
+		}
+
+		// 첫 번째 이미지 읽기
+		tmpImgPath := fmt.Sprintf("%v/%v", tmpDir, files[0].Name())
+		tmpFile, err := os.Open(tmpImgPath)
+		if err != nil {
+			log.Println(err)
+			continue
+		}
+
+		img, _, err := image.Decode(tmpFile)
+		tmpFile.Close()
+		os.Remove(tmpImgPath)
 		if err != nil {
 			log.Println(err)
 			continue
@@ -136,14 +169,44 @@ func (c *ManagebookController) Multiprocess(id int64, filename string, originalf
 		}
 
 		fullFilename := fmt.Sprintf("%v/%v", config.UploadPath, filename)
-		doc, err := fitz.New(fullFilename)
+		
+		// PDF 페이지 수 확인
+		pageCount, err := api.PageCountFile(fullFilename)
 		if err != nil {
 			log.Println(err)
 			return
 		}
 
-		for i := 0; i < doc.NumPage(); i++ {
-			img, err := doc.Image(i)
+		// 임시 디렉토리 생성
+		tmpDir := fmt.Sprintf("%v/tmp-%v", config.UploadPath, global.UniqueId())
+		os.Mkdir(tmpDir, 0755)
+		defer os.RemoveAll(tmpDir)
+
+		for i := 1; i <= pageCount; i++ {
+			// PDF 페이지를 이미지로 추출
+			err := api.ExtractImagesFile(fullFilename, tmpDir, []string{fmt.Sprintf("%d", i)}, nil)
+			if err != nil {
+				log.Println(err)
+				continue
+			}
+
+			// 추출된 이미지 파일 찾기
+			files, _ := os.ReadDir(tmpDir)
+			if len(files) == 0 {
+				continue
+			}
+
+			// 첫 번째 이미지 읽기
+			tmpImgPath := fmt.Sprintf("%v/%v", tmpDir, files[0].Name())
+			tmpFile, err := os.Open(tmpImgPath)
+			if err != nil {
+				log.Println(err)
+				continue
+			}
+
+			img, _, err := image.Decode(tmpFile)
+			tmpFile.Close()
+			os.Remove(tmpImgPath)
 			if err != nil {
 				log.Println(err)
 				continue

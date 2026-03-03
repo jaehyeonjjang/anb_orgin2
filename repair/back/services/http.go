@@ -5,6 +5,7 @@ import (
 	"repair/chat"
 	"repair/global/config"
 	"repair/router"
+	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -13,11 +14,24 @@ import (
 
 func CORSMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		c.Header("Access-Control-Allow-Headers", "Content-Type, Authorization, Origin")
-		c.Header("Access-Control-Allow-Credentials", "true")
-		for _, v := range config.Cors {
-			c.Header("Access-Control-Allow-Origin", v)
+		origin := c.Request.Header.Get("Origin")
+		
+		// localhost의 모든 포트 허용
+		if strings.HasPrefix(origin, "http://localhost:") {
+			c.Header("Access-Control-Allow-Origin", origin)
+			c.Header("Access-Control-Allow-Credentials", "true")
+		} else {
+			// 설정된 CORS 목록에서 확인
+			for _, v := range config.Cors {
+				if v == origin || v == "http://localhost:*" {
+					c.Header("Access-Control-Allow-Origin", origin)
+					c.Header("Access-Control-Allow-Credentials", "true")
+					break
+				}
+			}
 		}
+		
+		c.Header("Access-Control-Allow-Headers", "Content-Type, Authorization, Origin")
 		c.Header("Access-Control-Allow-Methods", "GET, DELETE, POST, PUT")
 
 		if c.Request.Method == "OPTIONS" {

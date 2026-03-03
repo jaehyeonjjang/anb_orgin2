@@ -6,7 +6,7 @@ import 'package:common_control/common_control.dart';
 import 'package:dio/dio.dart';
 import 'package:http/http.dart' as http;
 // import 'package:image_downloader/image_downloader.dart';
-import 'package:image_gallery_saver/image_gallery_saver.dart';
+// import 'package:image_gallery_saver/image_gallery_saver.dart';
 import 'package:localstorage/localstorage.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
@@ -136,55 +136,11 @@ class BlueprintController extends GetxController {
 
     if (config.platform() == 'android') {
       var onlyFilename = p.basename(filename);
-      if (p.extension(onlyFilename).toLowerCase() != ".jpg") {
-        // var appDocDir = await getTemporaryDirectory();
-        var appDocDir = await getApplicationDocumentsDirectory();
-        String savePath = appDocDir.path + onlyFilename;
-        await Dio().download(filename, savePath);
-        return savePath;
-        // j
-        // final result = await ImageGallerySaver.saveFile(savePath, isReturnPathOfIOS: true);
-        // print(result);
-        // return result['filePath'];
-        // String? path = await findSavedFilePath(onlyFilename);
-        // if (path == null) {
-        //   print('path == null');
-        //   final temp = result['filePath'].split('/');
-        //   final id = temp[temp.length - 1];
-        //   print('id = $id');
-        //   print('$id${p.extension(onlyFilename)}');
-        //   path = await findSavedFilePath('$id${p.extension(onlyFilename)}');
-        //   print(path);
-        // }
-
-        // return path!;
-      } else {
-        var response = await Dio()
-            .get(filename, options: Options(responseType: ResponseType.bytes));
-
-        if (response.data == null) {
-          return '';
-        }
-
-        try {
-          final result = await ImageGallerySaver.saveImage(
-              Uint8List.fromList(response.data),
-              name: onlyFilename,
-              quality: 100);
-
-          String? path = await findSavedFilePath(onlyFilename);
-          if (path == null) {
-            final temp = result['filePath'].split('/');
-            final id = temp[temp.length - 1];
-            path = await findSavedFilePath('$id${p.extension(onlyFilename)}');
-          }
-          return path!;
-        } catch (e) {
-          // error
-        }
-      }
-
-      return '';
+      // 모든 파일을 앱 Documents 디렉토리에 저장
+      var appDocDir = await getApplicationDocumentsDirectory();
+      String savePath = appDocDir.path + '/' + onlyFilename;
+      await Dio().download(filename, savePath);
+      return savePath;
     } else {
       // try {
       //   var tempId = await ImageDownloader.downloadImage(filename);

@@ -567,35 +567,19 @@ class Painter extends StatelessWidget {
     var x = event.localPos.dx / c.zoom + c.sx;
     var y = event.localPos.dy / c.zoom + c.sy;
 
-    if (c.index == inclinationLine ||
-        c.index == basicVerticalLine ||
-        c.index == basicHorizontalLine ||
-        c.index == basicVerticalBreak ||
-        c.index == basicHorizontalBreak) {
-      DateTime time = DateTime.now();
-      final current = time.millisecondsSinceEpoch;
-      if (c.lastUpdateTime != 0) {
-        final diff = current - c.lastUpdateTime;
-        if (diff > 2000) {
-          c.addPoint(Offset(x, y));
-          c.lastUpdateTime = current;
-          return;
-        }
-      }
+    // 꺾은선 90도 가로/세로 고정 로직
+    if ((c.index == basicVerticalBreak || c.index == basicHorizontalBreak) &&
+        c.points.isNotEmpty &&
+        c.points[c.points.length - 1].items.isNotEmpty) {
+      var lastPoint = c.points[c.points.length - 1].items.last;
+      var dx = (x - lastPoint.dx).abs();
+      var dy = (y - lastPoint.dy).abs();
 
-      if (c.points[c.points.length - 1].items.length >= 2) {
-        var dx = c.points[c.points.length - 1]
-                .items[c.points[c.points.length - 1].items.length - 1].dx -
-            x;
-        var dy = c.points[c.points.length - 1]
-                .items[c.points[c.points.length - 1].items.length - 1].dy -
-            y;
-
-        if (dx.abs() > 10 * c.zoom || dy.abs() > 10 * c.zoom) {
-          c.lastUpdateTime = current;
-        }
+      // 수평/수직 중 더 큰 이동 방향으로 고정
+      if (dx > dy) {
+        y = lastPoint.dy; // 수평 이동만 허용
       } else {
-        c.lastUpdateTime = current;
+        x = lastPoint.dx; // 수직 이동만 허용
       }
     }
 
@@ -609,6 +593,22 @@ class Painter extends StatelessWidget {
   void onDrawEnd(MoveEvent event) {
     var x = event.localPos.dx / c.zoom + c.sx;
     var y = event.localPos.dy / c.zoom + c.sy;
+
+    // 꺾은선 90도 고정 로직 (onDrawEnd에도 적용)
+    if ((c.index == basicVerticalBreak || c.index == basicHorizontalBreak) &&
+        c.points.isNotEmpty &&
+        c.points[c.points.length - 1].items.isNotEmpty) {
+      var lastPoint = c.points[c.points.length - 1].items.last;
+      var dx = (x - lastPoint.dx).abs();
+      var dy = (y - lastPoint.dy).abs();
+
+      // 수평/수직 중 더 큰 이동 방향으로 고정
+      if (dx > dy) {
+        y = lastPoint.dy; // 수평 이동만 허용
+      } else {
+        x = lastPoint.dx; // 수직 이동만 허용
+      }
+    }
 
     if (c.type == DrawType.line || c.type == DrawType.numberLine) {
       c.movePoint(Offset(x, y));
@@ -816,6 +816,22 @@ class Painter extends StatelessWidget {
 
     var x = event.localPos.dx / c.zoom + c.sx;
     var y = event.localPos.dy / c.zoom + c.sy;
+
+    // 꺾은선의 경우 90도 고정 적용
+    if ((c.index == basicVerticalBreak || c.index == basicHorizontalBreak) &&
+        c.points.isNotEmpty &&
+        c.points[c.points.length - 1].items.isNotEmpty) {
+      var lastPoint = c.points[c.points.length - 1].items.last;
+      var dx = (x - lastPoint.dx).abs();
+      var dy = (y - lastPoint.dy).abs();
+
+      // 수평/수직 중 더 큰 이동 방향으로 고정
+      if (dx > dy) {
+        y = lastPoint.dy; // 수평 이동만 허용
+      } else {
+        x = lastPoint.dx; // 수직 이동만 허용
+      }
+    }
 
     if (c.lineStart == false ||
         c.type == DrawType.icon ||

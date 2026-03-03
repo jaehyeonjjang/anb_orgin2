@@ -1,6 +1,10 @@
 bin
 webdata
+webdata_local
 main
 .DS_Store
 dist
 web
+.env.yml
+.env.local.yml
+logs/
