@@ -15,7 +15,7 @@ import (
 func CORSMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		origin := c.Request.Header.Get("Origin")
-		
+
 		// localhost의 모든 포트 허용
 		if strings.HasPrefix(origin, "http://localhost:") {
 			c.Header("Access-Control-Allow-Origin", origin)
@@ -30,7 +30,7 @@ func CORSMiddleware() gin.HandlerFunc {
 				}
 			}
 		}
-		
+
 		c.Header("Access-Control-Allow-Headers", "Content-Type, Authorization, Origin")
 		c.Header("Access-Control-Allow-Methods", "GET, DELETE, POST, PUT")
 

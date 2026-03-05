@@ -460,7 +460,8 @@ class DataBox extends StatelessWidget {
     }
 
     if (pos == 2 &&
-        (point.icon == basicHorizontal || point.icon == basicHorizontalLine) &&
+        (point.icon == basicHorizontal || 
+         point.icon == basicHorizontalLine) &&
         point.shape == '균열') {
       pos = 3;
       name = point.shape;
@@ -468,7 +469,8 @@ class DataBox extends StatelessWidget {
 
     if (pos == 3) {
       var category = 3;
-      if (point.icon == basicHorizontal || point.icon == basicHorizontalLine) {
+      if (point.icon == basicHorizontal || 
+          point.icon == basicHorizontalLine) {
         category = 11;
 
         if (point.member == '보') {

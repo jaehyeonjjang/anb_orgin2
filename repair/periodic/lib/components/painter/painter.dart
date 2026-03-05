@@ -568,7 +568,7 @@ class Painter extends StatelessWidget {
     var y = event.localPos.dy / c.zoom + c.sy;
 
     // 꺾은선 90도 가로/세로 고정 로직
-    if ((c.index == basicVerticalBreak || c.index == basicHorizontalBreak) &&
+    if (c.index == basicVerticalBreak &&
         c.points.isNotEmpty &&
         c.points[c.points.length - 1].items.isNotEmpty) {
       var lastPoint = c.points[c.points.length - 1].items.last;
@@ -580,6 +580,22 @@ class Painter extends StatelessWidget {
         y = lastPoint.dy; // 수평 이동만 허용
       } else {
         x = lastPoint.dx; // 수직 이동만 허용
+      }
+    }
+
+    // 세로 시작 꺾은선: 세로 고정 후 가로 고정
+    if (c.index == basicVerticalBreakV &&
+        c.points.isNotEmpty &&
+        c.points[c.points.length - 1].items.isNotEmpty) {
+      var lastPoint = c.points[c.points.length - 1].items.last;
+      var dx = (x - lastPoint.dx).abs();
+      var dy = (y - lastPoint.dy).abs();
+
+      // 수직/수평 중 더 큰 이동 방향으로 고정
+      if (dy > dx) {
+        x = lastPoint.dx; // 수직 이동만 허용
+      } else {
+        y = lastPoint.dy; // 수평 이동만 허용
       }
     }
 
@@ -595,7 +611,7 @@ class Painter extends StatelessWidget {
     var y = event.localPos.dy / c.zoom + c.sy;
 
     // 꺾은선 90도 고정 로직 (onDrawEnd에도 적용)
-    if ((c.index == basicVerticalBreak || c.index == basicHorizontalBreak) &&
+    if (c.index == basicVerticalBreak &&
         c.points.isNotEmpty &&
         c.points[c.points.length - 1].items.isNotEmpty) {
       var lastPoint = c.points[c.points.length - 1].items.last;
@@ -607,6 +623,22 @@ class Painter extends StatelessWidget {
         y = lastPoint.dy; // 수평 이동만 허용
       } else {
         x = lastPoint.dx; // 수직 이동만 허용
+      }
+    }
+
+    // 세로 시작 꺾은선: 세로 고정 후 가로 고정
+    if (c.index == basicVerticalBreakV &&
+        c.points.isNotEmpty &&
+        c.points[c.points.length - 1].items.isNotEmpty) {
+      var lastPoint = c.points[c.points.length - 1].items.last;
+      var dx = (x - lastPoint.dx).abs();
+      var dy = (y - lastPoint.dy).abs();
+
+      // 수직/수평 중 더 큰 이동 방향으로 고정
+      if (dy > dx) {
+        x = lastPoint.dx; // 수직 이동만 허용
+      } else {
+        y = lastPoint.dy; // 수평 이동만 허용
       }
     }
 
@@ -818,7 +850,7 @@ class Painter extends StatelessWidget {
     var y = event.localPos.dy / c.zoom + c.sy;
 
     // 꺾은선의 경우 90도 고정 적용
-    if ((c.index == basicVerticalBreak || c.index == basicHorizontalBreak) &&
+    if (c.index == basicVerticalBreak &&
         c.points.isNotEmpty &&
         c.points[c.points.length - 1].items.isNotEmpty) {
       var lastPoint = c.points[c.points.length - 1].items.last;
@@ -830,6 +862,22 @@ class Painter extends StatelessWidget {
         y = lastPoint.dy; // 수평 이동만 허용
       } else {
         x = lastPoint.dx; // 수직 이동만 허용
+      }
+    }
+
+    // 세로 시작 꺾은선: 세로 고정 후 가로 고정
+    if (c.index == basicVerticalBreakV &&
+        c.points.isNotEmpty &&
+        c.points[c.points.length - 1].items.isNotEmpty) {
+      var lastPoint = c.points[c.points.length - 1].items.last;
+      var dx = (x - lastPoint.dx).abs();
+      var dy = (y - lastPoint.dy).abs();
+
+      // 수직/수평 중 더 큰 이동 방향으로 고정
+      if (dy > dx) {
+        x = lastPoint.dx; // 수직 이동만 허용
+      } else {
+        y = lastPoint.dy; // 수평 이동만 허용
       }
     }
 

@@ -562,7 +562,9 @@ class BlueprintController extends GetxController {
         if (data.type == basicHorizontalLine ||
             data.type == basicVerticalLine ||
             data.type == basicHorizontalBreak ||
-            data.type == basicVerticalBreak) {
+            data.type == basicVerticalBreak ||
+            data.type == basicVerticalLineV ||
+            data.type == basicVerticalBreakV) {
           type = DrawType.numberLine;
         } else if (data.type == inclinationLine) {
           type = DrawType.line;
@@ -588,6 +590,10 @@ class BlueprintController extends GetxController {
           color = LineColor.red;
         } else if (data.type == basicVerticalBreak) {
           color = LineColor.blue;
+        } else if (data.type == basicVerticalLineV) {
+          color = LineColor.red;
+        } else if (data.type == basicVerticalBreakV) {
+          color = LineColor.red;
         }
 
         final point = Point(

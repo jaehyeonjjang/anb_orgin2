@@ -19,6 +19,10 @@ const basicHorizontalLine = 4;
 const basicVerticalBreak = 5;
 const basicHorizontalBreak = 6;
 
+const basicVerticalLineV = 7;  // 세로 시작 직선
+
+const basicVerticalBreakV = 9;  // 세로 시작 꺾은선
+
 const curveBlue = 31;
 const curveRed = 32;
 const curveGreen = 33;
@@ -154,7 +158,9 @@ class Point {
     if (icon == basicVerticalLine ||
         icon == basicHorizontalLine ||
         icon == basicVerticalBreak ||
-        icon == basicHorizontalBreak) {
+        icon == basicHorizontalBreak ||
+        icon == basicVerticalLineV ||
+        icon == basicVerticalBreakV) {
       return true;
     } else {
       return false;
@@ -618,7 +624,8 @@ class PainterController extends GetxController {
     if (type == DrawType.number || type == DrawType.numberLine) {
       point.weight = '0.1';
 
-      if (index == 1 || index == 3 || index == 5) {
+      if (index == 1 || index == 3 || index == 5 || 
+          index == 7 || index == 9) {
         point.member = '벽체';
       } else {
         point.member = '슬래브';
@@ -983,6 +990,12 @@ class PainterController extends GetxController {
       setColor(LineColor.blue);
       setType(DrawType.numberLine);
     } else if (value == basicVerticalBreak) {
+      setColor(LineColor.red);
+      setType(DrawType.numberLine);
+    } else if (value == basicVerticalLineV) {
+      setColor(LineColor.red);
+      setType(DrawType.numberLine);
+    } else if (value == basicVerticalBreakV) {
       setColor(LineColor.red);
       setType(DrawType.numberLine);
     } else if (value == crackLineRed) {

@@ -3,9 +3,9 @@ package api
 import (
 	"fmt"
 	"image"
+	"image/jpeg"
 	_ "image/jpeg"
 	_ "image/png"
-	"image/jpeg"
 	"log"
 	"os"
 	"repair/controllers"
@@ -73,7 +73,7 @@ func (c *ManagebookController) Process(id int64, name string, order int, filenam
 	}
 
 	fullFilename := fmt.Sprintf("%v/%v", config.UploadPath, filename)
-	
+
 	// PDF 페이지 수 확인
 	pageCount, err := api.PageCountFile(fullFilename)
 	if err != nil {
@@ -169,7 +169,7 @@ func (c *ManagebookController) Multiprocess(id int64, filename string, originalf
 		}
 
 		fullFilename := fmt.Sprintf("%v/%v", config.UploadPath, filename)
-		
+
 		// PDF 페이지 수 확인
 		pageCount, err := api.PageCountFile(fullFilename)
 		if err != nil {

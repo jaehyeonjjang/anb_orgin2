@@ -3,9 +3,9 @@ package api
 import (
 	"fmt"
 	"image"
+	"image/jpeg"
 	_ "image/jpeg"
 	_ "image/png"
-	"image/jpeg"
 	"log"
 	"os"
 	"repair/controllers"
@@ -63,7 +63,7 @@ func (c *PeriodicimageController) Process(item *models.Periodicimage) {
 	}
 
 	fullFilename := fmt.Sprintf("%v/%v", config.UploadPath, item.Filename)
-	
+
 	// PDF 페이지 수 확인
 	pageCount, err := api.PageCountFile(fullFilename)
 	if err != nil {

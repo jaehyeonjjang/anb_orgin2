@@ -132,8 +132,8 @@ class ToolBox extends StatelessWidget {
             width: 65,
             textStyle: const TextStyle(fontSize: 14, color: Colors.black)),
         toolBoxNumber(basicVertical, Colors.red),
-        drawText(basicVerticalLine, '직선', Colors.red),
-        drawText(basicVerticalBreak, '꺾은선', Colors.red),
+        drawText(basicVerticalLine, '가로(정)', Colors.red),
+        drawText(basicVerticalBreak, '가로(역)', Colors.red),
         Expanded(
             child: CContainer(
                 onTap: () {
@@ -151,12 +151,20 @@ class ToolBox extends StatelessWidget {
                       )))
       ]),
       Row(children: [
+        CText('',
+            width: 65,
+            textStyle: const TextStyle(fontSize: 14, color: Colors.black)),
+        const SizedBox(width: 28),
+        drawText(basicVerticalLineV, '세로(정)', Colors.red),
+        drawText(basicVerticalBreakV, '세로(역)', Colors.red),
+      ]),
+      Row(children: [
         CText('수평부재',
             width: 65,
             textStyle: const TextStyle(fontSize: 14, color: Colors.black)),
         toolBoxNumber(basicHorizontal, const Color.fromRGBO(0, 0, 255, 1.0)),
         drawText(basicHorizontalLine, '직선', Color.fromRGBO(0, 0, 255, 10.0)),
-        drawText(basicHorizontalBreak, '꺾은선', Color.fromRGBO(0, 0, 255, 10.0))
+        drawText(basicHorizontalBreak, '꺾은선', Color.fromRGBO(0, 0, 255, 10.0)),
       ]),
       const SizedBox(height: 5.0),
       Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [

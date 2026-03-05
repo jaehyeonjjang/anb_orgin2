@@ -138,7 +138,9 @@ class PainterDrawer extends CustomPainter {
         paint = paintFillBlue;
         points.color = LineColor.blue;
       } else if (points.icon == basicVerticalLine ||
-          points.icon == basicVerticalBreak) {
+          points.icon == basicVerticalBreak ||
+          points.icon == basicVerticalLineV ||
+          points.icon == basicVerticalBreakV) {
         paint = paintFillRed;
         points.color = LineColor.red;
       }
@@ -175,6 +177,42 @@ class PainterDrawer extends CustomPainter {
           y = point.dy * zoom + dy;
           path.lineTo(x, y);
         }
+      } else if (points.icon == basicVerticalLine ||
+          points.icon == basicVerticalBreak) {
+        // 직선과 꺾은선: 가로로 시작해서 세로로 한 번만 꺾기
+        if (points.items.length > 1) {
+          var point = points.items[0];
+          var x = point.dx * zoom + dx;
+          var y = point.dy * zoom + dy;
+          path.moveTo(x, y);
+
+          point = points.items[points.items.length - 1];
+
+          x = point.dx * zoom + dx;
+          path.lineTo(x, y);  // 가로로 먼저 그림
+
+          x = point.dx * zoom + dx;
+          y = point.dy * zoom + dy;
+          path.lineTo(x, y);  // 세로로 연결
+        }
+      } else if (points.icon == basicVerticalLineV ||
+          points.icon == basicVerticalBreakV) {
+        // 세로 시작 직선과 꺾은선: 세로로 시작해서 가로로 한 번만 꺾기
+        if (points.items.length > 1) {
+          var point = points.items[0];
+          var x = point.dx * zoom + dx;
+          var y = point.dy * zoom + dy;
+          path.moveTo(x, y);
+
+          point = points.items[points.items.length - 1];
+
+          y = point.dy * zoom + dy;
+          path.lineTo(x, y);  // 세로로 먼저 그림
+
+          x = point.dx * zoom + dx;
+          y = point.dy * zoom + dy;
+          path.lineTo(x, y);  // 가로로 연결
+        }
       } else {
         for (var j = 0; j < points.items.length; j++) {
           var point = points.items[j];
@@ -194,7 +232,9 @@ class PainterDrawer extends CustomPainter {
           points.icon == basicVerticalLine ||
           points.icon == basicHorizontalLine ||
           points.icon == basicVerticalBreak ||
-          points.icon == basicHorizontalBreak) {
+          points.icon == basicHorizontalBreak ||
+          points.icon == basicVerticalLineV ||
+          points.icon == basicVerticalBreakV) {
         strokeWidth = 1.5;
       }
 
@@ -252,7 +292,8 @@ class PainterDrawer extends CustomPainter {
 
       if (points.isInclination() == true || points.isBasicLine() == true) {
         if (points.icon == basicVerticalBreak ||
-            points.icon == basicHorizontalBreak) {
+            points.icon == basicHorizontalBreak ||
+            points.icon == basicVerticalBreakV) {
           drawBreakArrow(canvas, points, paint);
         } else {
           drawArrow(canvas, points, paint);
@@ -386,6 +427,34 @@ class PainterDrawer extends CustomPainter {
       } else {
         angle = 270;
       }
+    } else if (points.icon == basicVerticalLine) {
+      // 직선 화살표: 항상 가로 방향으로 고정
+      if (points.items.length < 2) {
+        return;
+      }
+
+      var point = points.items[0];
+      var point2 = points.items[points.items.length - 1];
+
+      if (point.dx > point2.dx) {
+        angle = 0;
+      } else {
+        angle = 180;
+      }
+    } else if (points.icon == basicVerticalLineV) {
+      // 세로 시작 직선 화살표: 항상 세로 방향으로 고정
+      if (points.items.length < 2) {
+        return;
+      }
+
+      var point = points.items[0];
+      var point2 = points.items[points.items.length - 1];
+
+      if (point.dy > point2.dy) {
+        angle = 90;
+      } else {
+        angle = 270;
+      }
     }
 
     Path path = Path();
@@ -477,7 +546,9 @@ class PainterDrawer extends CustomPainter {
       if (points.icon == basicVertical ||
           points.icon == materialVertical ||
           points.icon == basicVerticalLine ||
-          points.icon == basicVerticalBreak) {
+          points.icon == basicVerticalBreak ||
+          points.icon == basicVerticalLineV ||
+          points.icon == basicVerticalBreakV) {
         paint = paintRed;
         color = Colors.red;
       } else if (points.icon == basicHorizontal ||
@@ -981,7 +1052,7 @@ class PainterDrawer extends CustomPainter {
 
     Paint color2;
 
-    if (points.icon == basicVerticalBreak) {
+    if (points.icon == basicVerticalBreak || points.icon == basicVerticalBreakV) {
       color2 = paintRed;
     } else {
       color2 = paintBlue;
@@ -1011,6 +1082,34 @@ class PainterDrawer extends CustomPainter {
         angle = 180;
       }
     } else if (points.icon == inclinationVertical) {
+      if (points.items.length < 2) {
+        return;
+      }
+
+      var point = points.items[0];
+      var point2 = points.items[points.items.length - 1];
+
+      if (point.dy > point2.dy) {
+        angle = 90;
+      } else {
+        angle = 270;
+      }
+    } else if (points.icon == basicVerticalBreak) {
+      // 꺾은선 화살표: 항상 가로 방향으로 고정
+      if (points.items.length < 2) {
+        return;
+      }
+
+      var point = points.items[0];
+      var point2 = points.items[points.items.length - 1];
+
+      if (point.dx > point2.dx) {
+        angle = 0;
+      } else {
+        angle = 180;
+      }
+    } else if (points.icon == basicVerticalBreakV) {
+      // 세로 시작 꺾은선 화살표: 항상 세로 방향으로 고정
       if (points.items.length < 2) {
         return;
       }
