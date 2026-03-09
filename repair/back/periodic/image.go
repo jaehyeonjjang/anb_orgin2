@@ -22,6 +22,10 @@ const (
 	basicVerticalBreak   = 5
 	basicHorizontalBreak = 6
 
+	basicVerticalLineV  = 7 // 세로 시작 직선
+
+	basicVerticalBreakV = 9 // 세로 시작 꺾은선
+
 	curveBlue   = 31
 	curveRed    = 32
 	curveGreen  = 33
@@ -70,7 +74,7 @@ func IsCrackCurve(v int) bool {
 func MakeImage(periodic int64, blueprint models.Blueprint, items []models.Periodicdata, iconZoom float64, numberZoom float64, crackZoom float64) {
 	draw2d.SetFontFolder("./doc")
 
-	os.Mkdir(fmt.Sprintf("%v/periodicresult/%v", config.UploadPath, periodic), 0755)
+	os.MkdirAll(fmt.Sprintf("%v/periodicresult/%v", config.UploadPath, periodic), 0755)
 
 	filename := fmt.Sprintf("%v/%v", config.UploadPath, blueprint.Filename)
 	img, _ := global.LoadImageFile(filename)
@@ -172,7 +176,7 @@ func MakeImage(periodic int64, blueprint models.Blueprint, items []models.Period
 				gc.FillStringAt(fmt.Sprintf("%v", v.Group), point.Dx-stepNumber*0.35, point.Dy+stepNumber/2)
 			}
 			gc.Stroke()
-		} else if v.Type == basicVerticalLine || v.Type == basicHorizontalLine || v.Type == basicVerticalBreak || v.Type == basicHorizontalBreak {
+		} else if v.Type == 1 || v.Type == 2 || v.Type == basicVerticalLine || v.Type == basicHorizontalLine || v.Type == basicVerticalBreak || v.Type == basicHorizontalBreak || v.Type == basicVerticalLineV || v.Type == basicVerticalBreakV {
 			w := 4.0 * stepNumber / 50.0
 
 			if w < 1.5 {
@@ -182,7 +186,7 @@ func MakeImage(periodic int64, blueprint models.Blueprint, items []models.Period
 			w = 1.0
 			gc.SetLineWidth(w)
 
-			if v.Type == basicVerticalLine || v.Type == basicVerticalBreak {
+			if v.Type == 1 || v.Type == basicVerticalLine || v.Type == basicVerticalBreak || v.Type == basicVerticalLineV || v.Type == basicVerticalBreakV {
 				gc.SetStrokeColor(red)
 				gc.SetFillColor(red)
 			} else {
@@ -222,6 +226,26 @@ func MakeImage(periodic int64, blueprint models.Blueprint, items []models.Period
 			} else {
 				if sy < 0.0 {
 					angle += 360.0
+				}
+			}
+
+			// 기본 직선/꺾은선 타입들은 가로 방향으로 고정
+			if v.Type == basicVerticalLine || v.Type == basicVerticalBreak {
+				if len(results) >= 2 {
+					if results[0].Dx > results[len(results)-1].Dx {
+						angle = 0
+					} else {
+						angle = 180
+					}
+				}
+			} else if v.Type == basicVerticalLineV || v.Type == basicVerticalBreakV {
+				// 세로 시작 타입들은 세로 방향으로 고정
+				if len(results) >= 2 {
+					if results[0].Dy > results[len(results)-1].Dy {
+						angle = 90
+					} else {
+						angle = 270
+					}
 				}
 			}
 
@@ -335,36 +359,52 @@ func MakeImage(periodic int64, blueprint models.Blueprint, items []models.Period
 			for i, point := range results {
 				if i == 0 {
 					gc.MoveTo(point.Dx, point.Dy)
+				} else if (v.Type == basicVerticalLine || v.Type == basicVerticalBreak) && i == 1 && len(results) == 2 {
+					// 타입 3, 5: 가로 먼저, 세로 나중 (horizontal first)
+					// 코너 점 추가: x는 point의 x, y는 첫 점의 y
+					gc.LineTo(point.Dx, results[0].Dy)
+					gc.LineTo(point.Dx, point.Dy)
+				} else if (v.Type == basicVerticalLineV || v.Type == basicVerticalBreakV) && i == 1 && len(results) == 2 {
+					// 타입 7, 9: 세로 먼저, 가로 나중 (vertical first)
+					// 코너 점 추가: x는 첫 점의 x, y는 point의 y
+					gc.LineTo(results[0].Dx, point.Dy)
+					gc.LineTo(point.Dx, point.Dy)
 				} else {
+					// 일반 점 또는 3개 이상의 점
 					gc.LineTo(point.Dx, point.Dy)
 				}
 			}
 
-			gc.Stroke()
-
-			point = results[len(results)-1]
-			x = point.Dx
-			y = point.Dy
-
-			gc.SetFillColor(color.RGBA{0xff, 0xff, 0xff, 0xff})
-			if v.Type == basicVerticalLine || v.Type == basicVerticalBreak {
+			if v.Type == 1 || v.Type == basicVerticalLine || v.Type == basicVerticalBreak || v.Type == basicVerticalLineV || v.Type == basicVerticalBreakV {
 				gc.SetStrokeColor(red)
 			} else {
 				gc.SetStrokeColor(blue)
 			}
 
+			gc.Stroke() // 선 그리기!
+
+			// 끝점에 숫자가 들어간 원 그리기
+			endPoint := results[len(results)-1]
+			
+			// 원 그리기
 			gc.BeginPath()
-			gc.ArcTo(x, y, stepNumber, stepNumber, 0, math.Pi*2)
+			gc.SetFillColor(color.RGBA{0xff, 0xff, 0xff, 0xff}) // 흰색 배경
+			if v.Type == 1 || v.Type == basicVerticalLine || v.Type == basicVerticalBreak || v.Type == basicVerticalLineV || v.Type == basicVerticalBreakV {
+				gc.SetStrokeColor(red)
+			} else {
+				gc.SetStrokeColor(blue)
+			}
+			gc.ArcTo(endPoint.Dx, endPoint.Dy, stepNumber, stepNumber, 0, math.Pi*2)
 			gc.FillStroke()
 
-			if v.Type == basicVerticalLine || v.Type == basicVerticalBreak {
+			// 숫자 표시
+			if v.Type == 1 || v.Type == basicVerticalLine || v.Type == basicVerticalBreak || v.Type == basicVerticalLineV || v.Type == basicVerticalBreakV {
 				gc.SetFillColor(red)
 			} else {
 				gc.SetFillColor(blue)
 			}
 
 			gc.SetFontSize(50 * numberZoom / 100)
-
 			gc.SetFontData(draw2d.FontData{
 				Name:   "Noto Sans KR",
 				Family: draw2d.FontFamilyMono,
@@ -372,20 +412,25 @@ func MakeImage(periodic int64, blueprint models.Blueprint, items []models.Period
 			})
 
 			if v.Group >= 10 {
-				gc.FillStringAt(fmt.Sprintf("%v", v.Group), point.Dx-stepNumber*0.7, point.Dy+stepNumber/2)
+				gc.FillStringAt(fmt.Sprintf("%v", v.Group), endPoint.Dx-stepNumber*0.7, endPoint.Dy+stepNumber/2)
 			} else {
-				gc.FillStringAt(fmt.Sprintf("%v", v.Group), point.Dx-stepNumber*0.35, point.Dy+stepNumber/2)
+				gc.FillStringAt(fmt.Sprintf("%v", v.Group), endPoint.Dx-stepNumber*0.35, endPoint.Dy+stepNumber/2)
 			}
 
+			// 텍스트 표시 (화살표 반대편)
 			txt := v.Member
 			if v.Shape != "" {
 				txt = fmt.Sprintf("%v(%v)", txt, v.Shape)
 			}
 
+			// Flutter 앱과 동일하게 끝점 기준으로 텍스트 배치
+			// Flutter: if (points.items[0].dx > points.items[points.items.length - 1].dx)
 			if results[0].Dx > results[len(results)-1].Dx {
-				gc.FillStringAt(txt, point.Dx-stepNumber*1.3-float64(len(txt))*stepNumber/2.5, point.Dy+stepNumber/2)
+				// 오른쪽에서 왼쪽으로: 텍스트는 왼쪽에
+				gc.FillStringAt(txt, endPoint.Dx-stepNumber*1.3-float64(len(txt))*stepNumber/2.5, endPoint.Dy+stepNumber/2)
 			} else {
-				gc.FillStringAt(txt, point.Dx+stepNumber*1.3, point.Dy+stepNumber/2)
+				// 왼쪽에서 오른쪽으로: 텍스트는 오른쪽에
+				gc.FillStringAt(txt, endPoint.Dx+stepNumber*1.3, endPoint.Dy+stepNumber/2)
 			}
 
 			gc.Stroke()
@@ -687,5 +732,8 @@ func MakeImage(periodic int64, blueprint models.Blueprint, items []models.Period
 	}
 
 	targetFilename := fmt.Sprintf("%v/periodicresult/%v/%v.jpg", config.UploadPath, periodic, blueprint.Id)
-	global.SaveToJpegFile(targetFilename, dest)
+	err := global.SaveToJpegFile(targetFilename, dest)
+	if err != nil {
+		log.Println("Failed to save image:", targetFilename, err)
+	}
 }

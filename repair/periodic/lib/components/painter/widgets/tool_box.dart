@@ -434,24 +434,29 @@ class ToolBox extends StatelessWidget {
       const SizedBox(width: 2),
     ]));
 
-    return Column(children: [
-      Container(
-          margin: EdgeInsets.only(left: 5.0 + c.toolboxPosition, top: 5.0),
-          padding: const EdgeInsets.only(
-              left: 10.0, top: 10.0, bottom: 10.0, right: 5.0),
-          width: 230,
-          decoration: BoxDecoration(
-              border: Border.all(width: 1.0),
-              borderRadius: const BorderRadius.all(
-                Radius.circular(5.0),
-              ),
-              color: Colors.white),
-          child: Column(mainAxisSize: MainAxisSize.min, children: widgets)),
-      // Container(
-      //     margin: EdgeInsets.only(left: 5.0 + c.toolboxPosition, top: 20.0),
-      //     width: 205,
-      //     child: inputBox()),
-    ]);
+    return Align(
+      alignment: c.toolboxPosition == 0 
+          ? Alignment.topLeft 
+          : Alignment.topRight,
+      child: Column(children: [
+        Container(
+            margin: const EdgeInsets.only(left: 5.0, top: 5.0, right: 5.0),
+            padding: const EdgeInsets.only(
+                left: 10.0, top: 10.0, bottom: 10.0, right: 5.0),
+            width: 270,
+            decoration: BoxDecoration(
+                border: Border.all(width: 1.0),
+                borderRadius: const BorderRadius.all(
+                  Radius.circular(5.0),
+                ),
+                color: Colors.white),
+            child: Column(mainAxisSize: MainAxisSize.min, children: widgets)),
+        // Container(
+        //     margin: EdgeInsets.only(left: 5.0 + c.toolboxPosition, top: 20.0),
+        //     width: 205,
+        //     child: inputBox()),
+      ]),
+    );
   }
 
   inputBox() {

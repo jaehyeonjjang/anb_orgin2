@@ -19,9 +19,9 @@ const basicHorizontalLine = 4;
 const basicVerticalBreak = 5;
 const basicHorizontalBreak = 6;
 
-const basicVerticalLineV = 7;  // 세로 시작 직선
+const basicVerticalLineV = 7; // 세로 시작 직선
 
-const basicVerticalBreakV = 9;  // 세로 시작 꺾은선
+const basicVerticalBreakV = 9; // 세로 시작 꺾은선
 
 const curveBlue = 31;
 const curveRed = 32;
@@ -624,8 +624,7 @@ class PainterController extends GetxController {
     if (type == DrawType.number || type == DrawType.numberLine) {
       point.weight = '0.1';
 
-      if (index == 1 || index == 3 || index == 5 || 
-          index == 7 || index == 9) {
+      if (index == 1 || index == 3 || index == 5 || index == 7 || index == 9) {
         point.member = '벽체';
       } else {
         point.member = '슬래브';

@@ -3,6 +3,7 @@ package rest
 
 import (
 	"repair/controllers"
+	"repair/controllers/api"
 	"repair/models"
 
     "strings"
@@ -27,6 +28,9 @@ func (c *PeriodicdataController) DeleteByPeriodicBlueprint(periodic int64 ,bluep
         return
     }
     
+    // 모든 데이터 삭제 시 이미지 파일 제거
+    apiController := &api.PeriodicdataController{}
+    apiController.Post_DeleteByPeriodicBlueprint(periodic, blueprint)
 }
 
 
@@ -92,11 +96,20 @@ func (c *PeriodicdataController) Delete(item *models.Periodicdata) {
 
 	manager := models.NewPeriodicdataManager(conn)
 
+    // 삭제 전에 데이터 조회 (Post_Delete에서 periodic, blueprint 필요)
+    beforeItem := manager.Get(item.Id)
     
 	err := manager.Delete(item.Id)
     if err != nil {
         c.Set("code", "error")    
         c.Set("error", err)
+        return
+    }
+    
+    // 삭제 후 이미지 재생성
+    if beforeItem != nil {
+        apiController := &api.PeriodicdataController{}
+        apiController.Post_Delete(beforeItem)
     }
 }
 
@@ -107,6 +120,15 @@ func (c *PeriodicdataController) Deletebatch(item *[]models.Periodicdata) {
 
 	manager := models.NewPeriodicdataManager(conn)
 
+    // 삭제 전에 모든 데이터 조회
+    beforeItems := []models.Periodicdata{}
+    for _, v := range *item {
+        beforeItem := manager.Get(v.Id)
+        if beforeItem != nil {
+            beforeItems = append(beforeItems, *beforeItem)
+        }
+    }
+
     for _, v := range *item {
         
     
@@ -116,6 +138,12 @@ func (c *PeriodicdataController) Deletebatch(item *[]models.Periodicdata) {
             c.Set("error", err)
             return
         }
+    }
+    
+    // 삭제 후 이미지 재생성
+    if len(beforeItems) > 0 {
+        apiController := &api.PeriodicdataController{}
+        apiController.Post_Deletebatch(&beforeItems)
     }
 }
 
