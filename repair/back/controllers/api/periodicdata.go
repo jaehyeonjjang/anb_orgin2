@@ -41,7 +41,7 @@ func (c *PeriodicdataController) Post_Deletebatch(items *[]models.Periodicdata) 
 			blueprints[v.Blueprint] = v.Periodic
 		}
 	}
-	
+
 	for blueprint, periodic := range blueprints {
 		global.SendNotify(global.Notify{Type: global.NotifyBlueprint, Periodic: periodic, Blueprint: blueprint})
 	}

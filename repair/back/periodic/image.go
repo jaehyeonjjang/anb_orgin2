@@ -22,7 +22,7 @@ const (
 	basicVerticalBreak   = 5
 	basicHorizontalBreak = 6
 
-	basicVerticalLineV  = 7 // 세로 시작 직선
+	basicVerticalLineV = 7 // 세로 시작 직선
 
 	basicVerticalBreakV = 9 // 세로 시작 꺾은선
 
@@ -385,7 +385,7 @@ func MakeImage(periodic int64, blueprint models.Blueprint, items []models.Period
 
 			// 끝점에 숫자가 들어간 원 그리기
 			endPoint := results[len(results)-1]
-			
+
 			// 원 그리기
 			gc.BeginPath()
 			gc.SetFillColor(color.RGBA{0xff, 0xff, 0xff, 0xff}) // 흰색 배경
