@@ -48,6 +48,7 @@ dependencies:
   intl: ^0.20.2
   # flutter_downloader: ^1.12.0
   localstorage: ^4.0.0
+  gal: ^2.3.0
   common_control: ^0.0.53
   fluttertoast: ^8.2.1
   percent_indicator: ^4.2.3

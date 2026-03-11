@@ -884,15 +884,32 @@ func (p *StandardManager) ReadRow(rows *sql.Rows) *Standard {
 func (p *StandardManager) ReadRows(rows *sql.Rows) []Standard {
     items := make([]Standard, 0)
 
+    // 먼저 컬럼 수를 확인
+    columns, err := rows.Columns()
+    if err != nil {
+        if p.Log {
+            log.Error().Str("error", err.Error()).Msg("SQL Column Check")
+        }
+        return items
+    }
+    hasCategory := len(columns) > 11 // category 정보가 포함된 경우
+
     for rows.Next() {
         var item Standard
         var _category Category
             
-    
-        err := rows.Scan(&item.Id, &item.Name, &item.Direct, &item.Labor, &item.Cost, &item.Unit, &item.Order, &item.Original, &item.Category, &item.Apt, &item.Date, &_category.Id, &_category.Name, &_category.Level, &_category.Parent, &_category.Cycle, &_category.Percent, &_category.Unit, &_category.Elevator, &_category.Remark, &_category.Order, &_category.Apt, &_category.Date)
-        if err != nil {
+        var scanErr error
+        if hasCategory {
+            // category JOIN이 포함된 경우
+            scanErr = rows.Scan(&item.Id, &item.Name, &item.Direct, &item.Labor, &item.Cost, &item.Unit, &item.Order, &item.Original, &item.Category, &item.Apt, &item.Date, &_category.Id, &_category.Name, &_category.Level, &_category.Parent, &_category.Cycle, &_category.Percent, &_category.Unit, &_category.Elevator, &_category.Remark, &_category.Order, &_category.Apt, &_category.Date)
+        } else {
+            // standard만 조회한 경우 (category JOIN 없음)
+            scanErr = rows.Scan(&item.Id, &item.Name, &item.Direct, &item.Labor, &item.Cost, &item.Unit, &item.Order, &item.Original, &item.Category, &item.Apt, &item.Date)
+        }
+        
+        if scanErr != nil {
            if p.Log {
-             log.Error().Str("error", err.Error()).Msg("SQL")
+             log.Error().Str("error", scanErr.Error()).Msg("SQL")
            }
            break
         }
@@ -928,9 +945,11 @@ func (p *StandardManager) ReadRows(rows *sql.Rows) []Standard {
 		
 		
         
-        item.InitExtra()        
-        _category.InitExtra()
-        item.AddExtra("category",  _category)
+        item.InitExtra()
+        if hasCategory {
+            _category.InitExtra()
+            item.AddExtra("category",  _category)
+        }
 
         items = append(items, item)
     }

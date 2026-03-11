@@ -36,6 +36,8 @@ func (c *StandardController) FindByApt(apt int64) []models.Standard {
     conn := c.NewConnection()
 
 	_manager := models.NewStandardManager(conn)
+    // category JOIN 없이 standard만 조회하여 응답 크기 줄임
+    _manager.SetSelectQuery("select s_id, s_name, s_direct, s_labor, s_cost, s_unit, s_order, s_original, s_category, s_apt, s_date from standard_tb where 1=1")
     
     item := _manager.FindByApt(apt)
     

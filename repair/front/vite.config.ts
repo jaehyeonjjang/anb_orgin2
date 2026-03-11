@@ -9,6 +9,15 @@ const pathSrc = path.resolve(__dirname, 'src')
 
 // https://vitejs.dev/config/
 export default defineConfig({
+  server: {
+    port: 4000,
+    proxy: {
+      '/api': {
+        target: 'http://localhost:9107',
+        changeOrigin: true,
+      }
+    }
+  },
   resolve: {
     alias: {
       '~/': `${pathSrc}/`

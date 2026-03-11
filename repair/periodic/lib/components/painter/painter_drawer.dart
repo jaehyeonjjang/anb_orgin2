@@ -189,11 +189,11 @@ class PainterDrawer extends CustomPainter {
           point = points.items[points.items.length - 1];
 
           x = point.dx * zoom + dx;
-          path.lineTo(x, y); // 가로로 먼저 그림
+          path.lineTo(x, y);  // 가로로 먼저 그림
 
           x = point.dx * zoom + dx;
           y = point.dy * zoom + dy;
-          path.lineTo(x, y); // 세로로 연결
+          path.lineTo(x, y);  // 세로로 연결
         }
       } else if (points.icon == basicVerticalLineV ||
           points.icon == basicVerticalBreakV) {
@@ -207,11 +207,11 @@ class PainterDrawer extends CustomPainter {
           point = points.items[points.items.length - 1];
 
           y = point.dy * zoom + dy;
-          path.lineTo(x, y); // 세로로 먼저 그림
+          path.lineTo(x, y);  // 세로로 먼저 그림
 
           x = point.dx * zoom + dx;
           y = point.dy * zoom + dy;
-          path.lineTo(x, y); // 가로로 연결
+          path.lineTo(x, y);  // 가로로 연결
         }
       } else {
         for (var j = 0; j < points.items.length; j++) {
@@ -1052,8 +1052,7 @@ class PainterDrawer extends CustomPainter {
 
     Paint color2;
 
-    if (points.icon == basicVerticalBreak ||
-        points.icon == basicVerticalBreakV) {
+    if (points.icon == basicVerticalBreak || points.icon == basicVerticalBreakV) {
       color2 = paintRed;
     } else {
       color2 = paintBlue;

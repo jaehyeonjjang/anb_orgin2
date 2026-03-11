@@ -6,7 +6,7 @@ import 'package:common_control/common_control.dart';
 import 'package:dio/dio.dart';
 import 'package:http/http.dart' as http;
 // import 'package:image_downloader/image_downloader.dart';
-// import 'package:image_gallery_saver/image_gallery_saver.dart';
+import 'package:gal/gal.dart';
 import 'package:localstorage/localstorage.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
@@ -140,30 +140,33 @@ class BlueprintController extends GetxController {
       var appDocDir = await getApplicationDocumentsDirectory();
       String savePath = appDocDir.path + '/' + onlyFilename;
       await Dio().download(filename, savePath);
+      
+      // 갤러리에도 저장 (gal 사용)
+      try {
+        await Gal.putImage(savePath);
+      } catch (e) {
+        print('갤러리 저장 실패: $e');
+      }
+      
       return savePath;
     } else {
-      // try {
-      //   var tempId = await ImageDownloader.downloadImage(filename);
-      //   if (tempId == null) {
-      //     return '';
-      //   }
-
-      //   imageId = tempId;
-      // } catch (e) {
-      //   return '';
-      // }
       final response = await http.get(Uri.parse(filename));
       if (response.statusCode == 200) {
         final directory = await getApplicationDocumentsDirectory();
         final filePath = '${directory.path}/${p.basename(filename)}';
         final file = File(filePath);
         await file.writeAsBytes(response.bodyBytes);
+        
+        // iOS도 갤러리에 저장
+        try {
+          await Gal.putImage(filePath);
+        } catch (e) {
+          print('갤러리 저장 실패: $e');
+        }
+        
         return filePath;
       }
     }
-
-    // var path = await ImageDownloader.findPath(imageId);
-    // return path!;
 
     return '';
   }
