@@ -176,7 +176,7 @@ func MakeImage(periodic int64, blueprint models.Blueprint, items []models.Period
 				gc.FillStringAt(fmt.Sprintf("%v", v.Group), point.Dx-stepNumber*0.35, point.Dy+stepNumber/2)
 			}
 			gc.Stroke()
-		} else if v.Type == 1 || v.Type == 2 || v.Type == basicVerticalLine || v.Type == basicHorizontalLine || v.Type == basicVerticalBreak || v.Type == basicHorizontalBreak || v.Type == basicVerticalLineV || v.Type == basicVerticalBreakV {
+		} else if v.Type == basicVerticalLine || v.Type == basicHorizontalLine || v.Type == basicVerticalBreak || v.Type == basicHorizontalBreak || v.Type == basicVerticalLineV || v.Type == basicVerticalBreakV {
 			w := 4.0 * stepNumber / 50.0
 
 			if w < 1.5 {
@@ -186,7 +186,7 @@ func MakeImage(periodic int64, blueprint models.Blueprint, items []models.Period
 			w = 1.0
 			gc.SetLineWidth(w)
 
-			if v.Type == 1 || v.Type == basicVerticalLine || v.Type == basicVerticalBreak || v.Type == basicVerticalLineV || v.Type == basicVerticalBreakV {
+			if v.Type == basicVerticalLine || v.Type == basicVerticalBreak || v.Type == basicVerticalLineV || v.Type == basicVerticalBreakV {
 				gc.SetStrokeColor(red)
 				gc.SetFillColor(red)
 			} else {
@@ -375,7 +375,7 @@ func MakeImage(periodic int64, blueprint models.Blueprint, items []models.Period
 				}
 			}
 
-			if v.Type == 1 || v.Type == basicVerticalLine || v.Type == basicVerticalBreak || v.Type == basicVerticalLineV || v.Type == basicVerticalBreakV {
+			if v.Type == basicVerticalLine || v.Type == basicVerticalBreak || v.Type == basicVerticalLineV || v.Type == basicVerticalBreakV {
 				gc.SetStrokeColor(red)
 			} else {
 				gc.SetStrokeColor(blue)
@@ -389,7 +389,7 @@ func MakeImage(periodic int64, blueprint models.Blueprint, items []models.Period
 			// 원 그리기
 			gc.BeginPath()
 			gc.SetFillColor(color.RGBA{0xff, 0xff, 0xff, 0xff}) // 흰색 배경
-			if v.Type == 1 || v.Type == basicVerticalLine || v.Type == basicVerticalBreak || v.Type == basicVerticalLineV || v.Type == basicVerticalBreakV {
+			if v.Type == basicVerticalLine || v.Type == basicVerticalBreak || v.Type == basicVerticalLineV || v.Type == basicVerticalBreakV {
 				gc.SetStrokeColor(red)
 			} else {
 				gc.SetStrokeColor(blue)
@@ -398,7 +398,7 @@ func MakeImage(periodic int64, blueprint models.Blueprint, items []models.Period
 			gc.FillStroke()
 
 			// 숫자 표시
-			if v.Type == 1 || v.Type == basicVerticalLine || v.Type == basicVerticalBreak || v.Type == basicVerticalLineV || v.Type == basicVerticalBreakV {
+			if v.Type == basicVerticalLine || v.Type == basicVerticalBreak || v.Type == basicVerticalLineV || v.Type == basicVerticalBreakV {
 				gc.SetFillColor(red)
 			} else {
 				gc.SetFillColor(blue)

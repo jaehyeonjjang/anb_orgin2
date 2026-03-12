@@ -435,9 +435,8 @@ class ToolBox extends StatelessWidget {
     ]));
 
     return Align(
-      alignment: c.toolboxPosition == 0 
-          ? Alignment.topLeft 
-          : Alignment.topRight,
+      alignment:
+          c.toolboxPosition == 0 ? Alignment.topLeft : Alignment.topRight,
       child: Column(children: [
         Container(
             margin: const EdgeInsets.only(left: 5.0, top: 5.0, right: 5.0),

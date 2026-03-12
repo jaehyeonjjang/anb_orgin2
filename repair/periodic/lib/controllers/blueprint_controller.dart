@@ -140,14 +140,14 @@ class BlueprintController extends GetxController {
       var appDocDir = await getApplicationDocumentsDirectory();
       String savePath = appDocDir.path + '/' + onlyFilename;
       await Dio().download(filename, savePath);
-      
+
       // 갤러리에도 저장 (gal 사용)
       try {
         await Gal.putImage(savePath);
       } catch (e) {
         print('갤러리 저장 실패: $e');
       }
-      
+
       return savePath;
     } else {
       final response = await http.get(Uri.parse(filename));
@@ -156,14 +156,14 @@ class BlueprintController extends GetxController {
         final filePath = '${directory.path}/${p.basename(filename)}';
         final file = File(filePath);
         await file.writeAsBytes(response.bodyBytes);
-        
+
         // iOS도 갤러리에 저장
         try {
           await Gal.putImage(filePath);
         } catch (e) {
           print('갤러리 저장 실패: $e');
         }
-        
+
         return filePath;
       }
     }
