@@ -247,6 +247,24 @@ func MakeImage(periodic int64, blueprint models.Blueprint, items []models.Period
 						angle = 270
 					}
 				}
+			} else if v.Type == basicHorizontalLine {
+				// 수평부재 가로: 가로 방향 화살표
+				if len(results) >= 2 {
+					if results[0].Dx > results[len(results)-1].Dx {
+						angle = 0
+					} else {
+						angle = 180
+					}
+				}
+			} else if v.Type == basicHorizontalBreak {
+				// 수평부재 세로: 세로 방향 화살표
+				if len(results) >= 2 {
+					if results[0].Dy > results[len(results)-1].Dy {
+						angle = 90
+					} else {
+						angle = 270
+					}
+				}
 			}
 
 			r := (numberZoom / 2.0) * 0.5 / 2.0
@@ -261,180 +279,196 @@ func MakeImage(periodic int64, blueprint models.Blueprint, items []models.Period
 			x1 -= xinc
 			y1 -= yinc
 
-			if v.Type == basicVerticalBreak || v.Type == basicHorizontalBreak {
-				// 반대선
-				gc.BeginPath()
-				cx := math.Cos((angle+90)*3.14/180) * r
-				cy := math.Sin((angle+90)*3.14/180) * r
-				gc.MoveTo((x1+xinc+cx)*zoom+dx, (y1+yinc+cy)*zoom+dy)
-
-				cx = math.Cos((angle+90+180)*3.14/180) * r
-				cy = math.Sin((angle+90+180)*3.14/180) * r
-				gc.LineTo((x1+xinc+cx)*zoom+dx, (y1+yinc+cy)*zoom+dy)
-
-				// 연장선
-				cx = math.Cos((angle)*3.14/180) * r * 2
-				cy = math.Sin((angle)*3.14/180) * r * 2
-				gc.MoveTo((x1+xinc+cx)*zoom+dx, (y1+yinc+cy)*zoom+dy)
-
-				cx = math.Cos((angle+180)*3.14/180) * r * 2
-				cy = math.Sin((angle+180)*3.14/180) * r * 2
-				gc.LineTo((x1+xinc+cx)*zoom+dx, (y1+yinc+cy)*zoom+dy)
-
-				gc.Stroke()
-
-				gc.BeginPath()
-
-				angle += 180
-
-				xinc = math.Cos(angle*3.14/180) * r
-				yinc = math.Sin(angle*3.14/180) * r
-
-				x1 = originalX - xinc
-				y1 = originalY - yinc
-
-				dx = 0
-				dy = 0
-				gc.MoveTo((x1+xinc)*zoom+dx, (y1+yinc)*zoom+dy)
-
-				angle += 120
-
-				xinc = math.Cos(angle*3.14/180) * r
-				yinc = math.Sin(angle*3.14/180) * r
-
-				gc.LineTo((x1+xinc)*zoom+dx, (y1+yinc)*zoom+dy)
-
-				gc.LineTo((x1)*zoom+dx, (y1)*zoom+dy)
-
-				angle += 120
-
-				xinc = math.Cos(angle*3.14/180) * r
-				yinc = math.Sin(angle*3.14/180) * r
-
-				gc.LineTo((x1+xinc)*zoom+dx, (y1+yinc)*zoom+dy)
-
-				angle += 120
-
-				xinc = math.Cos(angle*3.14/180) * r
-				yinc = math.Sin(angle*3.14/180) * r
-
-				gc.LineTo((x1+xinc)*zoom+dx, (y1+yinc)*zoom+dy)
-
-				gc.FillStroke()
-			} else {
-				gc.BeginPath()
-
-				dx = 0
-				dy = 0
-				gc.MoveTo((x1+xinc)*zoom+dx, (y1+yinc)*zoom+dy)
-
-				angle += 120
-
-				xinc = math.Cos(angle*3.14/180) * r
-				yinc = math.Sin(angle*3.14/180) * r
-
-				gc.LineTo((x1+xinc)*zoom+dx, (y1+yinc)*zoom+dy)
-
-				gc.LineTo((x1)*zoom+dx, (y1)*zoom+dy)
-
-				angle += 120
-
-				xinc = math.Cos(angle*3.14/180) * r
-				yinc = math.Sin(angle*3.14/180) * r
-
-				gc.LineTo((x1+xinc)*zoom+dx, (y1+yinc)*zoom+dy)
-
-				angle += 120
-
-				xinc = math.Cos(angle*3.14/180) * r
-				yinc = math.Sin(angle*3.14/180) * r
-
-				gc.LineTo((x1+xinc)*zoom+dx, (y1+yinc)*zoom+dy)
-
-				gc.FillStroke()
-			}
-
+		if v.Type == basicVerticalBreak || v.Type == basicVerticalBreakV {
+			// 반대선
 			gc.BeginPath()
+			cx := math.Cos((angle+90)*3.14/180) * r
+			cy := math.Sin((angle+90)*3.14/180) * r
+			gc.MoveTo((x1+xinc+cx)*zoom+dx, (y1+yinc+cy)*zoom+dy)
 
-			for i, point := range results {
-				if i == 0 {
-					gc.MoveTo(point.Dx, point.Dy)
-				} else if (v.Type == basicVerticalLine || v.Type == basicVerticalBreak) && i == 1 && len(results) == 2 {
-					// 타입 3, 5: 가로 먼저, 세로 나중 (horizontal first)
-					// 코너 점 추가: x는 point의 x, y는 첫 점의 y
-					gc.LineTo(point.Dx, results[0].Dy)
-					gc.LineTo(point.Dx, point.Dy)
-				} else if (v.Type == basicVerticalLineV || v.Type == basicVerticalBreakV) && i == 1 && len(results) == 2 {
-					// 타입 7, 9: 세로 먼저, 가로 나중 (vertical first)
-					// 코너 점 추가: x는 첫 점의 x, y는 point의 y
-					gc.LineTo(results[0].Dx, point.Dy)
-					gc.LineTo(point.Dx, point.Dy)
-				} else {
-					// 일반 점 또는 3개 이상의 점
-					gc.LineTo(point.Dx, point.Dy)
-				}
-			}
+			cx = math.Cos((angle+90+180)*3.14/180) * r
+			cy = math.Sin((angle+90+180)*3.14/180) * r
+			gc.LineTo((x1+xinc+cx)*zoom+dx, (y1+yinc+cy)*zoom+dy)
 
-			if v.Type == basicVerticalLine || v.Type == basicVerticalBreak || v.Type == basicVerticalLineV || v.Type == basicVerticalBreakV {
-				gc.SetStrokeColor(red)
-			} else {
-				gc.SetStrokeColor(blue)
-			}
+			// 연장선
+			cx = math.Cos((angle)*3.14/180) * r * 2
+			cy = math.Sin((angle)*3.14/180) * r * 2
+			gc.MoveTo((x1+xinc+cx)*zoom+dx, (y1+yinc+cy)*zoom+dy)
 
-			gc.Stroke() // 선 그리기!
-
-			// 끝점에 숫자가 들어간 원 그리기
-			endPoint := results[len(results)-1]
-
-			// 원 그리기
-			gc.BeginPath()
-			gc.SetFillColor(color.RGBA{0xff, 0xff, 0xff, 0xff}) // 흰색 배경
-			if v.Type == basicVerticalLine || v.Type == basicVerticalBreak || v.Type == basicVerticalLineV || v.Type == basicVerticalBreakV {
-				gc.SetStrokeColor(red)
-			} else {
-				gc.SetStrokeColor(blue)
-			}
-			gc.ArcTo(endPoint.Dx, endPoint.Dy, stepNumber, stepNumber, 0, math.Pi*2)
-			gc.FillStroke()
-
-			// 숫자 표시
-			if v.Type == basicVerticalLine || v.Type == basicVerticalBreak || v.Type == basicVerticalLineV || v.Type == basicVerticalBreakV {
-				gc.SetFillColor(red)
-			} else {
-				gc.SetFillColor(blue)
-			}
-
-			gc.SetFontSize(50 * numberZoom / 100)
-			gc.SetFontData(draw2d.FontData{
-				Name:   "Noto Sans KR",
-				Family: draw2d.FontFamilyMono,
-				Style:  draw2d.FontStyleBold,
-			})
-
-			if v.Group >= 10 {
-				gc.FillStringAt(fmt.Sprintf("%v", v.Group), endPoint.Dx-stepNumber*0.7, endPoint.Dy+stepNumber/2)
-			} else {
-				gc.FillStringAt(fmt.Sprintf("%v", v.Group), endPoint.Dx-stepNumber*0.35, endPoint.Dy+stepNumber/2)
-			}
-
-			// 텍스트 표시 (화살표 반대편)
-			txt := v.Member
-			if v.Shape != "" {
-				txt = fmt.Sprintf("%v(%v)", txt, v.Shape)
-			}
-
-			// Flutter 앱과 동일하게 끝점 기준으로 텍스트 배치
-			// Flutter: if (points.items[0].dx > points.items[points.items.length - 1].dx)
-			if results[0].Dx > results[len(results)-1].Dx {
-				// 오른쪽에서 왼쪽으로: 텍스트는 왼쪽에
-				gc.FillStringAt(txt, endPoint.Dx-stepNumber*1.3-float64(len(txt))*stepNumber/2.5, endPoint.Dy+stepNumber/2)
-			} else {
-				// 왼쪽에서 오른쪽으로: 텍스트는 오른쪽에
-				gc.FillStringAt(txt, endPoint.Dx+stepNumber*1.3, endPoint.Dy+stepNumber/2)
-			}
+			cx = math.Cos((angle+180)*3.14/180) * r * 2
+			cy = math.Sin((angle+180)*3.14/180) * r * 2
+			gc.LineTo((x1+xinc+cx)*zoom+dx, (y1+yinc+cy)*zoom+dy)
 
 			gc.Stroke()
-		} else if v.Type >= 31 && v.Type <= 44 {
+
+			gc.BeginPath()
+
+			angle += 180
+
+			xinc = math.Cos(angle*3.14/180) * r
+			yinc = math.Sin(angle*3.14/180) * r
+
+			x1 = originalX - xinc
+			y1 = originalY - yinc
+
+			dx = 0
+			dy = 0
+			gc.MoveTo((x1+xinc)*zoom+dx, (y1+yinc)*zoom+dy)
+
+			angle += 120
+
+			xinc = math.Cos(angle*3.14/180) * r
+			yinc = math.Sin(angle*3.14/180) * r
+
+			gc.LineTo((x1+xinc)*zoom+dx, (y1+yinc)*zoom+dy)
+
+			gc.LineTo((x1)*zoom+dx, (y1)*zoom+dy)
+
+			angle += 120
+
+			xinc = math.Cos(angle*3.14/180) * r
+			yinc = math.Sin(angle*3.14/180) * r
+
+			gc.LineTo((x1+xinc)*zoom+dx, (y1+yinc)*zoom+dy)
+
+			angle += 120
+
+			xinc = math.Cos(angle*3.14/180) * r
+			yinc = math.Sin(angle*3.14/180) * r
+
+			gc.LineTo((x1+xinc)*zoom+dx, (y1+yinc)*zoom+dy)
+
+			gc.FillStroke()
+		} else {
+			gc.BeginPath()
+
+			dx = 0
+			dy = 0
+			gc.MoveTo((x1+xinc)*zoom+dx, (y1+yinc)*zoom+dy)
+
+		angle += 120
+
+		xinc = math.Cos(angle*3.14/180) * r
+		yinc = math.Sin(angle*3.14/180) * r
+
+		gc.LineTo((x1+xinc)*zoom+dx, (y1+yinc)*zoom+dy)
+
+		gc.LineTo((x1)*zoom+dx, (y1)*zoom+dy)
+
+		angle += 120
+
+		xinc = math.Cos(angle*3.14/180) * r
+		yinc = math.Sin(angle*3.14/180) * r
+
+		gc.LineTo((x1+xinc)*zoom+dx, (y1+yinc)*zoom+dy)
+
+		angle += 120
+
+		xinc = math.Cos(angle*3.14/180) * r
+		yinc = math.Sin(angle*3.14/180) * r
+
+		gc.LineTo((x1+xinc)*zoom+dx, (y1+yinc)*zoom+dy)
+
+		gc.FillStroke()
+	}
+
+	gc.BeginPath()
+
+	for i, point := range results {
+		if i == 0 {
+			gc.MoveTo(point.Dx, point.Dy)
+		} else if (v.Type == basicVerticalLine || v.Type == basicVerticalBreak) && i == 1 && len(results) == 2 {
+			// 타입 3, 5: 가로 먼저, 세로 나중 (horizontal first)
+			// 코너 점 추가: x는 point의 x, y는 첫 점의 y
+			gc.LineTo(point.Dx, results[0].Dy)
+			gc.LineTo(point.Dx, point.Dy)
+		} else if (v.Type == basicVerticalLineV || v.Type == basicVerticalBreakV) && i == 1 && len(results) == 2 {
+			// 타입 7, 9: 세로 먼저, 가로 나중 (vertical first)
+			// 코너 점 추가: x는 첫 점의 x, y는 point의 y
+			gc.LineTo(results[0].Dx, point.Dy)
+			gc.LineTo(point.Dx, point.Dy)
+		} else if v.Type == basicHorizontalLine && i == 1 && len(results) == 2 {
+			// 타입 4: 수평부재 가로 - 가로 먼저, 세로 나중 (horizontal first)
+			// 코너 점 추가: x는 point의 x, y는 첫 점의 y
+			gc.LineTo(point.Dx, results[0].Dy)
+			gc.LineTo(point.Dx, point.Dy)
+		} else if v.Type == basicHorizontalBreak && i == 1 && len(results) == 2 {
+			// 타입 6: 수평부재 세로 - 세로 먼저, 가로 나중 (vertical first)
+			// 코너 점 추가: x는 첫 점의 x, y는 point의 y
+			gc.LineTo(results[0].Dx, point.Dy)
+			gc.LineTo(point.Dx, point.Dy)
+		} else {
+			// 일반 점 또는 3개 이상의 점
+			gc.LineTo(point.Dx, point.Dy)
+		}
+	}
+
+	if v.Type == basicVerticalLine || v.Type == basicVerticalBreak || v.Type == basicVerticalLineV || v.Type == basicVerticalBreakV {
+		gc.SetStrokeColor(red)
+	} else if v.Type == basicHorizontalLine || v.Type == basicHorizontalBreak {
+		gc.SetStrokeColor(blue)
+	} else {
+		gc.SetStrokeColor(blue)
+	}
+
+	gc.Stroke() // 선 그리기!
+
+	// 끝점에 숫자가 들어간 원 그리기
+	endPoint := results[len(results)-1]
+
+	// 원 그리기
+	gc.BeginPath()
+	gc.SetFillColor(color.RGBA{0xff, 0xff, 0xff, 0xff}) // 흰색 배경
+	if v.Type == basicVerticalLine || v.Type == basicVerticalBreak || v.Type == basicVerticalLineV || v.Type == basicVerticalBreakV {
+		gc.SetStrokeColor(red)
+	} else if v.Type == basicHorizontalLine || v.Type == basicHorizontalBreak {
+		gc.SetStrokeColor(blue)
+	} else {
+		gc.SetStrokeColor(blue)
+	}
+	gc.ArcTo(endPoint.Dx, endPoint.Dy, stepNumber, stepNumber, 0, math.Pi*2)
+	gc.FillStroke()
+
+	// 숫자 표시
+	if v.Type == basicVerticalLine || v.Type == basicVerticalBreak || v.Type == basicVerticalLineV || v.Type == basicVerticalBreakV {
+		gc.SetFillColor(red)
+	} else if v.Type == basicHorizontalLine || v.Type == basicHorizontalBreak {
+		gc.SetFillColor(blue)
+	} else {
+		gc.SetFillColor(blue)
+	}
+
+	gc.SetFontSize(50 * numberZoom / 100)
+	gc.SetFontData(draw2d.FontData{
+		Name:   "Noto Sans KR",
+		Family: draw2d.FontFamilyMono,
+		Style:  draw2d.FontStyleBold,
+	})
+
+	if v.Group >= 10 {
+		gc.FillStringAt(fmt.Sprintf("%v", v.Group), endPoint.Dx-stepNumber*0.7, endPoint.Dy+stepNumber/2)
+	} else {
+		gc.FillStringAt(fmt.Sprintf("%v", v.Group), endPoint.Dx-stepNumber*0.35, endPoint.Dy+stepNumber/2)
+	}
+
+	// 텍스트 표시 (화살표 반대편)
+	txt := v.Member
+	if v.Shape != "" {
+		txt = fmt.Sprintf("%v(%v)", txt, v.Shape)
+	}
+
+	// Flutter 앱과 동일하게 끝점 기준으로 텍스트 배치
+	// Flutter: if (points.items[0].dx > points.items[points.items.length - 1].dx)
+	if results[0].Dx > results[len(results)-1].Dx {
+		// 오른쪽에서 왼쪽으로: 텍스트는 왼쪽에
+		gc.FillStringAt(txt, endPoint.Dx-stepNumber*1.3-float64(len(txt))*stepNumber/2.5, endPoint.Dy+stepNumber/2)
+	} else {
+		// 왼쪽에서 오른쪽으로: 텍스트는 오른쪽에
+		gc.FillStringAt(txt, endPoint.Dx+stepNumber*1.3, endPoint.Dy+stepNumber/2)
+	}
+
+	gc.Stroke()
+} else if v.Type >= 31 && v.Type <= 44 {
 			if v.Type == 31 || v.Type == 41 {
 				gc.SetStrokeColor(lightblue)
 			} else if v.Type == 32 || v.Type == 42 {
@@ -732,6 +766,10 @@ func MakeImage(periodic int64, blueprint models.Blueprint, items []models.Period
 	}
 
 	targetFilename := fmt.Sprintf("%v/periodicresult/%v/%v.jpg", config.UploadPath, periodic, blueprint.Id)
+	
+	// 기존 이미지 파일 삭제 (캐시 방지)
+	os.Remove(targetFilename)
+	
 	err := global.SaveToJpegFile(targetFilename, dest)
 	if err != nil {
 		log.Println("Failed to save image:", targetFilename, err)

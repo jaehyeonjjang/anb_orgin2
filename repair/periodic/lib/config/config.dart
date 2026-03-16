@@ -2,10 +2,10 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 
-//const serverUrl = 'http://10.0.2.2:9107'; // 안드로이드 에뮬레이터용
+const serverUrl = 'http://10.0.2.2:9107'; // 안드로이드 에뮬레이터용
 //const serverUrl = 'http://192.168.0.168:9107'; // 실제 디바이스용
 //const serverUrl = 'http://localhost:9107'; // 웹용
-const serverUrl = 'https://service.anbweb.kr'; // 운영 서버
+//const serverUrl = 'https://service.anbweb.kr'; // 운영 서버
 
 const primaryColor = Color.fromARGB(255, 33, 56, 190);
 const selectColor = Color.fromARGB(255, 232, 31, 99);

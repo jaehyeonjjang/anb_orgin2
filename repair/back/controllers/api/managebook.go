@@ -53,10 +53,10 @@ func removeFile(item *models.Managebook) {
 func convertPDFPageToImage(pdfPath string, pageNum int, outputPrefix string) (string, error) {
 	// pdftoppm 경로 찾기 (macOS Homebrew, Linux 기본 경로)
 	pdftoppmPaths := []string{
-		"/opt/homebrew/bin/pdftoppm",  // macOS M1/M2 Homebrew
-		"/usr/local/bin/pdftoppm",      // macOS Intel Homebrew
-		"/usr/bin/pdftoppm",            // Linux
-		"pdftoppm",                     // PATH에서 찾기
+		"/opt/homebrew/bin/pdftoppm", // macOS M1/M2 Homebrew
+		"/usr/local/bin/pdftoppm",    // macOS Intel Homebrew
+		"/usr/bin/pdftoppm",          // Linux
+		"pdftoppm",                   // PATH에서 찾기
 	}
 
 	var pdftoppmPath string
@@ -315,6 +315,6 @@ func (c *ManagebookController) Multiprocess(id int64, filename string, originalf
 		c.Code = http.StatusBadRequest
 		return
 	}
-	
+
 	log.Printf("=== Multiprocess SUCCESS: processed %d files ===", len(filenames))
 }

@@ -195,6 +195,40 @@ class PainterDrawer extends CustomPainter {
           y = point.dy * zoom + dy;
           path.lineTo(x, y); // 세로로 연결
         }
+      } else if (points.icon == basicHorizontalLine) {
+        // 수평부재 가로: 가로로 시작해서 세로로 한 번만 꺾기 (수직부재 가로와 동일)
+        if (points.items.length > 1) {
+          var point = points.items[0];
+          var x = point.dx * zoom + dx;
+          var y = point.dy * zoom + dy;
+          path.moveTo(x, y);
+
+          point = points.items[points.items.length - 1];
+
+          x = point.dx * zoom + dx;
+          path.lineTo(x, y); // 가로로 먼저 그림
+
+          x = point.dx * zoom + dx;
+          y = point.dy * zoom + dy;
+          path.lineTo(x, y); // 세로로 연결
+        }
+      } else if (points.icon == basicHorizontalBreak) {
+        // 수평부재 세로: 세로로 시작해서 가로로 한 번만 꺾기 (수직부재 세로와 동일)
+        if (points.items.length > 1) {
+          var point = points.items[0];
+          var x = point.dx * zoom + dx;
+          var y = point.dy * zoom + dy;
+          path.moveTo(x, y);
+
+          point = points.items[points.items.length - 1];
+
+          y = point.dy * zoom + dy;
+          path.lineTo(x, y); // 세로로 먼저 그림
+
+          x = point.dx * zoom + dx;
+          y = point.dy * zoom + dy;
+          path.lineTo(x, y); // 가로로 연결
+        }
       } else if (points.icon == basicVerticalLineV ||
           points.icon == basicVerticalBreakV) {
         // 세로 시작 직선과 꺾은선: 세로로 시작해서 가로로 한 번만 꺾기
@@ -292,7 +326,6 @@ class PainterDrawer extends CustomPainter {
 
       if (points.isInclination() == true || points.isBasicLine() == true) {
         if (points.icon == basicVerticalBreak ||
-            points.icon == basicHorizontalBreak ||
             points.icon == basicVerticalBreakV) {
           drawBreakArrow(canvas, points, paint);
         } else {
@@ -443,6 +476,34 @@ class PainterDrawer extends CustomPainter {
       }
     } else if (points.icon == basicVerticalLineV) {
       // 세로 시작 직선 화살표: 항상 세로 방향으로 고정
+      if (points.items.length < 2) {
+        return;
+      }
+
+      var point = points.items[0];
+      var point2 = points.items[points.items.length - 1];
+
+      if (point.dy > point2.dy) {
+        angle = 90;
+      } else {
+        angle = 270;
+      }
+    } else if (points.icon == basicHorizontalLine) {
+      // 수평부재 가로 화살표: 항상 가로 방향으로 고정
+      if (points.items.length < 2) {
+        return;
+      }
+
+      var point = points.items[0];
+      var point2 = points.items[points.items.length - 1];
+
+      if (point.dx > point2.dx) {
+        angle = 0;
+      } else {
+        angle = 180;
+      }
+    } else if (points.icon == basicHorizontalBreak) {
+      // 수평부재 세로 화살표: 가로 화살표 모양으로 고정
       if (points.items.length < 2) {
         return;
       }
@@ -1122,6 +1183,20 @@ class PainterDrawer extends CustomPainter {
         angle = 90;
       } else {
         angle = 270;
+      }
+    } else if (points.icon == basicHorizontalBreak) {
+      // 수평부재 세로 꺾은선 화살표: 가로 화살표 모양으로 고정
+      if (points.items.length < 2) {
+        return;
+      }
+
+      var point = points.items[0];
+      var point2 = points.items[points.items.length - 1];
+
+      if (point.dx > point2.dx) {
+        angle = 0;
+      } else {
+        angle = 180;
       }
     }
 

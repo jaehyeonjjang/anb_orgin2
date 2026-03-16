@@ -163,8 +163,8 @@ class ToolBox extends StatelessWidget {
             width: 65,
             textStyle: const TextStyle(fontSize: 14, color: Colors.black)),
         toolBoxNumber(basicHorizontal, const Color.fromRGBO(0, 0, 255, 1.0)),
-        drawText(basicHorizontalLine, '직선', Color.fromRGBO(0, 0, 255, 10.0)),
-        drawText(basicHorizontalBreak, '꺾은선', Color.fromRGBO(0, 0, 255, 10.0)),
+        drawText(basicHorizontalLine, '가로', Color.fromRGBO(0, 0, 255, 10.0)),
+        drawText(basicHorizontalBreak, '세로', Color.fromRGBO(0, 0, 255, 10.0)),
       ]),
       const SizedBox(height: 5.0),
       Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
