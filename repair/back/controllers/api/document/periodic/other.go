@@ -223,8 +223,8 @@ func Other(datas []models.Periodicother) map[int]OtherResult {
 
 		// 재질별 Order 매핑
 		materialOrderMap := map[string]int{
-			"석재":       143,
-			"A/L 판넬":   144,
+			"석재":      143,
+			"A/L 판넬":  144,
 			"알루미늄 판넬": 144,
 			"드라이비트":   145,
 			"적벽돌":     146,

@@ -60,7 +60,7 @@ func Data(datas []models.Periodicdata) DataItem {
 	groups := []bool{false, false, false, false, false}
 	positions := []bool{false, false, false, false, false, false, false, false}
 	check := []bool{false, false, false, false, false, false}
-	types := []bool{false, false, false}
+	types := []bool{false, false, false, false, false, false, false, false, false, false, false, false, false, false}
 
 	width2 := false
 	width3 := false
@@ -94,7 +94,7 @@ func Data(datas []models.Periodicdata) DataItem {
 	causes := make([]string, 0)
 
 	for _, data := range datas {
-		if data.Type != 1 && data.Type != 2 {
+		if data.Type < 1 || data.Type > 13 {
 			continue
 		}
 

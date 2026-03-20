@@ -31,7 +31,9 @@ func (c *ManagebookController) Pre_Delete(item *models.Managebook) {
 	managebookManager := models.NewManagebookManager(conn)
 	managebookItem := managebookManager.Get(item.Id)
 
-	removeFile(managebookItem)
+	if managebookItem != nil {
+		removeFile(managebookItem)
+	}
 }
 
 func (c *ManagebookController) Pre_Deletebatch(items *[]models.Managebook) {
@@ -49,8 +51,8 @@ func removeFile(item *models.Managebook) {
 	os.Remove(fullFilename)
 }
 
-// convertPDFPageToImage converts a single PDF page to JPEG using pdftoppm
-func convertPDFPageToImage(pdfPath string, pageNum int, outputPrefix string) (string, error) {
+// convertPDFToImages converts all pages of a PDF to JPEG using pdftoppm
+func convertPDFToImages(pdfPath string, outputDir string, outputPrefix string) (int, error) {
 	// pdftoppm 경로 찾기 (macOS Homebrew, Linux 기본 경로)
 	pdftoppmPaths := []string{
 		"/opt/homebrew/bin/pdftoppm", // macOS M1/M2 Homebrew
@@ -72,23 +74,25 @@ func convertPDFPageToImage(pdfPath string, pageNum int, outputPrefix string) (st
 		if path, err := exec.LookPath("pdftoppm"); err == nil {
 			pdftoppmPath = path
 		} else {
-			return "", fmt.Errorf("pdftoppm을 찾을 수 없습니다. poppler-utils를 설치해주세요")
+			return 0, fmt.Errorf("pdftoppm을 찾을 수 없습니다. poppler-utils를 설치해주세요")
 		}
 	}
 
-	// pdftoppm 실행: -jpeg -r 150 -f pageNum -l pageNum input.pdf output_prefix
-	cmd := exec.Command(pdftoppmPath, "-jpeg", "-r", "150", "-f", fmt.Sprintf("%d", pageNum), "-l", fmt.Sprintf("%d", pageNum), pdfPath, outputPrefix)
-	if output, err := cmd.CombinedOutput(); err != nil {
-		return "", fmt.Errorf("pdftoppm 실행 실패: %v, output: %s", err, string(output))
+	// PDF 페이지 수 확인
+	pageCount, err := api.PageCountFile(pdfPath)
+	if err != nil {
+		return 0, fmt.Errorf("PDF 페이지 확인 실패: %v", err)
 	}
 
-	// 생성된 파일 찾기 (pdftoppm은 output_prefix-XX.jpg 형식으로 저장)
-	outputFile := fmt.Sprintf("%s-%02d.jpg", outputPrefix, pageNum)
-	if _, err := os.Stat(outputFile); err != nil {
-		return "", fmt.Errorf("변환된 이미지 파일을 찾을 수 없습니다: %s", outputFile)
+	// pdftoppm 실행: 전체 페이지를 한 번에 변환
+	fullOutputPath := fmt.Sprintf("%s/%s", outputDir, outputPrefix)
+	cmd := exec.Command(pdftoppmPath, "-jpeg", "-r", "150", pdfPath, fullOutputPath)
+	output, err := cmd.CombinedOutput()
+	if err != nil {
+		return 0, fmt.Errorf("pdftoppm 실행 실패: %v, output: %s", err, string(output))
 	}
 
-	return outputFile, nil
+	return pageCount, nil
 }
 
 // @Post()
@@ -118,10 +122,15 @@ func (c *ManagebookController) Process(id int64, name string, order int, filenam
 
 	fullFilename := fmt.Sprintf("%v/%v", config.UploadPath, filename)
 
-	// PDF 페이지 수 확인
-	pageCount, err := api.PageCountFile(fullFilename)
+	// 임시 디렉토리 생성
+	tmpDir := fmt.Sprintf("%v/tmp-%v", config.UploadPath, global.UniqueId())
+	os.Mkdir(tmpDir, 0755)
+	defer os.RemoveAll(tmpDir)
+
+	// PDF 전체를 이미지로 변환
+	pageCount, err := convertPDFToImages(fullFilename, tmpDir, "page")
 	if err != nil {
-		errMsg := fmt.Sprintf("PDF 페이지 확인 실패 (%s): %v", name, err)
+		errMsg := fmt.Sprintf("PDF 변환 실패 (%s): %v", name, err)
 		log.Println(errMsg)
 		c.Result["code"] = "error"
 		c.Result["message"] = errMsg
@@ -129,23 +138,16 @@ func (c *ManagebookController) Process(id int64, name string, order int, filenam
 		return
 	}
 
-	// 임시 디렉토리 생성
-	tmpDir := fmt.Sprintf("%v/tmp-%v", config.UploadPath, global.UniqueId())
-	os.Mkdir(tmpDir, 0755)
-	defer os.RemoveAll(tmpDir)
-
 	var errors []string
 	successCount := 0
 
 	for i := 1; i <= pageCount; i++ {
-		// pdftoppm을 사용하여 PDF 페이지를 이미지로 변환
-		tmpOutputPrefix := fmt.Sprintf("%v/page", tmpDir)
-		tmpImgPath, err := convertPDFPageToImage(fullFilename, i, tmpOutputPrefix)
-		if err != nil {
-			errMsg := fmt.Sprintf("PDF 렌더링 실패 (%s, 페이지 %d): %v", name, i, err)
-			log.Println(errMsg)
-			errors = append(errors, errMsg)
-			continue
+		// 페이지 수에 따라 파일명 형식이 달라짐 (10개 이상이면 zero-padding)
+		var tmpImgPath string
+		if pageCount >= 10 {
+			tmpImgPath = fmt.Sprintf("%s/page-%02d.jpg", tmpDir, i)
+		} else {
+			tmpImgPath = fmt.Sprintf("%s/page-%d.jpg", tmpDir, i)
 		}
 
 		// 생성된 이미지 읽기
@@ -159,7 +161,6 @@ func (c *ManagebookController) Process(id int64, name string, order int, filenam
 
 		img, _, err := image.Decode(tmpFile)
 		tmpFile.Close()
-		os.Remove(tmpImgPath)
 		if err != nil {
 			errMsg := fmt.Sprintf("이미지 디코딩 실패 (%s, 페이지 %d): %v", name, i, err)
 			log.Println(errMsg)
@@ -236,30 +237,28 @@ func (c *ManagebookController) Multiprocess(id int64, filename string, originalf
 
 		fullFilename := fmt.Sprintf("%v/%v", config.UploadPath, filename)
 
-		// PDF 페이지 수 확인
-		pageCount, err := api.PageCountFile(fullFilename)
+		// 임시 디렉토리 생성
+		tmpDir := fmt.Sprintf("%v/tmp-%v", config.UploadPath, global.UniqueId())
+		os.Mkdir(tmpDir, 0755)
+
+		// PDF 전체를 이미지로 변환
+		pageCount, err := convertPDFToImages(fullFilename, tmpDir, "page")
 		if err != nil {
-			errMsg := fmt.Sprintf("PDF 페이지 확인 실패 (%s): %v", name, err)
+			errMsg := fmt.Sprintf("PDF 변환 실패 (%s): %v", name, err)
 			log.Println(errMsg)
+			os.RemoveAll(tmpDir) // 실패 시 즉시 정리
 			errors = append(errors, errMsg)
 			continue
 		}
 
-		// 임시 디렉토리 생성
-		tmpDir := fmt.Sprintf("%v/tmp-%v", config.UploadPath, global.UniqueId())
-		os.Mkdir(tmpDir, 0755)
-		defer os.RemoveAll(tmpDir)
-
 		successCount := 0
 		for i := 1; i <= pageCount; i++ {
-			// pdftoppm을 사용하여 PDF 페이지를 이미지로 변환
-			tmpOutputPrefix := fmt.Sprintf("%v/page", tmpDir)
-			tmpImgPath, err := convertPDFPageToImage(fullFilename, i, tmpOutputPrefix)
-			if err != nil {
-				errMsg := fmt.Sprintf("PDF 렌더링 실패 (%s, 페이지 %d): %v", name, i, err)
-				log.Println(errMsg)
-				errors = append(errors, errMsg)
-				continue
+			// 페이지 수에 따라 파일명 형식이 달라짐 (10개 이상이면 zero-padding)
+			var tmpImgPath string
+			if pageCount >= 10 {
+				tmpImgPath = fmt.Sprintf("%s/page-%02d.jpg", tmpDir, i)
+			} else {
+				tmpImgPath = fmt.Sprintf("%s/page-%d.jpg", tmpDir, i)
 			}
 
 			// 생성된 이미지 읽기
@@ -300,6 +299,9 @@ func (c *ManagebookController) Multiprocess(id int64, filename string, originalf
 
 			successCount++
 		}
+
+		// 처리 완료 후 임시 디렉토리 삭제
+		os.RemoveAll(tmpDir)
 
 		if successCount == 0 {
 			errors = append(errors, fmt.Sprintf("파일 변환 완전 실패: %s (0/%d 페이지 처리됨)", name, pageCount))

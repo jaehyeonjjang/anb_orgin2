@@ -10,18 +10,20 @@ import 'package:periodic/controllers/auth_controller.dart';
 import 'package:periodic/controllers/blueprint_controller.dart';
 import 'package:periodic/models/blueprint.dart';
 
-const basicVertical = 1;
-const basicHorizontal = 2;
+const basicVertical = 1; //수직 점
+const basicHorizontal = 2; //수평 점
 
-const basicVerticalLine = 3;
-const basicHorizontalLine = 4;
+const basicVerticalLine = 3; //가로(정)
+const basicHorizontalLine = 4; //가로
 
-const basicVerticalBreak = 5;
-const basicHorizontalBreak = 6;
+const basicVerticalBreak = 5; //가로(역)
+const basicHorizontalBreak = 6; //세로
 
-const basicVerticalLineV = 7;
+const basicVerticalLineV = 7; //세로(정)
+const basicVerticalLineFree = 11; //자유(정)
 
-const basicVerticalBreakV = 9;
+const basicVerticalBreakV = 9; //세로(역)
+const basicVerticalBreakFree = 13; //자유(역)
 
 const curveBlue = 31;
 const curveRed = 32;
@@ -160,7 +162,9 @@ class Point {
         icon == basicVerticalBreak ||
         icon == basicHorizontalBreak ||
         icon == basicVerticalLineV ||
-        icon == basicVerticalBreakV) {
+        icon == basicVerticalLineFree ||
+        icon == basicVerticalBreakV ||
+        icon == basicVerticalBreakFree) {
       return true;
     } else {
       return false;
@@ -624,7 +628,13 @@ class PainterController extends GetxController {
     if (type == DrawType.number || type == DrawType.numberLine) {
       point.weight = '0.1';
 
-      if (index == 1 || index == 3 || index == 5 || index == 7 || index == 9) {
+      if (index == 1 ||
+          index == 3 ||
+          index == 5 ||
+          index == 7 ||
+          index == 9 ||
+          index == 11 ||
+          index == 13) {
         point.member = '벽체';
       } else {
         point.member = '슬래브';
@@ -995,6 +1005,12 @@ class PainterController extends GetxController {
       setColor(LineColor.red);
       setType(DrawType.numberLine);
     } else if (value == basicVerticalBreakV) {
+      setColor(LineColor.red);
+      setType(DrawType.numberLine);
+    } else if (value == basicVerticalLineFree) {
+      setColor(LineColor.red);
+      setType(DrawType.numberLine);
+    } else if (value == basicVerticalBreakFree) {
       setColor(LineColor.red);
       setType(DrawType.numberLine);
     } else if (value == crackLineRed) {

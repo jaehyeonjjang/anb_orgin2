@@ -105,7 +105,7 @@ class ToolBox extends StatelessWidget {
               borderRadius: BorderRadius.circular(5.0),
               color: background,
             ),
-            padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 1.0),
+            padding: const EdgeInsets.symmetric(horizontal: 5.0, vertical: 2.0),
             child: Row(children: [
               Container(
                   decoration: BoxDecoration(
@@ -143,11 +143,11 @@ class ToolBox extends StatelessWidget {
                 child: c.toolboxPosition == 0
                     ? const Icon(
                         Icons.arrow_right,
-                        size: 40.0,
+                        size: 33.0,
                       )
                     : const Icon(
                         Icons.arrow_left,
-                        size: 40.0,
+                        size: 33.0,
                       )))
       ]),
       Row(children: [
@@ -157,6 +157,14 @@ class ToolBox extends StatelessWidget {
         const SizedBox(width: 28),
         drawText(basicVerticalLineV, '세로(정)', Colors.red),
         drawText(basicVerticalBreakV, '세로(역)', Colors.red),
+      ]),
+      Row(children: [
+        CText('',
+            width: 65,
+            textStyle: const TextStyle(fontSize: 14, color: Colors.black)),
+        const SizedBox(width: 28),
+        drawText(basicVerticalLineFree, '자유(정)', Colors.red),
+        drawText(basicVerticalBreakFree, '자유(역)', Colors.red),
       ]),
       Row(children: [
         CText('수평부재',

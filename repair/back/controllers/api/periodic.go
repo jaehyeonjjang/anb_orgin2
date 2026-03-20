@@ -201,7 +201,7 @@ func (c *PeriodicController) Post_Insert(item *models.Periodic) {
 	periodicotherManager.Insert(&models.Periodicother{Name: "a,b,c,d,e", Type: 1, Position: "도로부 신축 이음부", Category: 12, Order: 120, Periodic: id})
 	periodicotherManager.Insert(&models.Periodicother{Name: "미시공,고무재 및 강재,후타재", Type: 3, Position: "시공", Category: 12, Order: 121, Periodic: id})
 	periodicotherManager.Insert(&models.Periodicother{Name: "마모,강판노출,부식,누수,단차,파손,이격,이물질 퇴적", Type: 2, Position: "신축 이음부 고무재 및 강재", Category: 12, Order: 122, Periodic: id})
-	periodicotherManager.Insert(&models.Periodicother{Name: "콘크리트 균열PeriodiType:,파손", Type: 2, Position: "신축 이음부 후타재", Category: 12, Order: 123, Periodic: id})
+	periodicotherManager.Insert(&models.Periodicother{Name: "콘크리트 균열,파손", Type: 2, Position: "신축 이음부 후타재", Category: 12, Order: 123, Periodic: id})
 
 	periodicotherManager.Insert(&models.Periodicother{Name: "a,b,c,d,e", Type: 1, Position: "환기구 등의 덮개", Category: 13, Order: 130, Periodic: id})
 	periodicotherManager.Insert(&models.Periodicother{Name: "벽부형,입상형,바닥형,벤츄레이터", Type: 4, Position: "환기구", Category: 13, Order: 131, Periodic: id})

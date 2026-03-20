@@ -140,7 +140,9 @@ class PainterDrawer extends CustomPainter {
       } else if (points.icon == basicVerticalLine ||
           points.icon == basicVerticalBreak ||
           points.icon == basicVerticalLineV ||
-          points.icon == basicVerticalBreakV) {
+          points.icon == basicVerticalLineFree ||
+          points.icon == basicVerticalBreakV ||
+          points.icon == basicVerticalBreakFree) {
         paint = paintFillRed;
         points.color = LineColor.red;
       }
@@ -268,7 +270,9 @@ class PainterDrawer extends CustomPainter {
           points.icon == basicVerticalBreak ||
           points.icon == basicHorizontalBreak ||
           points.icon == basicVerticalLineV ||
-          points.icon == basicVerticalBreakV) {
+          points.icon == basicVerticalLineFree ||
+          points.icon == basicVerticalBreakV ||
+          points.icon == basicVerticalBreakFree) {
         strokeWidth = 1.5;
       }
 
@@ -326,7 +330,8 @@ class PainterDrawer extends CustomPainter {
 
       if (points.isInclination() == true || points.isBasicLine() == true) {
         if (points.icon == basicVerticalBreak ||
-            points.icon == basicVerticalBreakV) {
+            points.icon == basicVerticalBreakV ||
+            points.icon == basicVerticalBreakFree) {
           drawBreakArrow(canvas, points, paint);
         } else {
           drawArrow(canvas, points, paint);
@@ -1114,7 +1119,8 @@ class PainterDrawer extends CustomPainter {
     Paint color2;
 
     if (points.icon == basicVerticalBreak ||
-        points.icon == basicVerticalBreakV) {
+        points.icon == basicVerticalBreakV ||
+        points.icon == basicVerticalBreakFree) {
       color2 = paintRed;
     } else {
       color2 = paintBlue;

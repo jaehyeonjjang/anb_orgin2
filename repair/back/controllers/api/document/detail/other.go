@@ -201,6 +201,29 @@ func Other(datas []models.Periodicother) map[int]OtherResult {
 		strs := make([]string, 0)
 
 		work := GetItemByPosition("건물외부 벽체", items)
+		if work == nil {
+			work = &models.Periodicother{}
+		}
+
+		// 선택된 재질 확인
+		selectedMaterials := make(map[string]bool)
+		if work.Status != "" {
+			materials := strings.Split(work.Status, ",")
+			for _, m := range materials {
+				material := strings.TrimSpace(m)
+				selectedMaterials[material] = true
+			}
+		}
+
+		// 재질별 Order 매핑
+		materialOrderMap := map[string]int{
+			"석재":      143,
+			"A/L 판넬":  144,
+			"알루미늄 판넬": 144,
+			"드라이비트":   145,
+			"적벽돌":     146,
+			"벽돌":      146,
+		}
 
 		head := ""
 		position := ""
@@ -215,11 +238,42 @@ func Other(datas []models.Periodicother) map[int]OtherResult {
 			good = 1
 		} else {
 			for _, v := range typeitems {
+				if v.Order == 141 {
+					continue
+				}
+
 				if v.Status == "" {
 					continue
 				}
 
-				strs = append(strs, fmt.Sprintf("%v - %v", v.Position, strings.ReplaceAll(v.Status, ",", ", ")))
+				// 선택된 재질에 해당하는 항목만 출력
+				shouldInclude := false
+				if len(selectedMaterials) == 0 {
+					// 재질 선택 안 됨 - 모두 포함
+					shouldInclude = true
+				} else {
+					// 선택된 재질과 매칭되는지 확인
+					for material, order := range materialOrderMap {
+						if selectedMaterials[material] && v.Order == order {
+							shouldInclude = true
+							break
+						}
+					}
+				}
+
+				if shouldInclude {
+					strs = append(strs, fmt.Sprintf("%v - %v", v.Position, strings.ReplaceAll(v.Status, ",", ", ")))
+				}
+			}
+
+			if len(strs) == 0 {
+				str := ""
+				if work.Status != "" {
+					position = fmt.Sprintf("(%v 등)", strings.ReplaceAll(work.Status, ",", ", "))
+					str = fmt.Sprintf("%v ", position)
+				}
+				head = fmt.Sprintf("건물외부 벽체 %v마감부위 상태는 양호한 것으로 확인됨.", str)
+				good = 1
 			}
 		}
 

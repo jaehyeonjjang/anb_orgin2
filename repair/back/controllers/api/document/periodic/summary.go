@@ -161,7 +161,7 @@ func GetSummary(id int64, periodic models.Periodic, dongs []models.Aptdong, item
 					continue
 				}
 
-				if v.Type < 1 || v.Type > 9 {
+				if v.Type < 1 || v.Type > 13 {
 					continue
 				}
 
@@ -201,7 +201,7 @@ func GetSummary(id int64, periodic models.Periodic, dongs []models.Aptdong, item
 						continue
 					}
 
-					if v.Type < 1 || v.Type > 9 {
+					if v.Type < 1 || v.Type > 13 {
 						continue
 					}
 

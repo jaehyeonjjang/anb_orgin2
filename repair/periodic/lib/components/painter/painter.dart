@@ -554,9 +554,12 @@ class Painter extends StatelessWidget {
       c.addPoint(Offset(x, y));
     }
 
-    DateTime time = DateTime.now();
-    final current = time.millisecondsSinceEpoch;
-    c.lastUpdateTime = current;
+    // 자유선 타입에만 2초 타이머 초기화
+    if (c.index == basicVerticalLineFree || c.index == basicVerticalBreakFree) {
+      DateTime time = DateTime.now();
+      final current = time.millisecondsSinceEpoch;
+      c.lastUpdateTime = current;
+    }
   }
 
   void onDrawUpdate(MoveEvent event) {
@@ -566,6 +569,41 @@ class Painter extends StatelessWidget {
 
     var x = event.localPos.dx / c.zoom + c.sx;
     var y = event.localPos.dy / c.zoom + c.sy;
+
+    // 자유선 타입들에 대한 2초 타이머 자동 포인트 추가 (한 번만, 점이 2개일 때만)
+    if (c.index == basicVerticalLineFree ||
+        c.index == basicVerticalBreakFree) {
+      // 이미 3개 이상의 점이 있으면 자동 추가하지 않음 (한 번만 발생)
+      if (c.points.isNotEmpty && c.points[c.points.length - 1].items.length >= 3) {
+        // 자동 추가가 이미 발생했으므로 타이머 로직 스킵
+      } else {
+        DateTime time = DateTime.now();
+        final current = time.millisecondsSinceEpoch;
+        if (c.lastUpdateTime != 0) {
+          final diff = current - c.lastUpdateTime;
+          if (diff > 2000 && c.points[c.points.length - 1].items.length == 2) {
+            c.addPoint(Offset(x, y));
+            c.lastUpdateTime = 0;
+            return;
+          }
+        }
+
+        if (c.points[c.points.length - 1].items.length >= 2) {
+          var dx = c.points[c.points.length - 1]
+                  .items[c.points[c.points.length - 1].items.length - 1].dx -
+              x;
+          var dy = c.points[c.points.length - 1]
+                  .items[c.points[c.points.length - 1].items.length - 1].dy -
+              y;
+
+          if (dx.abs() > 10 * c.zoom || dy.abs() > 10 * c.zoom) {
+            c.lastUpdateTime = current;
+          }
+        } else {
+          c.lastUpdateTime = current;
+        }
+      }
+    }
 
     // 꺾은선 90도 가로/세로 고정 로직
     if (c.index == basicVerticalBreak &&

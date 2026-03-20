@@ -26,6 +26,9 @@ const (
 
 	basicVerticalBreakV = 9 // 세로 시작 꺾은선
 
+	basicVerticalLineFree  = 11 // 자유 직선(정)
+	basicVerticalBreakFree = 13 // 자유 꺾은선(역)
+
 	curveBlue   = 31
 	curveRed    = 32
 	curveGreen  = 33
@@ -176,7 +179,7 @@ func MakeImage(periodic int64, blueprint models.Blueprint, items []models.Period
 				gc.FillStringAt(fmt.Sprintf("%v", v.Group), point.Dx-stepNumber*0.35, point.Dy+stepNumber/2)
 			}
 			gc.Stroke()
-		} else if v.Type == basicVerticalLine || v.Type == basicHorizontalLine || v.Type == basicVerticalBreak || v.Type == basicHorizontalBreak || v.Type == basicVerticalLineV || v.Type == basicVerticalBreakV {
+	} else if v.Type == basicVerticalLine || v.Type == basicHorizontalLine || v.Type == basicVerticalBreak || v.Type == basicHorizontalBreak || v.Type == basicVerticalLineV || v.Type == basicVerticalBreakV || v.Type == basicVerticalLineFree || v.Type == basicVerticalBreakFree {
 			w := 4.0 * stepNumber / 50.0
 
 			if w < 1.5 {
@@ -186,7 +189,7 @@ func MakeImage(periodic int64, blueprint models.Blueprint, items []models.Period
 			w = 1.0
 			gc.SetLineWidth(w)
 
-			if v.Type == basicVerticalLine || v.Type == basicVerticalBreak || v.Type == basicVerticalLineV || v.Type == basicVerticalBreakV {
+			if v.Type == basicVerticalLine || v.Type == basicVerticalBreak || v.Type == basicVerticalLineV || v.Type == basicVerticalBreakV || v.Type == basicVerticalLineFree || v.Type == basicVerticalBreakFree {
 				gc.SetStrokeColor(red)
 				gc.SetFillColor(red)
 			} else {
@@ -266,6 +269,7 @@ func MakeImage(periodic int64, blueprint models.Blueprint, items []models.Period
 					}
 				}
 			}
+			// 자유선(11, 13)은 자동 각도 계산 사용 (위의 angle 값 그대로 사용)
 
 			r := (numberZoom / 2.0) * 0.5 / 2.0
 			zoom := 1.0
@@ -279,7 +283,7 @@ func MakeImage(periodic int64, blueprint models.Blueprint, items []models.Period
 			x1 -= xinc
 			y1 -= yinc
 
-			if v.Type == basicVerticalBreak || v.Type == basicVerticalBreakV {
+			if v.Type == basicVerticalBreak || v.Type == basicVerticalBreakV || v.Type == basicVerticalBreakFree {
 				// 반대선
 				gc.BeginPath()
 				cx := math.Cos((angle+90)*3.14/180) * r
@@ -374,36 +378,43 @@ func MakeImage(periodic int64, blueprint models.Blueprint, items []models.Period
 
 			gc.BeginPath()
 
+// 타입별로 선 그리기
+		if v.Type == basicVerticalLine || v.Type == basicVerticalBreak {
+			// 타입 3, 5: 항상 L자 (가로→세로) - 첫점과 끝점만 사용
+			endPoint := results[len(results)-1]
+			gc.MoveTo(results[0].Dx, results[0].Dy)
+			gc.LineTo(endPoint.Dx, results[0].Dy)  // 가로선
+			gc.LineTo(endPoint.Dx, endPoint.Dy)    // 세로선
+		} else if v.Type == basicVerticalLineV || v.Type == basicVerticalBreakV {
+			// 타입 7, 9: 항상 L자 (세로→가로) - 첫점과 끝점만 사용
+			endPoint := results[len(results)-1]
+			gc.MoveTo(results[0].Dx, results[0].Dy)
+			gc.LineTo(results[0].Dx, endPoint.Dy)  // 세로선
+			gc.LineTo(endPoint.Dx, endPoint.Dy)    // 가로선
+		} else if v.Type == basicHorizontalLine {
+			// 타입 4: 항상 L자 (가로→세로) - 첫점과 끝점만 사용
+			endPoint := results[len(results)-1]
+			gc.MoveTo(results[0].Dx, results[0].Dy)
+			gc.LineTo(endPoint.Dx, results[0].Dy)  // 가로선
+			gc.LineTo(endPoint.Dx, endPoint.Dy)    // 세로선
+		} else if v.Type == basicHorizontalBreak {
+			// 타입 6: 항상 L자 (세로→가로) - 첫점과 끝점만 사용
+			endPoint := results[len(results)-1]
+			gc.MoveTo(results[0].Dx, results[0].Dy)
+			gc.LineTo(results[0].Dx, endPoint.Dy)  // 세로선
+			gc.LineTo(endPoint.Dx, endPoint.Dy)    // 가로선
+		} else {
+			// 자유선(11, 13): 모든 점을 순서대로 연결
 			for i, point := range results {
 				if i == 0 {
 					gc.MoveTo(point.Dx, point.Dy)
-				} else if (v.Type == basicVerticalLine || v.Type == basicVerticalBreak) && i == 1 && len(results) == 2 {
-					// 타입 3, 5: 가로 먼저, 세로 나중 (horizontal first)
-					// 코너 점 추가: x는 point의 x, y는 첫 점의 y
-					gc.LineTo(point.Dx, results[0].Dy)
-					gc.LineTo(point.Dx, point.Dy)
-				} else if (v.Type == basicVerticalLineV || v.Type == basicVerticalBreakV) && i == 1 && len(results) == 2 {
-					// 타입 7, 9: 세로 먼저, 가로 나중 (vertical first)
-					// 코너 점 추가: x는 첫 점의 x, y는 point의 y
-					gc.LineTo(results[0].Dx, point.Dy)
-					gc.LineTo(point.Dx, point.Dy)
-				} else if v.Type == basicHorizontalLine && i == 1 && len(results) == 2 {
-					// 타입 4: 수평부재 가로 - 가로 먼저, 세로 나중 (horizontal first)
-					// 코너 점 추가: x는 point의 x, y는 첫 점의 y
-					gc.LineTo(point.Dx, results[0].Dy)
-					gc.LineTo(point.Dx, point.Dy)
-				} else if v.Type == basicHorizontalBreak && i == 1 && len(results) == 2 {
-					// 타입 6: 수평부재 세로 - 세로 먼저, 가로 나중 (vertical first)
-					// 코너 점 추가: x는 첫 점의 x, y는 point의 y
-					gc.LineTo(results[0].Dx, point.Dy)
-					gc.LineTo(point.Dx, point.Dy)
 				} else {
-					// 일반 점 또는 3개 이상의 점
 					gc.LineTo(point.Dx, point.Dy)
+				}
 				}
 			}
 
-			if v.Type == basicVerticalLine || v.Type == basicVerticalBreak || v.Type == basicVerticalLineV || v.Type == basicVerticalBreakV {
+			if v.Type == basicVerticalLine || v.Type == basicVerticalBreak || v.Type == basicVerticalLineV || v.Type == basicVerticalBreakV || v.Type == basicVerticalLineFree || v.Type == basicVerticalBreakFree {
 				gc.SetStrokeColor(red)
 			} else if v.Type == basicHorizontalLine || v.Type == basicHorizontalBreak {
 				gc.SetStrokeColor(blue)
@@ -419,7 +430,7 @@ func MakeImage(periodic int64, blueprint models.Blueprint, items []models.Period
 			// 원 그리기
 			gc.BeginPath()
 			gc.SetFillColor(color.RGBA{0xff, 0xff, 0xff, 0xff}) // 흰색 배경
-			if v.Type == basicVerticalLine || v.Type == basicVerticalBreak || v.Type == basicVerticalLineV || v.Type == basicVerticalBreakV {
+			if v.Type == basicVerticalLine || v.Type == basicVerticalBreak || v.Type == basicVerticalLineV || v.Type == basicVerticalBreakV || v.Type == basicVerticalLineFree || v.Type == basicVerticalBreakFree {
 				gc.SetStrokeColor(red)
 			} else if v.Type == basicHorizontalLine || v.Type == basicHorizontalBreak {
 				gc.SetStrokeColor(blue)
@@ -430,7 +441,7 @@ func MakeImage(periodic int64, blueprint models.Blueprint, items []models.Period
 			gc.FillStroke()
 
 			// 숫자 표시
-			if v.Type == basicVerticalLine || v.Type == basicVerticalBreak || v.Type == basicVerticalLineV || v.Type == basicVerticalBreakV {
+			if v.Type == basicVerticalLine || v.Type == basicVerticalBreak || v.Type == basicVerticalLineV || v.Type == basicVerticalBreakV || v.Type == basicVerticalLineFree || v.Type == basicVerticalBreakFree {
 				gc.SetFillColor(red)
 			} else if v.Type == basicHorizontalLine || v.Type == basicHorizontalBreak {
 				gc.SetFillColor(blue)
