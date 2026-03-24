@@ -141,7 +141,32 @@ class BlueprintScreen extends CWidget {
       ]);
     }
 
-    var items = c.items.map((item) => renderItem(item)).toList();
+    // collapsed 상태에 따라 항목 필터링
+    var visibleItems = <Blueprint>[];
+    for (var i = 0; i < c.items.length; i++) {
+      var item = c.items[i];
+      visibleItems.add(item);
+      
+      // level 1이고 collapsed 상태면 하위 항목 건너뛰기
+      if (item.level == 1 && item.collapsed) {
+        while (i + 1 < c.items.length && c.items[i + 1].level > 1) {
+          i++;
+        }
+      }
+    }
+    
+    var items = visibleItems.map((item) {
+      // 하위 항목 존재 여부 확인 (원본 c.items에서 확인)
+      bool hasChildren = false;
+      if (item.level == 1) {
+        int originalIndex = c.items.indexOf(item);
+        if (originalIndex >= 0 && originalIndex < c.items.length - 1) {
+          hasChildren = c.items[originalIndex + 1].level > 1;
+        }
+      }
+      
+      return renderItem(item, hasChildren);
+    }).toList();
     items.insert(
         0,
         CContainer(
@@ -193,7 +218,7 @@ class BlueprintScreen extends CWidget {
         children: items);
   }
 
-  Widget renderItem(Blueprint item) {
+  Widget renderItem(Blueprint item, bool hasChildren) {
     return CContainer(
       border: Border.all(color: Colors.black),
       backgroundColor: item.extra["modified"] != null
@@ -201,11 +226,34 @@ class BlueprintScreen extends CWidget {
           : Colors.white,
       width: double.infinity,
       margin: EdgeInsets.only(bottom: 10, left: (item.level - 1) * 50),
-      child: CText(
-        item.name,
-        margin: const EdgeInsets.all(20),
+      child: Row(
+        children: [
+          if (item.level == 1 && hasChildren) ...[
+            const SizedBox(width: 10),
+            Icon(
+              item.collapsed ? Icons.chevron_right : Icons.expand_more,
+              size: 30,
+            ),
+          ],
+          Expanded(
+            child: CText(
+              item.name,
+              margin: item.level == 1 && hasChildren
+                  ? const EdgeInsets.fromLTRB(5, 20, 20, 20)
+                  : const EdgeInsets.all(20),
+            ),
+          ),
+        ],
       ),
       onTap: () {
+        // level 1이고 하위 항목이 있으면 토글만 수행
+        if (item.level == 1 && hasChildren) {
+          final index = c.items.indexOf(item);
+          c.toggleCollapse(index);
+          return;
+        }
+        
+        // 그 외는 기존 동작
         if (item.upload != 1) {
           return;
         }

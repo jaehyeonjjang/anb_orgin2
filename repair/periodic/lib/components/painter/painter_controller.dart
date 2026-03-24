@@ -10,20 +10,20 @@ import 'package:periodic/controllers/auth_controller.dart';
 import 'package:periodic/controllers/blueprint_controller.dart';
 import 'package:periodic/models/blueprint.dart';
 
-const basicVertical = 1; //수직 점
-const basicHorizontal = 2; //수평 점
+const basicVertical = 1;
+const basicHorizontal = 2;
 
-const basicVerticalLine = 3; //가로(정)
-const basicHorizontalLine = 4; //가로
+const basicVerticalLine = 3;
+const basicHorizontalLine = 4;
 
-const basicVerticalBreak = 5; //가로(역)
-const basicHorizontalBreak = 6; //세로
+const basicVerticalBreak = 5;
+const basicHorizontalBreak = 6;
 
-const basicVerticalLineV = 7; //세로(정)
-const basicVerticalLineFree = 11; //자유(정)
+const basicVerticalLineV = 7;
+const basicVerticalLineFree = 11;
 
-const basicVerticalBreakV = 9; //세로(역)
-const basicVerticalBreakFree = 13; //자유(역)
+const basicVerticalBreakV = 9;
+const basicVerticalBreakFree = 13;
 
 const curveBlue = 31;
 const curveRed = 32;
@@ -316,6 +316,11 @@ class PainterController extends GetxController {
   final _lastUpdateTime = 0.obs;
   int get lastUpdateTime => _lastUpdateTime.value;
   set lastUpdateTime(int value) => _lastUpdateTime.value = value;
+
+  // 마지막으로 설정한 폭 값 저장
+  final _lastWeight = '0.2'.obs;
+  String get lastWeight => _lastWeight.value;
+  set lastWeight(String value) => _lastWeight.value = value;
 
   int get iconset => _iconset.value;
   set iconset(int value) => _iconset.value = value;
@@ -626,7 +631,7 @@ class PainterController extends GetxController {
         onlineimages: []);
 
     if (type == DrawType.number || type == DrawType.numberLine) {
-      point.weight = '0.1';
+      point.weight = lastWeight; // 마지막 설정값 사용
 
       if (index == 1 ||
           index == 3 ||
@@ -1348,6 +1353,7 @@ class PainterController extends GetxController {
       points[current].shape = value;
     } else if (pos == 4) {
       points[current].weight = value;
+      lastWeight = value; // 마지막 폭 값 저장
     } else if (pos == 5) {
       points[current].length = value;
     } else if (pos == 6) {

@@ -98,6 +98,11 @@ class BlueprintController extends GetxController {
     _items.refresh();
   }
 
+  toggleCollapse(int index) {
+    items[index].collapsed = !items[index].collapsed;
+    _items.refresh();
+  }
+
   setCheckAll() {
     for (var i = 0; i < items.length; i++) {
       if (items[i].extra['modified'] == null) {
@@ -241,6 +246,7 @@ class BlueprintController extends GetxController {
 
     final LocalStorage storageBlueprint = LocalStorage('blueprints.json');
     await storageBlueprint.ready;
+
     var str = await storageBlueprint.getItem('blueprints');
 
     List<Blueprint> oldBlueprints = [];

@@ -179,7 +179,7 @@ func MakeImage(periodic int64, blueprint models.Blueprint, items []models.Period
 				gc.FillStringAt(fmt.Sprintf("%v", v.Group), point.Dx-stepNumber*0.35, point.Dy+stepNumber/2)
 			}
 			gc.Stroke()
-	} else if v.Type == basicVerticalLine || v.Type == basicHorizontalLine || v.Type == basicVerticalBreak || v.Type == basicHorizontalBreak || v.Type == basicVerticalLineV || v.Type == basicVerticalBreakV || v.Type == basicVerticalLineFree || v.Type == basicVerticalBreakFree {
+		} else if v.Type == basicVerticalLine || v.Type == basicHorizontalLine || v.Type == basicVerticalBreak || v.Type == basicHorizontalBreak || v.Type == basicVerticalLineV || v.Type == basicVerticalBreakV || v.Type == basicVerticalLineFree || v.Type == basicVerticalBreakFree {
 			w := 4.0 * stepNumber / 50.0
 
 			if w < 1.5 {
@@ -378,39 +378,39 @@ func MakeImage(periodic int64, blueprint models.Blueprint, items []models.Period
 
 			gc.BeginPath()
 
-// 타입별로 선 그리기
-		if v.Type == basicVerticalLine || v.Type == basicVerticalBreak {
-			// 타입 3, 5: 항상 L자 (가로→세로) - 첫점과 끝점만 사용
-			endPoint := results[len(results)-1]
-			gc.MoveTo(results[0].Dx, results[0].Dy)
-			gc.LineTo(endPoint.Dx, results[0].Dy)  // 가로선
-			gc.LineTo(endPoint.Dx, endPoint.Dy)    // 세로선
-		} else if v.Type == basicVerticalLineV || v.Type == basicVerticalBreakV {
-			// 타입 7, 9: 항상 L자 (세로→가로) - 첫점과 끝점만 사용
-			endPoint := results[len(results)-1]
-			gc.MoveTo(results[0].Dx, results[0].Dy)
-			gc.LineTo(results[0].Dx, endPoint.Dy)  // 세로선
-			gc.LineTo(endPoint.Dx, endPoint.Dy)    // 가로선
-		} else if v.Type == basicHorizontalLine {
-			// 타입 4: 항상 L자 (가로→세로) - 첫점과 끝점만 사용
-			endPoint := results[len(results)-1]
-			gc.MoveTo(results[0].Dx, results[0].Dy)
-			gc.LineTo(endPoint.Dx, results[0].Dy)  // 가로선
-			gc.LineTo(endPoint.Dx, endPoint.Dy)    // 세로선
-		} else if v.Type == basicHorizontalBreak {
-			// 타입 6: 항상 L자 (세로→가로) - 첫점과 끝점만 사용
-			endPoint := results[len(results)-1]
-			gc.MoveTo(results[0].Dx, results[0].Dy)
-			gc.LineTo(results[0].Dx, endPoint.Dy)  // 세로선
-			gc.LineTo(endPoint.Dx, endPoint.Dy)    // 가로선
-		} else {
-			// 자유선(11, 13): 모든 점을 순서대로 연결
-			for i, point := range results {
-				if i == 0 {
-					gc.MoveTo(point.Dx, point.Dy)
-				} else {
-					gc.LineTo(point.Dx, point.Dy)
-				}
+			// 타입별로 선 그리기
+			if v.Type == basicVerticalLine || v.Type == basicVerticalBreak {
+				// 타입 3, 5: 항상 L자 (가로→세로) - 첫점과 끝점만 사용
+				endPoint := results[len(results)-1]
+				gc.MoveTo(results[0].Dx, results[0].Dy)
+				gc.LineTo(endPoint.Dx, results[0].Dy) // 가로선
+				gc.LineTo(endPoint.Dx, endPoint.Dy)   // 세로선
+			} else if v.Type == basicVerticalLineV || v.Type == basicVerticalBreakV {
+				// 타입 7, 9: 항상 L자 (세로→가로) - 첫점과 끝점만 사용
+				endPoint := results[len(results)-1]
+				gc.MoveTo(results[0].Dx, results[0].Dy)
+				gc.LineTo(results[0].Dx, endPoint.Dy) // 세로선
+				gc.LineTo(endPoint.Dx, endPoint.Dy)   // 가로선
+			} else if v.Type == basicHorizontalLine {
+				// 타입 4: 항상 L자 (가로→세로) - 첫점과 끝점만 사용
+				endPoint := results[len(results)-1]
+				gc.MoveTo(results[0].Dx, results[0].Dy)
+				gc.LineTo(endPoint.Dx, results[0].Dy) // 가로선
+				gc.LineTo(endPoint.Dx, endPoint.Dy)   // 세로선
+			} else if v.Type == basicHorizontalBreak {
+				// 타입 6: 항상 L자 (세로→가로) - 첫점과 끝점만 사용
+				endPoint := results[len(results)-1]
+				gc.MoveTo(results[0].Dx, results[0].Dy)
+				gc.LineTo(results[0].Dx, endPoint.Dy) // 세로선
+				gc.LineTo(endPoint.Dx, endPoint.Dy)   // 가로선
+			} else {
+				// 자유선(11, 13): 모든 점을 순서대로 연결
+				for i, point := range results {
+					if i == 0 {
+						gc.MoveTo(point.Dx, point.Dy)
+					} else {
+						gc.LineTo(point.Dx, point.Dy)
+					}
 				}
 			}
 

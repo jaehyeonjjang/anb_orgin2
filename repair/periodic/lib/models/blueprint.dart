@@ -18,6 +18,7 @@ class Blueprint {
   int apt;
   String date;
   bool checked;
+  bool collapsed;
   Map<String, dynamic> extra;
 
   Blueprint(
@@ -36,7 +37,8 @@ class Blueprint {
       this.apt = 0,
       this.date = '',
       this.extra = const {},
-      this.checked = false});
+      this.checked = false,
+      this.collapsed = false});
 
   factory Blueprint.fromJson(Map<String, dynamic> json) {
     return Blueprint(
@@ -54,7 +56,8 @@ class Blueprint {
         aptdong: json['aptdong'] as int,
         apt: json['apt'] as int,
         date: json['date'] as String,
-        extra: json['extra'] == null ? <String, dynamic>{} : json['extra'] as Map<String, dynamic>);
+        extra: json['extra'] == null ? <String, dynamic>{} : json['extra'] as Map<String, dynamic>,
+        collapsed: false);
   }
 
   Map<String, dynamic> toJson() => {

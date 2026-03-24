@@ -571,10 +571,10 @@ class Painter extends StatelessWidget {
     var y = event.localPos.dy / c.zoom + c.sy;
 
     // 자유선 타입들에 대한 2초 타이머 자동 포인트 추가 (한 번만, 점이 2개일 때만)
-    if (c.index == basicVerticalLineFree ||
-        c.index == basicVerticalBreakFree) {
+    if (c.index == basicVerticalLineFree || c.index == basicVerticalBreakFree) {
       // 이미 3개 이상의 점이 있으면 자동 추가하지 않음 (한 번만 발생)
-      if (c.points.isNotEmpty && c.points[c.points.length - 1].items.length >= 3) {
+      if (c.points.isNotEmpty &&
+          c.points[c.points.length - 1].items.length >= 3) {
         // 자동 추가가 이미 발생했으므로 타이머 로직 스킵
       } else {
         DateTime time = DateTime.now();
