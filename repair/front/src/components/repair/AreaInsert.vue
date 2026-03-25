@@ -298,7 +298,7 @@ import { util, size }  from "~/global"
 import { Repairarea, Apt } from "~/models"
 import { useStore } from 'vuex'
 import { useRoute } from 'vue-router'
-import { ElTable } from 'element-plus'
+import { ElTable, UploadInstance, UploadProps, UploadFile, UploadFiles } from 'element-plus'
 import { v3ImgPreviewFn } from 'v3-img-preview'
 
 const { width, height } = size()
@@ -359,6 +359,11 @@ const data = reactive({
   names: ['', '', '', '', '', '', '', '', '', ''],
   filenames: ['', '', '', '', '', '', '', '', '', ''],
   uploadIndex: 0,
+  loading: false,
+  img: null as any,
+  imgWidth: 0,
+  imgHeight: 0,
+  apts: [] as any[],
 })
 
 async function initData() {
@@ -368,11 +373,18 @@ function changeUsershift() {
   data.shift = data.usershift
 }
 
-async function getItems(reset) {
+async function getItems(reset?: boolean) {
+  if (data.loading) {
+    return
+  }
+  
   if (reset == true) {
     data.items = []
     data.page = 1
   }
+  
+  data.loading = true
+  
   let res = await model.find({
     page: data.page,
     pagesize: data.pagesize,
@@ -392,13 +404,14 @@ async function getItems(reset) {
     res.items = []
   }
 
-  let items = util.clone(data.items).concat(res.items)
+  let items = reset === true ? res.items : util.clone(data.items).concat(res.items)
   for (let i = 0; i < items.length; i++) {
     items[i].index = i + 1
   }
 
   data.items = items
   data.page++
+  data.loading = false
 }
 
 function clickInsert() {
