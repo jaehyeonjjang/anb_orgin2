@@ -56,7 +56,9 @@ class Blueprint {
         aptdong: json['aptdong'] as int,
         apt: json['apt'] as int,
         date: json['date'] as String,
-        extra: json['extra'] == null ? <String, dynamic>{} : json['extra'] as Map<String, dynamic>,
+        extra: json['extra'] == null
+            ? <String, dynamic>{}
+            : json['extra'] as Map<String, dynamic>,
         collapsed: false);
   }
 

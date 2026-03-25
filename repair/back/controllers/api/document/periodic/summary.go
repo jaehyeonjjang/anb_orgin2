@@ -253,6 +253,8 @@ func GetSummary(id int64, periodic models.Periodic, dongs []models.Aptdong, item
 
 			material1 := false
 			material2 := false
+			material3 := false
+			material4 := false
 
 			parts := make([][]string, floorCount)
 			causes := make([][]string, floorCount)
@@ -283,6 +285,14 @@ func GetSummary(id int64, periodic models.Periodic, dongs []models.Aptdong, item
 
 					if strings.Contains(data.Shape, "파손") {
 						material2 = true
+					}
+
+					if strings.Contains(data.Shape, "박리") {
+						material3 = true
+					}
+
+					if strings.Contains(data.Shape, "박락") {
+						material4 = true
 					}
 
 					check[5] = true
@@ -498,6 +508,14 @@ func GetSummary(id int64, periodic models.Periodic, dongs []models.Aptdong, item
 
 					if material2 == true {
 						titles = append(titles, "파손")
+					}
+
+					if material3 == true {
+						titles = append(titles, "박리")
+					}
+
+					if material4 == true {
+						titles = append(titles, "박락")
 					}
 
 					title = fmt.Sprintf("마감재 %v", strings.Join(titles, "/"))
@@ -834,6 +852,8 @@ func GetSummary(id int64, periodic models.Periodic, dongs []models.Aptdong, item
 				if check[i*2] == true || check[i*2+1] == true {
 					material1 := false
 					material2 := false
+					material3 := false
+					material4 := false
 
 					for _, v := range items[i] {
 						if strings.Contains(v.Item.Result, "오염") {
@@ -842,6 +862,14 @@ func GetSummary(id int64, periodic models.Periodic, dongs []models.Aptdong, item
 
 						if strings.Contains(v.Item.Result, "파손") {
 							material2 = true
+						}
+
+						if strings.Contains(v.Item.Result, "박리") {
+							material3 = true
+						}
+
+						if strings.Contains(v.Item.Result, "박락") {
+							material4 = true
 						}
 
 					}
@@ -854,6 +882,14 @@ func GetSummary(id int64, periodic models.Periodic, dongs []models.Aptdong, item
 
 					if material2 == true {
 						temp = append(temp, "파손")
+					}
+
+					if material3 == true {
+						temp = append(temp, "박리")
+					}
+
+					if material4 == true {
+						temp = append(temp, "박락")
 					}
 
 					material := fmt.Sprintf("마감재 %v", strings.Join(temp, "/"))

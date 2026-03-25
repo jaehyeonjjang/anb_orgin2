@@ -880,7 +880,8 @@ func Periodic0(id int64, conn *models.Connection) string {
 
 		strs := "부대시설 조사결과 "
 		for _, v := range otherItems {
-			strs += fmt.Sprintf("%v에서 %v가 ", strings.Join(v.Position, ", "), strings.Join(global.UniqueStringWithoutSort(v.Result), "/"))
+			resultStr := strings.Join(global.UniqueStringWithoutSort(v.Result), "/")
+			strs += fmt.Sprintf("%v에서 %v ", strings.Join(v.Position, ", "), Josa(resultStr, hangul.I_GA))
 		}
 
 		endStr := ""

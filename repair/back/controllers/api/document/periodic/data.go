@@ -54,6 +54,8 @@ type DataItem struct {
 
 	Material1 bool
 	Material2 bool
+	Material3 bool
+	Material4 bool
 }
 
 func Data(datas []models.Periodicdata) DataItem {
@@ -89,6 +91,8 @@ func Data(datas []models.Periodicdata) DataItem {
 
 	material1 := false
 	material2 := false
+	material3 := false
+	material4 := false
 
 	parts := make([]string, 0)
 	causes := make([]string, 0)
@@ -140,6 +144,14 @@ func Data(datas []models.Periodicdata) DataItem {
 
 			if strings.Contains(data.Shape, "파손") {
 				material2 = true
+			}
+
+			if strings.Contains(data.Shape, "박리") {
+				material3 = true
+			}
+
+			if strings.Contains(data.Shape, "박락") {
+				material4 = true
 			}
 
 			check[5] = true
@@ -267,6 +279,8 @@ func Data(datas []models.Periodicdata) DataItem {
 
 	item.Material1 = material1
 	item.Material2 = material2
+	item.Material3 = material3
+	item.Material4 = material4
 
 	return item
 }
@@ -479,6 +493,14 @@ func (c *DataItem) Result() []DataResult {
 
 		if c.Material2 == true {
 			results = append(results, "파손")
+		}
+
+		if c.Material3 == true {
+			results = append(results, "박리")
+		}
+
+		if c.Material4 == true {
+			results = append(results, "박락")
 		}
 
 		title := fmt.Sprintf("마감재 %v", strings.Join(results, "/"))

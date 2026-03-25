@@ -146,7 +146,7 @@ class BlueprintScreen extends CWidget {
     for (var i = 0; i < c.items.length; i++) {
       var item = c.items[i];
       visibleItems.add(item);
-      
+
       // level 1이고 collapsed 상태면 하위 항목 건너뛰기
       if (item.level == 1 && item.collapsed) {
         while (i + 1 < c.items.length && c.items[i + 1].level > 1) {
@@ -154,7 +154,7 @@ class BlueprintScreen extends CWidget {
         }
       }
     }
-    
+
     var items = visibleItems.map((item) {
       // 하위 항목 존재 여부 확인 (원본 c.items에서 확인)
       bool hasChildren = false;
@@ -164,7 +164,7 @@ class BlueprintScreen extends CWidget {
           hasChildren = c.items[originalIndex + 1].level > 1;
         }
       }
-      
+
       return renderItem(item, hasChildren);
     }).toList();
     items.insert(
@@ -252,7 +252,7 @@ class BlueprintScreen extends CWidget {
           c.toggleCollapse(index);
           return;
         }
-        
+
         // 그 외는 기존 동작
         if (item.upload != 1) {
           return;
