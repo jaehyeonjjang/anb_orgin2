@@ -10,7 +10,6 @@ import (
 	"repair/models"
 	"strings"
 
-	"github.com/dustin/go-humanize"
 	"github.com/xuri/excelize/v2"
 )
 
@@ -48,6 +47,7 @@ func Repair(id int64, typeid int, conn *models.Connection, estimate *models.Esti
 		log.Println(err)
 		return ""
 	}
+	defer f.Close()
 
 	flatcount := strings.Split(apt.Flatcount, "(")
 
@@ -67,23 +67,38 @@ func Repair(id int64, typeid int, conn *models.Connection, estimate *models.Esti
 		// no := fmt.Sprintf("ANB-%v-%v", t.DateAsOnlyNumber(), count+1)
 		no := GetEstimateNo(typeid, t, estimate.Date, conn)
 
-		str := strings.Split(estimate.Writedate, "-")
-		f.SetCellStr(sheet, "E6", no)
-		f.SetCellStr(sheet, "E7", fmt.Sprintf("%v년 %v월 %v일", str[0], str[1], str[2]))
-		f.SetCellStr(sheet, "E8", fmt.Sprintf("%v 입주자대표회장님", apt.Name))
+		tel := ""
+		fax := ""
 
-		if estimate.Event == 1 {
-			f.SetCellStr(sheet, "E10", fmt.Sprintf("%v 장기수선계획서 %v 견적건 (이벤트 견적)", apt.Name, type2))
-		} else {
-			f.SetCellStr(sheet, "E10", fmt.Sprintf("%v 장기수선계획서 %v 견적건", apt.Name, type2))
+		if apt.Tel != "" {
+			tel = fmt.Sprintf("전화 : %v", apt.Tel)
 		}
 
-		f.SetCellStr(sheet, "A21", fmt.Sprintf("를 드리며, 귀 아파트에서 %v하고자 하는 장기수선계획서 작성에 관한 견적서를", type1))
-		f.SetCellStr(sheet, "A22", fmt.Sprintf("아래와 같이 제출하오니 검토하시어 %v 대행업무를 위임하여 주시기 바랍니다.", type1))
+		if apt.Fax != "" {
+			fax = fmt.Sprintf("팩스 : %v", apt.Fax)
+		}
 
-		f.SetCellStr(sheet, "A37", fmt.Sprintf("첨    부 :  1. 장기수선계획서 %v 견적서 1부 끝.", type1))
+		if fax != "" {
+			tel += ",      " + fax
+		}
 
-		f.SetCellStr(sheet, "M25", apt.Name)
+		str := strings.Split(estimate.Writedate, "-")
+		f.SetCellStr(sheet, "K6", no)
+		f.SetCellStr(sheet, "K7", fmt.Sprintf("%v년 %v월 %v일", str[0], str[1], str[2]))
+		f.SetCellStr(sheet, "K8", fmt.Sprintf("%v 입주자대표회장님", apt.Name))
+
+		if estimate.Event == 1 {
+			f.SetCellStr(sheet, "K10", fmt.Sprintf("%v 장기수선계획서 %v 견적건 (이벤트 견적)", apt.Name, type2))
+		} else {
+			f.SetCellStr(sheet, "K10", fmt.Sprintf("%v 장기수선계획서 %v 견적건", apt.Name, type2))
+		}
+
+		f.SetCellStr(sheet, "G21", fmt.Sprintf("에서 %v하고자 하는 장기수선계획서 작성에 관한 견적서를 아래와 같이 제출하오니 검토", type1))
+		f.SetCellStr(sheet, "G22", fmt.Sprintf("하시어 %v 대행업무를 위임하여 주시기 바랍니다.", type1))
+
+		f.SetCellStr(sheet, "G43", fmt.Sprintf("※ 첨    부 :  1. 장기수선계획서 %v 견적서 1부 끝.", type1))
+
+		f.SetCellStr(sheet, "R25", apt.Name)
 
 		complateyear := ""
 		str = strings.Split(apt.Completeyear, "-")
@@ -96,57 +111,70 @@ func Repair(id int64, typeid int, conn *models.Connection, estimate *models.Esti
 			complateyear = apt.Completeyear
 		}
 
-		f.SetCellStr(sheet, "M26", apt.Address)
-		f.SetCellStr(sheet, "M27", fmt.Sprintf("아파트 %v개동 %v세대", flatcount[0], apt.Familycount))
-		f.SetCellStr(sheet, "M28", complateyear)
-		f.SetCellStr(sheet, "M29", apt.Tel)
-
-		f.SetCellStr(sheet, "M30", fmt.Sprintf("장기수선계획 %v", type2))
+		f.SetCellStr(sheet, "R26", apt.Address)
+		f.SetCellStr(sheet, "R27", fmt.Sprintf("아파트 %v개동 %v세대", flatcount[0], apt.Familycount))
+		f.SetCellStr(sheet, "R28", complateyear)
+		f.SetCellStr(sheet, "R29", apt.Tel)
+		f.SetCellStr(sheet, "AA29", apt.Fax)
 
 		if estimate.Parcel == 1 {
-			f.SetCellStr(sheet, "M34", "4. 장기수선계획 관련 도면, 서류 수령 및 보고서 납품은")
-			f.SetCellStr(sheet, "M35", "   택배활용으로 함.")
+			boldUnderlineStyle, _ := f.NewStyle(&excelize.Style{
+				Font: &excelize.Font{
+					Bold:      true,
+					Underline: "single",
+				},
+			})
+			f.SetCellStr(sheet, "K40", "다. 장기수선계획 관련 도면, 서류 수령 및 보고서 납품은")
+			f.SetCellStyle(sheet, "K40", "K40", boldUnderlineStyle)
+			f.SetCellStr(sheet, "K41", "   택배활용으로 함.")
+			f.SetCellStyle(sheet, "K41", "K41", boldUnderlineStyle)
 		}
 
-		sheet = fmt.Sprintf("산출내역( 장기수선계획 %v)", type1)
+		sheet = "대가산출"
 
-		f.SetCellStr(sheet, "I3", no)
-		f.SetCellStr(sheet, "A3", fmt.Sprintf("%04d/%02d/%02d", t.Year(), t.Month(), t.Day()))
+		f.SetCellValue(sheet, "K13", float64(estimate.Person2))
+		f.SetCellValue(sheet, "K14", float64(estimate.Person3))
+		f.SetCellValue(sheet, "K15", float64(estimate.Person4))
+		f.SetCellValue(sheet, "K16", float64(estimate.Person5))
 
-		f.SetCellStr(sheet, "A4", apt.Name)
-		f.SetCellStr(sheet, "A8", fmt.Sprintf("아래와 같이 장기수선계획서 %v", type1))
+		f.SetCellValue(sheet, "L9", estimate.Personprice2)
+		f.SetCellValue(sheet, "L10", estimate.Personprice3)
+		f.SetCellValue(sheet, "L11", estimate.Personprice4)
+		f.SetCellValue(sheet, "L12", estimate.Personprice5)
 
-		f.SetCellValue(sheet, "D13", float64(estimate.Person2))
-		f.SetCellValue(sheet, "D14", float64(estimate.Person3))
-		f.SetCellValue(sheet, "D15", float64(estimate.Person4))
-		f.SetCellValue(sheet, "D16", float64(estimate.Person5))
+		f.SetCellValue(sheet, "L13", estimate.Personprice2)
+		f.SetCellValue(sheet, "L14", estimate.Personprice3)
+		f.SetCellValue(sheet, "L15", estimate.Personprice4)
+		f.SetCellValue(sheet, "L16", estimate.Personprice5)
 
-		f.SetCellValue(sheet, "F13", 1)
-		f.SetCellValue(sheet, "F14", 1)
-		f.SetCellValue(sheet, "F15", 1)
-		f.SetCellValue(sheet, "F16", 1)
+		f.SetCellValue(sheet, "K17", estimate.Financialprice)
+		f.SetCellValue(sheet, "K18", estimate.Techprice)
 
-		f.SetCellValue(sheet, "H13", estimate.Personprice2)
-		f.SetCellValue(sheet, "H14", estimate.Personprice3)
-		f.SetCellValue(sheet, "H15", estimate.Personprice4)
-		f.SetCellValue(sheet, "H16", estimate.Personprice5)
+		f.SetCellValue(sheet, "M19", estimate.Directprice)
+		f.SetCellValue(sheet, "M20", estimate.Printprice)
+		f.SetCellValue(sheet, "M21", estimate.Extraprice)
 
-		f.SetCellValue(sheet, "D18", fmt.Sprintf("직접인건비 × %v%%", estimate.Financialprice))
-		f.SetCellValue(sheet, "D19", fmt.Sprintf("(직접인건비+제경비)×%v%%", estimate.Techprice))
+		f.SetCellValue(sheet, "M23", estimate.Saleprice)
+		//f.SetCellValue(sheet, "I27", estimate.Price)
 
-		f.SetCellFormula(sheet, "I18", fmt.Sprintf("=ROUND(I17*%v%%, 0)", estimate.Financialprice))
-		f.SetCellFormula(sheet, "I19", fmt.Sprintf("=ROUND((I17+I18)*%v%%, 0)", estimate.Techprice))
-		f.SetCellValue(sheet, "I20", estimate.Directprice)
-		f.SetCellValue(sheet, "I21", estimate.Printprice)
-		f.SetCellValue(sheet, "I22", estimate.Extraprice)
-
-		f.SetCellValue(sheet, "I26", estimate.Saleprice)
-		f.SetCellValue(sheet, "I27", estimate.Price)
-
-		f.SetCellValue(sheet, "F10", fmt.Sprintf("%v원정(₩%v)", global.HumanMoney(estimate.Price), humanize.Comma(int64(estimate.Price))))
+		//f.SetCellValue(sheet, "F10", fmt.Sprintf("%v원정(₩%v)", global.HumanMoney(estimate.Price), humanize.Comma(int64(estimate.Price))))
 
 		if estimate.Event == 1 {
 			f.SetCellValue(sheet, "A26", "이벤트 할인 금액")
+		}
+
+		sheet = "계약서1"
+
+		if estimate.Subtype == 1 {
+			// repair1.xlsx (조정)
+			f.SetCellStr(sheet, "B9", apt.Name)
+			f.SetCellStr(sheet, "B16", fmt.Sprintf("%v년", t.Year()))
+			f.SetCellStr(sheet, "G41", tel)
+		} else {
+			// repair2.xlsx (수립)
+			f.SetCellStr(sheet, "H9", apt.Name)
+			f.SetCellStr(sheet, "H16", fmt.Sprintf("%v년", t.Year()))
+			f.SetCellStr(sheet, "M41", tel)
 		}
 
 		f.UpdateLinkedValue()
