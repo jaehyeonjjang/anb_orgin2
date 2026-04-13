@@ -16,7 +16,7 @@ import DetailSchedule from '~/views/detail/Schedule.vue'
 import DetailStruct from '~/views/detail/Struct.vue'
 import DetailTechnician from '~/views/detail/Technician.vue'
 import DetailUsagefloor from '~/views/detail/Usagefloor.vue'
-import ManagementApt from '~/views/management/Apt.vue'
+// import ManagementApt from '~/views/management/Apt.vue' // 순환 참조 방지를 위해 lazy loading 사용
 import ManagementDetailDetail from '~/views/management/detail/Detail.vue'
 import ManagementPatrolPatrol from '~/views/management/patrol/Patrol.vue'
 import ManagementPeriodicPeriodic from '~/views/management/periodic/Periodic.vue'
@@ -90,7 +90,7 @@ const routes = [
     path: '/management/apt',
     name: 'ManagementApt',
     meta: { authorization: ['admin'] },
-    component: ManagementApt
+    component: () => import('~/views/management/Apt.vue')
   },
   {
     path: '/management/sales',

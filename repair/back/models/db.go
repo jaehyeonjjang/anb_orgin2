@@ -128,9 +128,11 @@ func GetConnection() *Connection {
 		return nil
 	}
 
-	conn.SetMaxOpenConns(100)
-	conn.SetMaxIdleConns(10)
-	conn.SetConnMaxLifetime(5 * time.Minute)
+	// 연결 풀 설정 개선
+	conn.SetMaxOpenConns(50)           // 최대 오픈 연결 감소 (100 -> 50)
+	conn.SetMaxIdleConns(25)           // 유휴 연결 증가 (10 -> 25) - 연결 재사용 향상
+	conn.SetConnMaxLifetime(10 * time.Minute)  // 연결 수명 증가 (5분 -> 10분)
+	conn.SetConnMaxIdleTime(5 * time.Minute)   // 유휴 연결 타임아웃 추가
 
 	return &Connection{
 		Conn: conn,

@@ -47,5 +47,14 @@ echo "========================================="
 echo "종료: Ctrl+C"
 echo ""
 
+# 기존 프로세스 종료
+echo "🔍 기존 프로세스 확인 중..."
+if lsof -ti:9107 > /dev/null 2>&1; then
+    echo "⚠️  포트 9107이 이미 사용 중입니다. 기존 프로세스를 종료합니다..."
+    lsof -ti:9107 | xargs kill -9 2>/dev/null
+    sleep 1
+    echo "✅ 기존 프로세스 종료 완료"
+fi
+
 # develop 모드로 실행 (환경변수 불필요)
 go run main.go

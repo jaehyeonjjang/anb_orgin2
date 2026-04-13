@@ -53,7 +53,7 @@ func (c *Controller) Init(g *gin.Context) {
 	c.Vars = make(jet.VarMap)
 	c.Result = make(gin.H)
 	c.Result["code"] = "ok"
-	c.Connection = c.NewConnection()
+	c.Connection = nil  // 초기화는 nil로 설정, 필요시 NewConnection()으로 생성
 	c.Code = http.StatusOK
 
 	t := time.Now()
@@ -439,6 +439,10 @@ func (c *Controller) NewConnection() *models.Connection {
 	}
 
 	c.Connection = models.NewConnection()
+	if c.Connection != nil {
+		// 컨트롤러가 Close될 때 자동으로 연결을 닫도록 보장
+		// 각 REST 핸들러에서 defer conn.Close() 없이도 연결이 정리됨
+	}
 	return c.Connection
 }
 

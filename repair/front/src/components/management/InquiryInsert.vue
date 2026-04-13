@@ -330,9 +330,9 @@
             <y-th>상담결과</y-th>
             <y-td>
               <el-radio-group v-model.number="data.inquiry.status">
-                <el-radio-button size="small" label="1">완료</el-radio-button>
-                <el-radio-button size="small" label="2">진행</el-radio-button>
-                <el-radio-button size="small" label="3">예약</el-radio-button>                
+                <el-radio-button size="small" :value="1">완료</el-radio-button>
+                <el-radio-button size="small" :value="2">진행</el-radio-button>
+                <el-radio-button size="small" :value="3">예약</el-radio-button>                
               </el-radio-group>
             </y-td>              
           </y-tr>
@@ -384,14 +384,14 @@
                  <template #default="scope">
                    <div v-if="scope.row.type == 1">장기수선 (<span v-if="scope.row.subtype == 1">조정</span><span v-if="scope.row.subtype == 2">재수립</span>)</div>
                    <div v-if="scope.row.type == 2">정밀점검</div>
-                   <div v-if="scope.row.type == 3">정기점검 (<span v-if="scope.row.subtype == 1">상반기</span><span v-if="scope.row.subtype == 2">하반기</span><span v-if="scope.row.subtype == 3">연간</span><span v-if="scope.row.subtype == 4">정기 5회</span>)</div>
+                   <div v-if="scope.row.type == 3">정기점검 (<span v-if="scope.row.subtype == 1">상반기</span><span v-if="scope.row.subtype == 2">하반기</span><span v-if="scope.row.subtype == 3">연간</span><span v-if="scope.row.subtype == 4">연속</span>)</div>
                    <div v-if="scope.row.type == 4">하자보수</div>
                    <div v-if="scope.row.type == 5">하자조사</div>
                    <div v-if="scope.row.type == 6">구조안전진단</div>
                    <div v-if="scope.row.type == 7">감리</div>
                    <div v-if="scope.row.type == 8">기술자문</div>
                    <div v-if="scope.row.type == 9">순찰</div>
-                   <div v-if="scope.row.type == 10">점검프로그램 (<span v-if="scope.row.subtype == 1">상반기</span><span v-if="scope.row.subtype == 2">하반기</span><span v-if="scope.row.subtype == 3">연간</span><span v-if="scope.row.subtype == 4">연간-1회무상</span>)</div>
+                   <div v-if="scope.row.type == 10">점검프로그램 (<span v-if="scope.row.subtype == 1">상반기</span><span v-if="scope.row.subtype == 2">하반기</span><span v-if="scope.row.subtype == 3">연간</span><span v-if="scope.row.subtype == 4">연속</span><span v-if="scope.row.subtype == 5">연간-1회무상</span>)</div>
                  </template>
                </el-table-column>               
                <el-table-column label="견적일" align="center" width="110">
@@ -407,13 +407,7 @@
                <el-table-column label="총액" align="right" width="90">
                  <template #default="scope">
                    <span v-if="scope.row.price > 0">
-                     <span v-if="scope.row.type == 3 && scope.row.subtype == 3">
-                     {{util.money(scope.row.price * 2)}} 원
-                     </span>
-                     <span v-else>
-                     {{util.money(scope.row.price)}} 원
-                     </span>
-
+                     {{util.money(calculateTotalAmount(scope.row))}} 원
                    </span>
                  </template>
                </el-table-column>
@@ -558,25 +552,92 @@
 
           <span style="margin-left:10px;" v-if="data.estimate.type == 7 || data.estimate.type == 8">공사명: </span><el-input v-model="data.estimate.name" v-if="data.estimate.type == 7 || data.estimate.type == 8" style="width: 200px;" />
           <el-radio-group v-model.number="data.estimate.subtype"  v-if="data.estimate.type == 1" style="margin-left:10px;">
-            <el-radio-button size="small" label="1" @click="clickSubtype(1)">조정</el-radio-button>
-            <el-radio-button size="small" label="2" @click="clickSubtype(2)">재수립</el-radio-button>
+            <el-radio-button size="small" :value="1" @click="clickSubtype(1)">조정</el-radio-button>
+            <el-radio-button size="small" :value="2" @click="clickSubtype(2)">재수립</el-radio-button>
           </el-radio-group>
 
           <el-radio-group v-model.number="data.estimate.subtype"  v-if="data.estimate.type == 3" style="margin-left:10px;">
-            <el-radio-button size="small" label="1" @click="clickSubtype(1)">상반기</el-radio-button>
-            <el-radio-button size="small" label="2" @click="clickSubtype(2)">하반기</el-radio-button>
-            <el-radio-button size="small" label="3" @click="clickSubtype(3)">연간</el-radio-button>
-            <!-- <el-radio-button size="small" :value="4" @click="clickSubtype(4)">정기 5회</el-radio-button> -->
+            <el-radio-button size="small" :value="1" @click="clickSubtype(1)">상반기</el-radio-button>
+            <el-radio-button size="small" :value="2" @click="clickSubtype(2)">하반기</el-radio-button>
+            <el-radio-button size="small" :value="3" @click="clickSubtype(3)">연간</el-radio-button>
+            <el-radio-button size="small" :value="4" @click="clickSubtype(4)">연속</el-radio-button>
           </el-radio-group>
+          
+          <!-- 다회용 선택 시 년도별 상반기/하반기 선택 -->
+          <div v-if="data.estimate.type == 3 && data.estimate.subtype == 4" style="margin-left:10px;margin-top:10px;border:1px solid #ddd;padding:10px;border-radius:4px;max-width:600px;">
+            <div style="margin-bottom:10px;">
+              <span style="font-weight:bold;margin-right:10px;">점검 기간 선택:</span>
+              <el-button size="small" @click="addPeriodYear">년도 추가</el-button>
+            </div>
+            <div v-for="(year, idx) in data.estimate.multiyear_periods" :key="idx" style="display:flex;align-items:center;margin-bottom:8px;">
+              <el-input-number 
+                v-model="year.year" 
+                :min="2020" 
+                :max="2040" 
+                size="small" 
+                style="width:100px;"
+                @change="updateMultiyearPeriods"
+              />
+              <el-checkbox-group v-model="year.periods" size="small" style="margin-left:10px;" @change="updateMultiyearPeriods">
+                <el-checkbox :value="1">상반기</el-checkbox>
+                <el-checkbox :value="2">하반기</el-checkbox>
+              </el-checkbox-group>
+              <el-button 
+                size="small" 
+                type="danger" 
+                :icon="Delete" 
+                circle 
+                style="margin-left:10px;"
+                @click="removePeriodYear(idx)"
+              />
+            </div>
+            <div v-if="!data.estimate.multiyear_periods || data.estimate.multiyear_periods.length === 0" style="color:#999;font-size:12px;">
+              '년도 추가' 버튼을 클릭하여 점검 기간을 선택하세요.
+            </div>
+          </div>
 
           <el-radio-group v-model.number="data.estimate.subtype"  v-if="data.estimate.type == 10" style="margin-left:10px;">
-            <el-radio-button size="small" label="1" @click="clickSubtype(1)">상반기</el-radio-button>
-            <el-radio-button size="small" label="2" @click="clickSubtype(2)">하반기</el-radio-button>
-            <el-radio-button size="small" label="3" @click="clickSubtype(3)">연간</el-radio-button>
-            <el-radio-button size="small" label="4" @click="clickSubtype(4)">연간-1회무상</el-radio-button>
+            <el-radio-button size="small" :value="1" @click="clickSubtype(1)">상반기</el-radio-button>
+            <el-radio-button size="small" :value="2" @click="clickSubtype(2)">하반기</el-radio-button>
+            <el-radio-button size="small" :value="3" @click="clickSubtype(3)">연간</el-radio-button>
+            <el-radio-button size="small" :value="4" @click="clickSubtype(4)">연속</el-radio-button>
+            <el-radio-button size="small" :value="5" @click="clickSubtype(5)">무상1회</el-radio-button>
           </el-radio-group>
+          
+          <!-- 점검프로그램 다회용 선택 시 년도별 상반기/하반기 선택 -->
+          <div v-if="data.estimate.type == 10 && data.estimate.subtype == 4" style="margin-left:10px;margin-top:10px;border:1px solid #ddd;padding:10px;border-radius:4px;max-width:600px;">
+            <div style="margin-bottom:10px;">
+              <span style="font-weight:bold;margin-right:10px;">점검 기간 선택:</span>
+              <el-button size="small" @click="addPeriodYear">년도 추가</el-button>
+            </div>
+            <div v-for="(year, idx) in data.estimate.multiyear_periods" :key="idx" style="display:flex;align-items:center;margin-bottom:8px;">
+              <el-input-number 
+                v-model="year.year" 
+                :min="2020" 
+                :max="2040" 
+                size="small" 
+                style="width:100px;"
+                @change="updateMultiyearPeriods"
+              />
+              <el-checkbox-group v-model="year.periods" size="small" style="margin-left:10px;" @change="updateMultiyearPeriods">
+                <el-checkbox :value="1">상반기</el-checkbox>
+                <el-checkbox :value="2">하반기</el-checkbox>
+              </el-checkbox-group>
+              <el-button 
+                size="small" 
+                type="danger" 
+                :icon="Delete" 
+                circle 
+                style="margin-left:10px;"
+                @click="removePeriodYear(idx)"
+              />
+            </div>
+            <div v-if="!data.estimate.multiyear_periods || data.estimate.multiyear_periods.length === 0" style="color:#999;font-size:12px;">
+              '년도 추가' 버튼을 클릭하여 점검 기간을 선택하세요.
+            </div>
+          </div>
 
-          <el-select v-model="data.estimate.start" style="margin-left:20px;width:150px;" size="small" placeholder=""  v-if="(data.estimate.type == 3 && data.estimate.subtype == 4) || data.estimate.type == 2">
+          <el-select v-model="data.estimate.start" style="margin-left:20px;width:150px;" size="small" placeholder=""  v-if="data.estimate.type == 2">
             <el-option
               v-for="item in data.options"
               :key="item.value"
@@ -905,8 +966,8 @@
             </y-tr>
             <y-tr v-if="data.estimate.type == 10">
               <y-th>
-                <span v-if="data.estimate.subtype != 4">절삭금액</span>
-                <span v-if="data.estimate.subtype == 4">1회 무상제공</span>
+                <span v-if="data.estimate.subtype != 5">절삭금액</span>
+                <span v-if="data.estimate.subtype == 5">1회 무상제공</span>
               </y-th>
               <y-td></y-td>              
               <y-td style="text-align:right;padding-right:5px;">
@@ -1264,8 +1325,8 @@
         </y-th>
         <y-td>
           <el-radio-group v-model.number="data.contract.vat">
-                <el-radio-button size="small" label="1">포함</el-radio-button>
-                <el-radio-button size="small" label="2">별도</el-radio-button>                
+                <el-radio-button size="small" :value="1">포함</el-radio-button>
+                <el-radio-button size="small" :value="2">별도</el-radio-button>                
           </el-radio-group>
         </y-td>
       </y-tr>
@@ -1326,9 +1387,9 @@
         </y-th>
         <y-td>
           <el-radio-group v-model.number="data.editinquiry.status">
-                <el-radio-button size="small" label="1">완료</el-radio-button>
-                <el-radio-button size="small" label="2">진행</el-radio-button>
-                <el-radio-button size="small" label="3">예약</el-radio-button>                
+                <el-radio-button size="small" :value="1">완료</el-radio-button>
+                <el-radio-button size="small" :value="2">진행</el-radio-button>
+                <el-radio-button size="small" :value="3">예약</el-radio-button>                
           </el-radio-group>          
         </y-td>
       </y-tr>      
@@ -1351,6 +1412,7 @@ import { util, size }  from "~/global"
 import { Apt, Category, Repair, Facilitycategory, Standardwage, Contract, Estimate, Inquiry, Periodic, Comparecompany, Compareestimate } from "~/models"
 import { useStore } from 'vuex'
 import axios from 'axios'
+import { Delete } from '@element-plus/icons-vue'
 
 const content = ref('')
 const props = defineProps({
@@ -1603,6 +1665,46 @@ async function getItems(reset) {
 
   await readInquiry(reset)
   //await readContract(reset)  
+}
+
+// 총액 계산 함수: 1회 금액 × 체크박스 선택된 개수
+function calculateTotalAmount(row) {
+  // type 3(정기점검) 또는 type 10(점검프로그램)의 subtype 4(연속)인 경우
+  if ((row.type == 3 || row.type == 10) && row.subtype == 4) {
+    if (row.multiyear_periods) {
+      try {
+        let periods = row.multiyear_periods
+        if (typeof periods === 'string') {
+          periods = JSON.parse(periods)
+        }
+        
+        let totalCount = 0
+        for (let p of periods) {
+          if (p.periods && Array.isArray(p.periods)) {
+            totalCount += p.periods.length
+          }
+        }
+        
+        return row.price * totalCount
+      } catch (e) {
+        console.error('Failed to parse multiyear_periods:', e)
+        return row.price
+      }
+    }
+  }
+  
+  // type 3(정기점검)의 subtype 3(연간)인 경우 2배
+  if (row.type == 3 && row.subtype == 3) {
+    return row.price * 2
+  }
+  
+  // type 10(점검프로그램)의 subtype 3(연간)인 경우도 2배
+  if (row.type == 10 && row.subtype == 3) {
+    return row.price * 2
+  }
+  
+  // 그 외의 경우 1회 금액
+  return row.price
 }
 
 async function readInquiry(reset) {
@@ -2390,7 +2492,36 @@ function clickEstimate(item, index) {
     return
   }
 
-  data.estimate = util.clone(item)
+  // multiyear_periods JSON 파싱 (clone 전에 처리)
+  let cloneItem = util.clone(item)
+  
+  console.log('Original multiyear_periods:', cloneItem.multiyear_periods)
+  console.log('Type:', typeof cloneItem.multiyear_periods)
+  
+  if (cloneItem.multiyear_periods) {
+    if (typeof cloneItem.multiyear_periods === 'string') {
+      try {
+        const parsed = JSON.parse(cloneItem.multiyear_periods)
+        console.log('JSON parsed successfully:', parsed)
+        // periods를 명시적으로 숫자 배열로 변환
+        cloneItem.multiyear_periods = parsed.map(p => ({
+          year: p.year,
+          periods: Array.isArray(p.periods) ? p.periods.map(period => typeof period === 'number' ? period : parseInt(period)) : []
+        }))
+        console.log('Final multiyear_periods:', cloneItem.multiyear_periods)
+      } catch (e) {
+        console.error('Failed to parse multiyear_periods:', e)
+        cloneItem.multiyear_periods = []
+      }
+    } else {
+      console.log('multiyear_periods is not a string, using as is')
+    }
+  } else {
+    console.log('multiyear_periods is empty, initializing to []')
+    cloneItem.multiyear_periods = []
+  }
+
+  data.estimate = cloneItem
   
   let saleprice = util.money(data.estimate.saleprice)
   let price = util.money(data.estimate.price)
@@ -2460,9 +2591,30 @@ function clickEstimate(item, index) {
 async function clickSubmitEstimate() {
   let item = util.clone(data.estimate)
 
-  if (item.type == 3 && item.subtype == 4) {
-    if (data.estimate.start == '') {
-      util.error('시작 분기를 선택하세요')
+  // 다회용 기간 데이터 필터링 및 JSON 변환 (정기점검, 점검프로그램)
+  if ((item.type == 3 || item.type == 10) && item.subtype == 4) {
+    if (item.multiyear_periods) {
+      // periods가 비어있지 않은 항목만 필터링하고 정렬
+      const filtered = item.multiyear_periods
+        .filter(period => period.periods && period.periods.length > 0)
+        .map(period => ({
+          year: period.year,
+          periods: period.periods.map(p => parseInt(p)).sort()
+        }))
+        .sort((a, b) => {
+          if (a.year !== b.year) return a.year - b.year
+          return a.periods[0] - b.periods[0]
+        })
+      
+      if (filtered.length === 0) {
+        util.error('다회용은 최소 하나 이상의 기간을 선택해야 합니다')
+        return
+      }
+      
+      // JSON 문자열로 변환
+      item.multiyear_periods = JSON.stringify(filtered)
+    } else {
+      util.error('다회용은 최소 하나 이상의 기간을 선택해야 합니다')
       return
     }
   }
@@ -3098,7 +3250,47 @@ function clickType(value) {
   }
 
   data.estimate.type = value
-  changePrice() 
+  changePrice()
+}
+
+// 다회용 기간 년도 추가
+function addPeriodYear() {
+  if (!data.estimate.multiyear_periods) {
+    data.estimate.multiyear_periods = []
+  }
+  const currentYear = new Date().getFullYear()
+  data.estimate.multiyear_periods.push({
+    year: currentYear,
+    periods: []
+  })
+  // 추가 직후에는 updateMultiyearPeriods 호출하지 않음 (periods가 비어있어서 필터링되지 않도록)
+}
+
+// 다회용 기간 년도 제거
+function removePeriodYear(index) {
+  data.estimate.multiyear_periods.splice(index, 1)
+  updateMultiyearPeriods()
+}
+
+// 다회용 기간 업데이트 (JSON 문자열로 변환하여 저장)
+function updateMultiyearPeriods() {
+  // periods 배열을 숫자로 변환하여 정렬
+  if (data.estimate.multiyear_periods) {
+    // 선택된 기간이 있는 것만 필터링하여 정렬
+    const filtered = data.estimate.multiyear_periods
+      .filter(item => item.periods && item.periods.length > 0) // 선택된 기간이 있는 것만
+      .map(item => ({
+        year: item.year,
+        periods: item.periods.map(p => parseInt(p)).sort()
+      }))
+      .sort((a, b) => {
+        if (a.year !== b.year) return a.year - b.year
+        return a.periods[0] - b.periods[0]
+      })
+    
+    // 필터링된 결과가 있으면 업데이트 (빈 배열인 항목은 유지)
+    // 저장 시에만 필터링된 데이터 사용
+  }
 }
 
 function clickSubtype(value) {
@@ -3138,7 +3330,7 @@ function clickSubtype(value) {
     } else if (value == 2) {
       data.estimate.saleprice = 0
       data.estimate.price = 500000
-    } else if (value == 3) {
+    } else if (value == 3 || value == 4) {
       data.estimate.saleprice = 0
       data.estimate.price = 1000000
     } else {

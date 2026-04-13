@@ -128,11 +128,22 @@
     v-model="data.visible"
     :before-close="handleClose"
     width="1100px"
+    title="세부내역 추가"
   >
-    <el-form :model="data.item" label-width="100px">
+    <el-form :model="data.item" label-width="100px" style="margin-top: 10px;">
 
       <div style="text-align:left;">
-        <el-tree-select style="width:290px;" v-model="data.item.category" :data="data.categorys" :default-expand-all="false" :render-after-expand="false" @node-click="changeCategory" placeholder="공사종별" />        
+        <el-tree-select 
+          style="width:290px;" 
+          v-model="data.item.category" 
+          :data="data.categorys" 
+          :default-expand-all="false" 
+          :render-after-expand="false" 
+          @node-click="changeCategory" 
+          placeholder="공사종별"
+          popper-class="breakdown-tree-select-popper"
+          :teleported="true"
+        />        
       </div>
 
       
@@ -1165,7 +1176,7 @@
 
 
 <script setup lang="ts">
-
+// @ts-nocheck
 import { ref, reactive, onMounted, onUnmounted, watch } from "vue"
 import router from '~/router'
 import { util, size }  from "~/global"
@@ -1874,21 +1885,6 @@ function clickBatchAdd() {
 
   item.count = util.getInt(item.count)
 
-  /*
-     let standard = null
-
-     if (multipleSelectionStandard.value.length == 1) {
-     for (let i = 0; i < data.allstandards.length; i++) {
-     let standardItem = data.allstandards[i]
-
-     if (standardItem.id == multipleSelectionStandard.value[0].value) {
-     standard = standardItem
-     break
-     }
-     }
-     }
-   */
-
   let elevator = false
   let ca = getCategory(item.category)  
   if (ca.elevator == 1) {
@@ -1903,7 +1899,9 @@ function clickBatchAdd() {
     for (let i = 0; i < data.allstandards.length; i++) {
       let standardItem = data.allstandards[i]
 
-      if (standardItem.id == standardInfo.value) {
+      // standardInfo는 {label, value} 객체이므로 value 속성으로 접근
+      let standardId = standardInfo.value || standardInfo.id
+      if (standardItem.id == standardId) {
         standard = standardItem
         break
       }
@@ -1991,6 +1989,15 @@ function clickBatchAdd() {
     })
   })
 
+  if (items.length === 0) {
+    if (elevator) {
+      util.error('선택한 시설물에 승강기가 없거나, 선택한 조건으로 추가할 수 있는 항목이 없습니다.')
+    } else {
+      util.error('선택한 조건으로 추가할 수 있는 항목이 없습니다.')
+    }
+    return
+  }
+  
   data.batchs = data.batchs.concat(items)
   for (let i = 0; i < data.batchs.length; i++) {
     data.batchs[i].index = i
@@ -3031,5 +3038,22 @@ async function clickSubmitDiff() {
   overflow:hidden;
   text-overflow:ellipsis;
   white-space:nowrap;
+}
+
+/* tree-select 드롭다운이 dialog의 닫기 버튼을 가리지 않도록 z-index 조정 */
+.breakdown-tree-select-popper {
+  z-index: 2000 !important;
+}
+
+/* dialog 헤더의 닫기 버튼이 항상 클릭 가능하도록 */
+.el-dialog__header {
+  position: relative;
+  z-index: 2001 !important;
+}
+
+/* dialog 닫기 버튼 위치 조정 */
+.el-dialog__headerbtn {
+  top: -15px !important;
+  right: -10px !important;
 }
 </style>

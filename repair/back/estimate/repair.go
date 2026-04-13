@@ -132,15 +132,20 @@ func Repair(id int64, typeid int, conn *models.Connection, estimate *models.Esti
 
 		sheet = "대가산출"
 
-		f.SetCellValue(sheet, "K13", float64(estimate.Person2))
-		f.SetCellValue(sheet, "K14", float64(estimate.Person3))
-		f.SetCellValue(sheet, "K15", float64(estimate.Person4))
-		f.SetCellValue(sheet, "K16", float64(estimate.Person5))
+		f.SetCellValue(sheet, "K9", estimate.Person7*estimate.Days)
+		f.SetCellValue(sheet, "K10", estimate.Person8*estimate.Days)
+		f.SetCellValue(sheet, "K11", estimate.Person9*estimate.Days)
+		f.SetCellValue(sheet, "K12", estimate.Person10*estimate.Days)
 
-		f.SetCellValue(sheet, "L9", estimate.Personprice2)
-		f.SetCellValue(sheet, "L10", estimate.Personprice3)
-		f.SetCellValue(sheet, "L11", estimate.Personprice4)
-		f.SetCellValue(sheet, "L12", estimate.Personprice5)
+		f.SetCellValue(sheet, "K13", estimate.Person2)
+		f.SetCellValue(sheet, "K14", estimate.Person3)
+		f.SetCellValue(sheet, "K15", estimate.Person4)
+		f.SetCellValue(sheet, "K16", estimate.Person5)
+
+		f.SetCellValue(sheet, "L9", estimate.Personprice7)
+		f.SetCellValue(sheet, "L10", estimate.Personprice8)
+		f.SetCellValue(sheet, "L11", estimate.Personprice9)
+		f.SetCellValue(sheet, "L12", estimate.Personprice10)
 
 		f.SetCellValue(sheet, "L13", estimate.Personprice2)
 		f.SetCellValue(sheet, "L14", estimate.Personprice3)
@@ -149,6 +154,9 @@ func Repair(id int64, typeid int, conn *models.Connection, estimate *models.Esti
 
 		f.SetCellValue(sheet, "K17", estimate.Financialprice)
 		f.SetCellValue(sheet, "K18", estimate.Techprice)
+
+		f.SetCellValue(sheet, "N17", fmt.Sprintf("직접인건비 * %v%%", estimate.Financialprice))
+		f.SetCellValue(sheet, "N18", fmt.Sprintf("(직접인건비 + 제경비) * %v%%", estimate.Techprice))
 
 		f.SetCellValue(sheet, "M19", estimate.Directprice)
 		f.SetCellValue(sheet, "M20", estimate.Printprice)
@@ -165,16 +173,68 @@ func Repair(id int64, typeid int, conn *models.Connection, estimate *models.Esti
 
 		sheet = "계약서1"
 
+		contractManager := models.NewContractManager(conn)
+		contract := contractManager.GetByEstimate(estimate.Id)
+
+		if contract != nil {
+			startdate := time.ParseDate(contract.Contractstartdate)
+			enddate := time.ParseDate(contract.Contractenddate)
+			contractDate := time.ParseDate(contract.Contractdate)
+
+			if startdate != nil && enddate != nil {
+				if estimate.Subtype == 1 {
+					f.SetCellStr(sheet, "G39", fmt.Sprintf("%04d   .  %02d .  %02d .   ~   %04d .  %02d .  %02d . ", startdate.Year(), startdate.Month(), startdate.Day(), enddate.Year(), enddate.Month(), enddate.Day()))
+				} else {
+					f.SetCellStr(sheet, "M39", fmt.Sprintf("%04d   .  %02d .  %02d .   ~   %04d .  %02d .  %02d . ", startdate.Year(), startdate.Month(), startdate.Day(), enddate.Year(), enddate.Month(), enddate.Day()))
+				}
+			} else if enddate != nil {
+				if estimate.Subtype == 1 {
+					f.SetCellStr(sheet, "G39", fmt.Sprintf("%04d   .     .     .   ~   %04d .  %02d .  %02d . ", t.Year(), enddate.Year(), enddate.Month(), enddate.Day()))
+				} else {
+					f.SetCellStr(sheet, "M39", fmt.Sprintf("%04d   .     .     .   ~   %04d .  %02d .  %02d . ", t.Year(), enddate.Year(), enddate.Month(), enddate.Day()))
+				}
+			} else {
+				if estimate.Subtype == 1 {
+					f.SetCellStr(sheet, "G39", fmt.Sprintf("%04d   .     .     .   ~   %04d .     .     . ", t.Year(), t.Year()))
+				} else {
+					f.SetCellStr(sheet, "M39", fmt.Sprintf("%04d   .     .     .   ~   %04d .     .     . ", t.Year(), t.Year()))
+				}
+			}
+			if contractDate != nil {
+				if estimate.Subtype == 1 {
+					f.SetCellStr(sheet, "G51", contractDate.Humandate())
+				} else {
+					f.SetCellStr(sheet, "M51", contractDate.Humandate())
+				}
+			} else {
+				if estimate.Subtype == 1 {
+					f.SetCellStr(sheet, "G51", fmt.Sprintf("%v년", t.Year()))
+				} else {
+					f.SetCellStr(sheet, "M51", fmt.Sprintf("%v년", t.Year()))
+				}
+			}
+		} else {
+			if estimate.Subtype == 1 {
+				f.SetCellStr(sheet, "G39", fmt.Sprintf("%04d   .     .     .   ~   %04d .     .     . ", t.Year(), t.Year()))
+				f.SetCellStr(sheet, "G51", fmt.Sprintf("%v년", t.Year()))
+			} else {
+				f.SetCellStr(sheet, "M39", fmt.Sprintf("%04d   .     .     .   ~   %04d .     .     . ", t.Year(), t.Year()))
+				f.SetCellStr(sheet, "M51", fmt.Sprintf("%v년", t.Year()))
+			}
+		}
+
 		if estimate.Subtype == 1 {
 			// repair1.xlsx (조정)
 			f.SetCellStr(sheet, "B9", apt.Name)
 			f.SetCellStr(sheet, "B16", fmt.Sprintf("%v년", t.Year()))
-			f.SetCellStr(sheet, "G41", tel)
+			f.SetCellStr(sheet, "I41", apt.Tel)
+			f.SetCellStr(sheet, "Q41", apt.Fax)
 		} else {
 			// repair2.xlsx (수립)
 			f.SetCellStr(sheet, "H9", apt.Name)
 			f.SetCellStr(sheet, "H16", fmt.Sprintf("%v년", t.Year()))
-			f.SetCellStr(sheet, "M41", tel)
+			f.SetCellStr(sheet, "O41", apt.Tel)
+			f.SetCellStr(sheet, "W41", apt.Fax)
 		}
 
 		f.UpdateLinkedValue()

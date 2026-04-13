@@ -1,6 +1,7 @@
 package estimate
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
 	"repair/global"
@@ -13,11 +14,34 @@ import (
 	"github.com/xuri/excelize/v2"
 )
 
+// MultiyearPeriod 다회용 기간 구조체
+type MultiyearPeriod struct {
+	Year    int   `json:"year"`
+	Periods []int `json:"periods"` // 1=상반기, 2=하반기
+}
+
 func Periodic(id int64, typeid int, conn *models.Connection, estimate *models.Estimate, compareestimates []models.Compareestimate, apt *models.Apt) string {
-	excelFilename := fmt.Sprintf("periodic%v.xlsx", estimate.Subtype)
+	// 계약 정보 조회
+	contractManager := models.NewContractManager(conn)
+	contract := contractManager.GetByEstimate(estimate.Id)
+
+	// estimate.Subtype: 1=상반기, 2=하반기, 3=연간, 4=다회용
+	periodicType := estimate.Subtype
+
+	// 템플릿 파일 매핑: 1,2 → periodic1 / 3 → periodic2 / 4 → periodic3
+	var templateNum int
+	if periodicType == 1 || periodicType == 2 {
+		templateNum = 1
+	} else if periodicType == 3 {
+		templateNum = 2
+	} else {
+		templateNum = 3
+	}
+
+	excelFilename := fmt.Sprintf("periodic%v.xlsx", templateNum)
 
 	var complex int64 = 1
-	if estimate.Subtype == 3 {
+	if periodicType == 4 {
 		complex = 2
 	}
 
@@ -38,15 +62,12 @@ func Periodic(id int64, typeid int, conn *models.Connection, estimate *models.Es
 		return ""
 	}
 
-	sheet := "개요"
+	sheet := "갑지"
 
 	t := time.ParseDate(estimate.Writedate)
-	//no := fmt.Sprintf("ANB-%04d%02d%02d-%v", t.Year(), t.Month(), t.Day(), id)
 
-	writedate := strings.Split(estimate.Writedate, "-")
-
-	complateyear := ""
 	str := strings.Split(apt.Completeyear, "-")
+	complateyear := ""
 
 	if len(str) == 3 {
 		complateyear = fmt.Sprintf("%v년 %v월", str[0], str[1])
@@ -114,63 +135,294 @@ func Periodic(id int64, typeid int, conn *models.Connection, estimate *models.Es
 		estimate.Days = 1
 	}
 
+	no := GetEstimateNo(typeid, t, estimate.Date, conn)
+
+	part := ""
+	switch estimate.Subtype {
+	case 1:
+		part = "상반기 "
+	case 2:
+		part = "하반기 "
+	default:
+		part = "연간 "
+	}
+
 	if typeid == 0 {
-		if apt.Type == "아파트" || apt.Familycount3 > 0 {
-			f.SetCellStr(sheet, "B12", "공동주택")
+		// H10셀 텍스트 생성
+		h10Text := ""
+
+		// periodicType이 4(다회용)이고 estimate의 multiyear_periods 필드가 있으면 사용
+		if periodicType == 4 && estimate.Multiyear_periods != "" {
+			var periods []MultiyearPeriod
+			if err := json.Unmarshal([]byte(estimate.Multiyear_periods), &periods); err == nil && len(periods) > 0 {
+				// 선택된 기간들로 H10 텍스트 생성
+				var periodTexts []string
+				for _, p := range periods {
+					// 상반기(1)와 하반기(2)가 모두 선택된 경우 연간으로 표시
+					hasFirst := false
+					hasSecond := false
+					for _, period := range p.Periods {
+						if period == 1 {
+							hasFirst = true
+						} else if period == 2 {
+							hasSecond = true
+						}
+					}
+
+					if hasFirst && hasSecond {
+						periodTexts = append(periodTexts, fmt.Sprintf("%v년 연간", p.Year))
+					} else {
+						for _, period := range p.Periods {
+							if period == 1 {
+								periodTexts = append(periodTexts, fmt.Sprintf("%v년 상반기", p.Year))
+							} else if period == 2 {
+								periodTexts = append(periodTexts, fmt.Sprintf("%v년 하반기", p.Year))
+							}
+						}
+					}
+				}
+				h10Text = strings.Join(periodTexts, "/")
+			}
+		} else if contract != nil {
+			startdate := time.ParseDate(contract.Contractstartdate)
+			enddate := time.ParseDate(contract.Contractenddate)
+
+			if startdate != nil && enddate != nil {
+				startYear := startdate.Year()
+				endYear := enddate.Year()
+
+				switch periodicType {
+				case 1:
+					// 상반기
+					h10Text = fmt.Sprintf("%v년 상반기", startYear)
+				case 2:
+					// 하반기
+					h10Text = fmt.Sprintf("%v년 하반기", startYear)
+				case 3:
+					// 연간 (1년)
+					h10Text = fmt.Sprintf("%v년 연간", startYear)
+				case 4:
+					// 다회용 (여러 년도) - 각 년도별 상반기/하반기 판단
+					type YearPeriod struct {
+						Year       int
+						FirstHalf  bool
+						SecondHalf bool
+					}
+
+					var periods []YearPeriod
+
+					for year := startYear; year <= endYear; year++ {
+						var hasFirst, hasSecond bool
+
+						startMonth := 1
+						endMonth := 12
+
+						if year == startYear {
+							startMonth = int(startdate.Month())
+						}
+						if year == endYear {
+							endMonth = int(enddate.Month())
+						}
+
+						// 상반기: 1-6월
+						if startMonth <= 6 {
+							hasFirst = true
+						}
+						// 하반기: 7-12월
+						if endMonth >= 7 {
+							hasSecond = true
+						}
+						// 년도가 상반기/하반기 경계를 넘나드는 경우
+						if startMonth <= 6 && endMonth >= 7 {
+							hasFirst = true
+							hasSecond = true
+						}
+
+						periods = append(periods, YearPeriod{
+							Year:       year,
+							FirstHalf:  hasFirst,
+							SecondHalf: hasSecond,
+						})
+					}
+
+					// 모든 년도가 같은 패턴인지 확인
+					allSame := true
+					firstPattern := ""
+					if periods[0].FirstHalf && periods[0].SecondHalf {
+						firstPattern = "both"
+					} else if periods[0].FirstHalf {
+						firstPattern = "first"
+					} else if periods[0].SecondHalf {
+						firstPattern = "second"
+					}
+
+					for _, p := range periods {
+						pattern := ""
+						if p.FirstHalf && p.SecondHalf {
+							pattern = "both"
+						} else if p.FirstHalf {
+							pattern = "first"
+						} else if p.SecondHalf {
+							pattern = "second"
+						}
+						if pattern != firstPattern {
+							allSame = false
+							break
+						}
+					}
+
+					// 년도 문자열 생성
+					yearList := ""
+					for _, p := range periods {
+						if yearList != "" {
+							yearList += "/"
+						}
+						if allSame {
+							// 모든 년도가 같은 패턴이면 년도만
+							yearList += fmt.Sprintf("%v년", p.Year)
+						} else {
+							// 다른 패턴이면 각각 표시
+							if p.FirstHalf && p.SecondHalf {
+								yearList += fmt.Sprintf("%v년", p.Year)
+							} else if p.FirstHalf {
+								yearList += fmt.Sprintf("%v년 상반기", p.Year)
+							} else if p.SecondHalf {
+								yearList += fmt.Sprintf("%v년 하반기", p.Year)
+							}
+						}
+					}
+
+					// 최종 텍스트
+					if allSame {
+						if firstPattern == "both" {
+							h10Text = fmt.Sprintf("%v 연간", yearList)
+						} else if firstPattern == "first" {
+							h10Text = fmt.Sprintf("%v 상반기", yearList)
+						} else if firstPattern == "second" {
+							h10Text = fmt.Sprintf("%v 하반기", yearList)
+						}
+					} else {
+						h10Text = yearList
+					}
+				}
+			}
 		} else {
-			f.SetCellStr(sheet, "B12", "공동주택외 건축물")
+			// 계약 날짜가 없으면 기본값
+			h10Text = fmt.Sprintf("%v년 %v", t.Year(), strings.TrimSpace(part))
 		}
 
-		f.SetCellStr(sheet, "B4", apt.Name)
-		switch estimate.Subtype {
-		case 1:
-			f.SetCellStr(sheet, "C5", fmt.Sprintf("(%v년 상반기)", t.Year()))
-		case 2:
-			f.SetCellStr(sheet, "C5", fmt.Sprintf("(%v년 하반기)", t.Year()))
-		case 3:
-			f.SetCellStr(sheet, "C5", fmt.Sprintf("(%v년 연간)", t.Year()))
-		default:
-			f.SetCellStr(sheet, "C5", fmt.Sprintf("(%v년)", t.Year()))
+		if h10Text == "" {
+			// 계약 정보도 없고 multiyear_periods도 없으면 기본값
+			h10Text = fmt.Sprintf("%v년 %v", t.Year(), strings.TrimSpace(part))
 		}
 
-		switch estimate.Subtype {
-		case 1:
-			f.SetCellStr(sheet, "B18", fmt.Sprintf("%v년 상반기 정기안전점검 1회 금액", t.Year()))
-		case 2:
-			f.SetCellStr(sheet, "B18", fmt.Sprintf("%v년 하반기 정기안전점검 1회 금액", t.Year()))
-		case 3:
-			f.SetCellStr(sheet, "B18", fmt.Sprintf("%v년 연간 정기안전점검 금액", t.Year()))
-		default:
-			f.SetCellStr(sheet, "B18", fmt.Sprintf("%v년 정기안전점검 금액", t.Year()))
-		}
+		f.SetCellStr(sheet, "H6", no)
+		f.SetCellStr(sheet, "H7", t.Humandate())
+		f.SetCellStr(sheet, "H8", fmt.Sprintf("%v", apt.Name))
+		f.SetCellStr(sheet, "H10", h10Text)
+		f.SetCellStr(sheet, "N21", apt.Name)
+		f.SetCellStr(sheet, "N23", apt.Address)
+		f.SetCellStr(sheet, "N22", buildingSize)
+		f.SetCellStr(sheet, "N24", complateyear)
+		f.SetCellStr(sheet, "N25", apt.Tel)
+		f.SetCellStr(sheet, "U25", apt.Fax)
 
-		f.SetCellStr(sheet, "B6", fmt.Sprintf("%v 정기안전점검 용역", apt.Name))
-		f.SetCellStr(sheet, "B8", apt.Address)
-		f.SetCellStr(sheet, "B9", t.Humandate())
-		f.SetCellStr(sheet, "B10", fmt.Sprintf("%v년", writedate[0]))
+		// I30~I34: 계약 기간의 모든 상반기/하반기 나열 (periodic3, periodic4만)
+		if periodicType == 3 || periodicType == 4 {
+			var periodList []string
 
-		f.SetCellStr(sheet, "B11", buildingSize)
+			// periodicType 4(다회용)이면 estimate의 multiyear_periods 사용
+			if periodicType == 4 && estimate.Multiyear_periods != "" {
+				var periods []MultiyearPeriod
+				if err := json.Unmarshal([]byte(estimate.Multiyear_periods), &periods); err == nil {
+					for _, p := range periods {
+						for _, period := range p.Periods {
+							if period == 1 {
+								periodList = append(periodList, fmt.Sprintf("%v년 상반기 :", p.Year))
+							} else if period == 2 {
+								periodList = append(periodList, fmt.Sprintf("%v년 하반기 :", p.Year))
+							}
+						}
+					}
+				}
+			} else if contract != nil {
+				// 그 외에는 계약 정보 사용
+				startdate := time.ParseDate(contract.Contractstartdate)
+				enddate := time.ParseDate(contract.Contractenddate)
 
-		f.SetCellStr(sheet, "B13", complateyear)
+				if startdate != nil && enddate != nil {
+					startYear := startdate.Year()
+					endYear := enddate.Year()
 
-		f.SetCellStr(sheet, "B14", tel)
-		//f.SetCellStr(sheet, "B15", fax)
+					for year := startYear; year <= endYear; year++ {
+						startMonth := 1
+						endMonth := 12
 
-		f.SetCellValue(sheet, "B19", estimate.Price*int(complex))
-		f.SetCellValue(sheet, "H29", estimate.Price)
+						if year == startYear {
+							startMonth = int(startdate.Month())
+						}
+						if year == endYear {
+							endMonth = int(enddate.Month())
+						}
 
-		for i, v := range compareestimates {
-			col := "C3"
-			if i == 1 {
-				col = "D3"
+						// 상반기 포함 여부 (1-6월)
+						if startMonth <= 6 {
+							periodList = append(periodList, fmt.Sprintf("%v년 상반기 :", year))
+						}
+
+						// 하반기 포함 여부 (7-12월)
+						if endMonth >= 7 {
+							periodList = append(periodList, fmt.Sprintf("%v년 하반기 :", year))
+						}
+					}
+				}
 			}
-			f.SetCellStr(sheet, col, v.Extra["comparecompany"].(models.Comparecompany).Name)
 
-			col = "C19"
-			if i == 1 {
-				col = "D19"
+			if len(periodList) > 0 {
+
+				// L30부터 L34까지 최대 5개 출력, R열에는 대가산출 H25 참조, AC열에는 '-VAT별도'
+				cellsI := []string{"I32", "I33", "I34", "I35", "I36"}
+				cellsN := []string{"N32", "N33", "N34", "N35", "N36"}
+				cellsY := []string{"Y32", "Y33", "Y34", "Y35", "Y36"}
+				cellsZ := []string{"Z32", "Z33", "Z34", "Z35", "Z36"}
+				for i := 0; i < len(cellsI) && i < len(periodList); i++ {
+					f.SetCellStr(sheet, cellsI[i], periodList[i])
+					f.SetCellFormula(sheet, cellsN[i], "대가산출!H29")
+					f.SetCellStr(sheet, cellsY[i], "원")
+					f.SetCellStr(sheet, cellsZ[i], "-VAT별도")
+				}
+				// 총액 행 추가
+				totalRow := 32 + len(periodList)
+				if totalRow <= 39 { // 안전 범위 체크
+					totalCellI := fmt.Sprintf("I%d", totalRow)
+					totalCellN := fmt.Sprintf("N%d", totalRow)
+					totalCellY := fmt.Sprintf("Y%d", totalRow)
+					totalCellZ := fmt.Sprintf("Z%d", totalRow)
+
+					f.SetCellStr(sheet, totalCellI, fmt.Sprintf("※총액(연%d회)", len(periodList)))
+
+					// R열 총합 계산 (1회 금액 * 회수)
+					totalAmount := estimate.Price * len(periodList)
+					humanAmount := global.HumanMoney(totalAmount)
+
+					f.SetCellStr(sheet, totalCellN, fmt.Sprintf("일금 %v원정 ($%v)", humanAmount, humanize.Comma(int64(totalAmount))))
+					f.SetCellStr(sheet, totalCellY, "")
+					f.SetCellStr(sheet, totalCellZ, "-VAT별도※")
+
+					// 총액 행 스타일 (굵게 + 정렬)
+					boldCenterStyle, _ := f.NewStyle(&excelize.Style{
+						Font:      &excelize.Font{Bold: true, Family: "함초롱바탕"},
+						Alignment: &excelize.Alignment{Horizontal: "center"},
+					})
+					boldRightStyle, _ := f.NewStyle(&excelize.Style{
+						Font:      &excelize.Font{Bold: true, Family: "함초롱바탕"},
+						Alignment: &excelize.Alignment{Horizontal: "right"},
+					})
+					f.SetCellStyle(sheet, totalCellI, totalCellI, boldCenterStyle)
+					f.SetCellStyle(sheet, totalCellN, totalCellN, boldRightStyle)
+					f.SetCellStyle(sheet, totalCellZ, totalCellZ, boldCenterStyle)
+				}
 			}
-			f.SetCellValue(sheet, col, v.Price*int(complex))
 		}
 
 		sheet = "대가산출"
@@ -248,149 +500,189 @@ func Periodic(id int64, typeid int, conn *models.Connection, estimate *models.Es
 
 		f.SetCellValue(sheet, "H28", estimate.Saleprice)
 
-		f.SetCellStr(sheet, "D3", fmt.Sprintf("일금 %v원정(₩%v) - VAT 별도", global.HumanMoney(int64(estimate.Price)), humanize.Comma(int64(estimate.Price))))
+		f.SetCellStr(sheet, "D3", fmt.Sprintf("일금 %v원정(₩%v)", global.HumanMoney(int64(estimate.Price)), humanize.Comma(int64(estimate.Price))))
 
-		sheet = "에이앤비 갑지"
+		// G32: 상반기/하반기 횟수 (periodic3, periodic4만)
+		if periodicType == 3 || periodicType == 4 {
+			periodCount := 0
 
-		switch estimate.Subtype {
-		case 3:
-			f.SetCellStr(sheet, "D45", fmt.Sprintf("      상반기 정기안전점검 : %v원 (VAT 별도)", humanize.Comma(int64(estimate.Price))))
-			f.SetCellStr(sheet, "D46", fmt.Sprintf("      하반기 정기안전점검 : %v원 (VAT 별도)", humanize.Comma(int64(estimate.Price))))
-			f.SetCellStr(sheet, "D47", fmt.Sprintf("※ 총 액 (연2회) : 일금 %v원정(₩ %v)- VAT 별도 ※", global.HumanMoney(int64(estimate.Price*2)), humanize.Comma(int64(estimate.Price*2))))
-		case 4:
-			f.SetCellStr(sheet, "D43", fmt.Sprintf("(단, 계약 위반시 원수립금액 %v원-VAT 별도 청구)", humanize.Comma(int64(estimate.Price*2))))
+			// periodicType 4(다회용)이면 estimate의 multiyear_periods 사용
+			if periodicType == 4 && estimate.Multiyear_periods != "" {
+				var periods []MultiyearPeriod
+				if err := json.Unmarshal([]byte(estimate.Multiyear_periods), &periods); err == nil {
+					for _, p := range periods {
+						periodCount += len(p.Periods)
+					}
+				}
+			} else if contract != nil {
+				// 그 외에는 계약 정보 사용
+				startdate := time.ParseDate(contract.Contractstartdate)
+				enddate := time.ParseDate(contract.Contractenddate)
 
-			temp := strings.Split(estimate.Start, "-")
-			year := global.Atoi(temp[0])
-			month := global.Atoi(temp[1])
+				if startdate != nil && enddate != nil {
+					startYear := startdate.Year()
+					endYear := enddate.Year()
 
-			if month == 1 {
-				f.SetCellStr(sheet, "D45", fmt.Sprintf("라) %v년 상반기/하반기, %v년 상반기/하반기, %v년 상반기 (정기점검 5회)", year, year+1, year+2))
-				f.SetCellStr(sheet, "D46", fmt.Sprintf("     %v년 하반기 정밀점검 (1회) (추후 견적금액 상의 예정)", year+2))
-			} else {
-				f.SetCellStr(sheet, "D45", fmt.Sprintf("라) %v년 하반기, %v년 상반기/하반기, %v년 상반기/하반기 (정기점검 5회)", year, year+1, year+2))
-				f.SetCellStr(sheet, "D46", fmt.Sprintf("     %v년 상반기 정밀점검 (1회) (추후 견적금액 상의 예정)", year+3))
+					for year := startYear; year <= endYear; year++ {
+						startMonth := 1
+						endMonth := 12
+
+						if year == startYear {
+							startMonth = int(startdate.Month())
+						}
+						if year == endYear {
+							endMonth = int(enddate.Month())
+						}
+
+						if startMonth <= 6 {
+							periodCount++
+						}
+						if endMonth >= 7 {
+							periodCount++
+						}
+					}
+				}
 			}
 
-			f.SetCellStr(sheet, "D50", fmt.Sprintf("※ 총 액 (정기점검 5회) : 일금 %v원정(₩ %v)- VAT 별도 ※", global.HumanMoney(int64(estimate.Price*5)), humanize.Comma(int64(estimate.Price*5))))
+			if periodCount > 0 {
+				f.SetCellValue(sheet, "G32", periodCount)
+			}
 		}
 
-		subtitle := ""
-		switch estimate.Subtype {
-		case 1:
-			f.SetCellStr(sheet, "I43", fmt.Sprintf("(%v년 상반기 정기안전점검 1회 금액)", t.Year()))
-			subtitle = fmt.Sprintf("%v년 상반기", t.Year())
-		case 2:
-			f.SetCellStr(sheet, "I43", fmt.Sprintf("(%v년 하반기 정기안전점검 1회 금액)", t.Year()))
-			subtitle = fmt.Sprintf("%v년 하반기", t.Year())
-		case 3:
-			f.SetCellStr(sheet, "I43", fmt.Sprintf("(%v년 연간 정기안전점검 금액)", t.Year()))
-			subtitle = fmt.Sprintf("%v년 연간", t.Year())
-		default:
-			f.SetCellStr(sheet, "I43", fmt.Sprintf("(%v년 정기안전점검 금액)", t.Year()))
-			subtitle = fmt.Sprintf("%v년", t.Year())
-		}
+		sheet = "계약서"
 
-		f.SetCellStr(sheet, "G16", subtitle)
-
-		sheet = "계약서1"
-
-		priceStr := fmt.Sprintf("일금 %v원정(₩%v) - VAT 별도", global.HumanMoney(int64(estimate.Price)), humanize.Comma(int64(estimate.Price)))
-		priceStr2 := fmt.Sprintf("일금 %v원정(₩%v)", global.HumanMoney(int64(estimate.Price)), humanize.Comma(int64(estimate.Price)))
-		priceStr3 := fmt.Sprintf("일금 %v원정(₩%v) - VAT 별도", global.HumanMoney(int64(estimate.Price)), humanize.Comma(int64(estimate.Price)))
+		//priceStr := fmt.Sprintf("일금 %v원정(₩%v) - VAT 별도", global.HumanMoney(int64(estimate.Price)), humanize.Comma(int64(estimate.Price)))
+		//priceStr2 := fmt.Sprintf("일금 %v원정(₩%v)", global.HumanMoney(int64(estimate.Price)), humanize.Comma(int64(estimate.Price)))
+		//priceStr3 := fmt.Sprintf("일금 %v원정(₩%v) - VAT 별도", global.HumanMoney(int64(estimate.Price)), humanize.Comma(int64(estimate.Price)))
 
 		f.SetCellStr(sheet, "B9", apt.Name)
-		switch estimate.Subtype {
+
+		/*switch periodicType {
 		case 1:
 			f.SetCellStr(sheet, "B16", fmt.Sprintf("%v년 상반기", t.Year()))
+			subtitle = fmt.Sprintf("%v년 상반기", t.Year())
 		case 2:
 			f.SetCellStr(sheet, "B16", fmt.Sprintf("%v년 하반기", t.Year()))
+			subtitle = fmt.Sprintf("%v년 하반기", t.Year())
 		case 3:
 			f.SetCellStr(sheet, "B16", fmt.Sprintf("%v년 연간", t.Year()))
+			subtitle = fmt.Sprintf("%v년 연간", t.Year())
 			priceStr = fmt.Sprintf("일금 %v원정(₩%v) - VAT 별도", global.HumanMoney(int64(estimate.Price)*2), humanize.Comma(int64(estimate.Price)*2))
 			priceStr2 = fmt.Sprintf("일금 %v원정(₩%v)", global.HumanMoney(int64(estimate.Price)*2), humanize.Comma(int64(estimate.Price)*2))
 		default:
 			f.SetCellStr(sheet, "B16", fmt.Sprintf("%v년", t.Year()))
+			subtitle = fmt.Sprintf("%v년", t.Year())
+		}*/
+
+		//f.SetCellStr(sheet, "G37", fmt.Sprintf("%v 정기안전점검 용역", apt.Name))
+		//f.SetCellStr(sheet, "G38", priceStr)
+		//f.SetCellStr(sheet, "G39", priceStr2)
+
+		// 계약일자 셀 (파일별 위치 다름)
+		hCell := "E52" // periodic3, periodic4 기본값
+		if periodicType == 1 {
+			hCell = "E51" // periodic1, periodic2
 		}
-
-		f.SetCellStr(sheet, "G37", fmt.Sprintf("%v 정기안전점검 용역", apt.Name))
-		f.SetCellStr(sheet, "G38", priceStr)
-		f.SetCellStr(sheet, "G39", priceStr2)
-
-		contractManager := models.NewContractManager(conn)
-		contract := contractManager.GetByEstimate(estimate.Id)
 
 		if contract != nil {
 			startdate := time.ParseDate(contract.Contractstartdate)
 			enddate := time.ParseDate(contract.Contractenddate)
 			contractDate := time.ParseDate(contract.Contractdate)
 
+			// 계약 기간 (파일별 셀 위치 다름)
+			periodCell := "C74" // periodic3, periodic4 기본값
+			if periodicType == 1 {
+				periodCell = "C73" // periodic1, periodic2
+			}
+
 			if startdate != nil && enddate != nil {
-				f.SetCellStr(sheet, "G41", fmt.Sprintf("%04d   .  %02d .  %02d .   ~   %04d .  %02d .  %02d . ", startdate.Year(), startdate.Month(), startdate.Day(), enddate.Year(), enddate.Month(), enddate.Day()))
+				f.SetCellStr(sheet, periodCell, fmt.Sprintf("① 계약기간은 %04d년 %2d월 %2d일부터 %04d년 %2d월 %2d일로 종료한다.",
+					startdate.Year(), startdate.Month(), startdate.Day(),
+					enddate.Year(), enddate.Month(), enddate.Day()))
+				f.SetCellStr(sheet, "G38", fmt.Sprintf("%04d   .  %02d .  %02d .   ~   %04d .  %02d .  %02d . ", startdate.Year(), startdate.Month(), startdate.Day(), enddate.Year(), enddate.Month(), enddate.Day()))
 			} else if enddate != nil {
-				f.SetCellStr(sheet, "G41", fmt.Sprintf("%04d   .     .     .   ~   %04d .  %02d .  %02d . ", t.Year(), enddate.Year(), enddate.Month(), enddate.Day()))
+				f.SetCellStr(sheet, "G38", fmt.Sprintf("%04d   .     .     .   ~   %04d .  %02d .  %02d . ", t.Year(), enddate.Year(), enddate.Month(), enddate.Day()))
 			} else {
-				f.SetCellStr(sheet, "G41", fmt.Sprintf("%04d   .     .     .   ~   %04d .     .     . ", t.Year(), t.Year()))
+				f.SetCellStr(sheet, "G38", fmt.Sprintf("%04d   .     .     .   ~   %04d .     .     . ", t.Year(), t.Year()))
 			}
+
+			// J43: 년도 정보 (회수 없이, periodic3, periodic4만)
+			if h10Text != "" && (periodicType == 3 || periodicType == 4) {
+				f.SetCellStr(sheet, "J42", h10Text)
+			}
+
 			if contractDate != nil {
-				f.SetCellStr(sheet, "E53", contractDate.Humandate())
+				f.SetCellStr(sheet, hCell, contractDate.Humandate())
 			} else {
-				f.SetCellStr(sheet, "E53", fmt.Sprintf("%v년", t.Year()))
+				f.SetCellStr(sheet, hCell, fmt.Sprintf("%v년", t.Year()))
 			}
 		} else {
-			f.SetCellStr(sheet, "G41", fmt.Sprintf("%04d   .     .     .   ~   %04d .     .     . ", t.Year(), t.Year()))
-			f.SetCellStr(sheet, "E53", fmt.Sprintf("%v년", t.Year()))
+			f.SetCellStr(sheet, "G39", fmt.Sprintf("%04d   .     .     .   ~   %04d .     .     . ", t.Year(), t.Year()))
+			f.SetCellStr(sheet, hCell, fmt.Sprintf("%v년", t.Year()))
 		}
 
-		f.SetCellStr(sheet, "G42", apt.Address)
+		//f.SetCellStr(sheet, "G42", apt.Address)
 
-		f.SetCellStr(sheet, "G43", tel)
+		//f.SetCellStr(sheet, "G43", tel)
 
-		if estimate.Subtype == 3 {
-			f.SetCellStr(sheet, "G45", fmt.Sprintf("상기 금액은 %v 정기안전점검 용역대가임. (연 2회)\n  - 1회 : %v", subtitle, priceStr3))
+		/*if periodicType == 4 {
+			f.SetCellStr(sheet, "G43", fmt.Sprintf("상기 금액은 %v 정기안전점검 용역대가임. (연 2회)\n  - 1회 : %v", h10Text, priceStr3))
 		} else {
-			f.SetCellStr(sheet, "G45", fmt.Sprintf("상기 금액은 %v 정기안전점검 용역대가임.", subtitle))
+			f.SetCellStr(sheet, "G43", fmt.Sprintf("상기 금액은 %v 정기안전점검 용역대가임.", h10Text))
+		}*/
+
+		// 공동주택 타입 셀 (파일별 위치 다름)
+		buildingTypeCell := "F70" // periodic3, periodic4 기본값
+		if periodicType == 1 {
+			buildingTypeCell = "F69" // periodic1, periodic2
 		}
+
 		if apt.Type == "아파트" || apt.Familycount3 > 0 {
-			f.SetCellStr(sheet, "F71", "공동주택")
+			f.SetCellStr(sheet, buildingTypeCell, "공동주택")
 		} else {
-			f.SetCellStr(sheet, "F71", "공동주택외 건축물")
+			f.SetCellStr(sheet, buildingTypeCell, "공동주택외 건축물")
 		}
-		f.SetCellStr(sheet, "K72", buildingSize)
+		//f.SetCellStr(sheet, "K72", buildingSize)
 
-		f.SetCellValue(sheet, "I151", estimate.Personprice7)
-		f.SetCellValue(sheet, "I152", estimate.Personprice8)
-		f.SetCellValue(sheet, "I153", estimate.Personprice9)
-		f.SetCellValue(sheet, "I154", estimate.Personprice10)
+		// 계약서 시트 행 offset (periodic1, periodic2는 한 행씩 위로)
+		rowOffset := 0
+		if periodicType == 1 {
+			rowOffset = -1
+		}
 
-		f.SetCellValue(sheet, "I155", estimate.Personprice2)
-		f.SetCellValue(sheet, "I156", estimate.Personprice3)
-		f.SetCellValue(sheet, "I157", estimate.Personprice4)
-		f.SetCellValue(sheet, "I158", estimate.Personprice5)
+		f.SetCellValue(sheet, fmt.Sprintf("I%d", 139+rowOffset), estimate.Personprice7)
+		f.SetCellValue(sheet, fmt.Sprintf("I%d", 140+rowOffset), estimate.Personprice8)
+		f.SetCellValue(sheet, fmt.Sprintf("I%d", 141+rowOffset), estimate.Personprice9)
+		f.SetCellValue(sheet, fmt.Sprintf("I%d", 142+rowOffset), estimate.Personprice10)
 
-		f.SetCellValue(sheet, "P151", estimate.Person7*estimate.Days)
-		f.SetCellValue(sheet, "P152", estimate.Person8*estimate.Days)
-		f.SetCellValue(sheet, "P153", estimate.Person9*estimate.Days)
-		f.SetCellValue(sheet, "P154", estimate.Person10*estimate.Days)
+		f.SetCellValue(sheet, fmt.Sprintf("I%d", 143+rowOffset), estimate.Personprice2)
+		f.SetCellValue(sheet, fmt.Sprintf("I%d", 144+rowOffset), estimate.Personprice3)
+		f.SetCellValue(sheet, fmt.Sprintf("I%d", 145+rowOffset), estimate.Personprice4)
+		f.SetCellValue(sheet, fmt.Sprintf("I%d", 146+rowOffset), estimate.Personprice5)
 
-		f.SetCellValue(sheet, "P155", estimate.Person2)
-		f.SetCellValue(sheet, "P156", estimate.Person3)
-		f.SetCellValue(sheet, "P157", estimate.Person4)
-		f.SetCellValue(sheet, "P158", estimate.Person5)
+		f.SetCellValue(sheet, fmt.Sprintf("P%d", 139+rowOffset), estimate.Person7*estimate.Days)
+		f.SetCellValue(sheet, fmt.Sprintf("P%d", 140+rowOffset), estimate.Person8*estimate.Days)
+		f.SetCellValue(sheet, fmt.Sprintf("P%d", 141+rowOffset), estimate.Person9*estimate.Days)
+		f.SetCellValue(sheet, fmt.Sprintf("P%d", 142+rowOffset), estimate.Person10*estimate.Days)
 
-		f.SetCellValue(sheet, "P159", estimate.Financialprice)
-		f.SetCellValue(sheet, "P160", estimate.Techprice)
-		f.SetCellValue(sheet, "I164", estimate.Carprice)
-		f.SetCellValue(sheet, "I163", estimate.Travelprice)
-		f.SetCellValue(sheet, "I165", fmt.Sprintf("외업인건비의 %v%%", estimate.Danger))
-		f.SetCellFormula(sheet, "R165", fmt.Sprintf("=ROUND(SUM(R151:R154)*%v%%, 0)", estimate.Danger))
-		f.SetCellValue(sheet, "I166", fmt.Sprintf("직접인건비의 %v%%", estimate.Machine))
-		f.SetCellFormula(sheet, "R166", fmt.Sprintf("=ROUND(R150*%v%%, 0)", estimate.Machine))
-		f.SetCellValue(sheet, "R167", estimate.Printprice)
+		f.SetCellValue(sheet, fmt.Sprintf("P%d", 143+rowOffset), estimate.Person2)
+		f.SetCellValue(sheet, fmt.Sprintf("P%d", 144+rowOffset), estimate.Person3)
+		f.SetCellValue(sheet, fmt.Sprintf("P%d", 145+rowOffset), estimate.Person4)
+		f.SetCellValue(sheet, fmt.Sprintf("P%d", 146+rowOffset), estimate.Person5)
 
-		f.SetCellValue(sheet, "R170", estimate.Saleprice)
-		f.SetCellValue(sheet, "R171", estimate.Price)
-		f.SetCellValue(sheet, "R173", estimate.Price)
+		f.SetCellValue(sheet, fmt.Sprintf("P%d", 147+rowOffset), estimate.Financialprice)
+		f.SetCellValue(sheet, fmt.Sprintf("P%d", 148+rowOffset), estimate.Techprice)
+		f.SetCellValue(sheet, fmt.Sprintf("I%d", 151+rowOffset), estimate.Carprice)
+		f.SetCellValue(sheet, fmt.Sprintf("I%d", 152+rowOffset), estimate.Travelprice)
+		f.SetCellValue(sheet, fmt.Sprintf("I%d", 153+rowOffset), fmt.Sprintf("외업인건비의 %v%%", estimate.Danger))
+		f.SetCellFormula(sheet, fmt.Sprintf("R%d", 153+rowOffset), fmt.Sprintf("=ROUND(SUM(R%d:R%d)*%v%%, 0)", 139+rowOffset, 142+rowOffset, estimate.Danger))
+		f.SetCellValue(sheet, fmt.Sprintf("I%d", 154+rowOffset), fmt.Sprintf("직접인건비의 %v%%", estimate.Machine))
+		f.SetCellFormula(sheet, fmt.Sprintf("R%d", 154+rowOffset), fmt.Sprintf("=ROUND(R%d*%v%%, 0)", 138+rowOffset, estimate.Machine))
+		f.SetCellValue(sheet, fmt.Sprintf("R%d", 155+rowOffset), estimate.Printprice)
+
+		f.SetCellValue(sheet, fmt.Sprintf("R%d", 158+rowOffset), estimate.Saleprice)
+		f.SetCellValue(sheet, fmt.Sprintf("R%d", 159+rowOffset), estimate.Price)
+		f.SetCellValue(sheet, fmt.Sprintf("R%d", 161+rowOffset), estimate.Price)
 
 		f.UpdateLinkedValue()
 	} else if typeid == 1 {

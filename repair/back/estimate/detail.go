@@ -37,7 +37,7 @@ func Detail(estimateType int, id int64, typeid int, conn *models.Connection, est
 		return ""
 	}
 
-	sheet := "개요"
+	sheet := "갑지"
 
 	t := time.ParseDate(estimate.Writedate)
 	writedate := strings.Split(estimate.Writedate, "-")
@@ -122,8 +122,7 @@ func Detail(estimateType int, id int64, typeid int, conn *models.Connection, est
 	}
 
 	typeStr := "정밀안전점검"
-	duration := 25
-	name := "시설물 "
+	//name := "시설물 "
 	name2 := "시설물의 "
 
 	switch estimateType {
@@ -136,7 +135,6 @@ func Detail(estimateType int, id int64, typeid int, conn *models.Connection, est
 	case 6:
 		typeStr = "구조안전진단"
 		part = ""
-		duration = 60
 	case 7:
 		typeStr = "감리"
 		part = ""
@@ -147,8 +145,7 @@ func Detail(estimateType int, id int64, typeid int, conn *models.Connection, est
 			typeStr = "기술자문"
 		}
 		part = ""
-		duration = 30
-		name = ""
+		//name = ""
 	case 9:
 		typeStr = "순찰"
 		part = ""
@@ -157,98 +154,64 @@ func Detail(estimateType int, id int64, typeid int, conn *models.Connection, est
 		part = ""
 	}
 
-	title := fmt.Sprintf("(%v년 %v%v)", start[0], part, typeStr)
+	//title := fmt.Sprintf("%v년 %v%v", start[0], part, typeStr)
+	title := fmt.Sprintf("%v년 %v", start[0], part)
 	priceStr := fmt.Sprintf("일금 %v원정(₩%v) - VAT 별도", global.HumanMoney(int64(estimate.Price)), humanize.Comma(int64(estimate.Price)))
 
 	if estimate.Days == 0 {
 		estimate.Days = 1
 	}
 
+	no := GetEstimateNo(typeid, t, estimate.Date, conn)
+
 	if typeid == 0 {
-		if apt.Type == "아파트" || apt.Familycount3 > 0 {
-			f.SetCellStr(sheet, "B12", "공동주택")
-		} else {
-			f.SetCellStr(sheet, "B12", "공동주택외 건축물")
-		}
-
-		f.SetCellStr(sheet, "B4", apt.Name)
-		f.SetCellStr(sheet, "B6", fmt.Sprintf("%v %v 용역", apt.Name, typeStr))
-		f.SetCellStr(sheet, "B8", apt.Address)
-		f.SetCellStr(sheet, "B9", t.Humandate())
-		f.SetCellStr(sheet, "B10", fmt.Sprintf("%v년", writedate[0]))
-
-		f.SetCellStr(sheet, "B11", buildingSize)
-		f.SetCellStr(sheet, "B13", complateyear)
-
-		f.SetCellStr(sheet, "B14", tel)
-		//f.SetCellStr(sheet, "B15", fax)
-
-		f.SetCellValue(sheet, "B19", estimate.Price)
-		f.SetCellValue(sheet, "H29", estimate.Price)
-
-		for i, v := range compareestimates {
-			col := "C3"
-			if i == 1 {
-				col = "D3"
-			}
-			f.SetCellStr(sheet, col, v.Extra["comparecompany"].(models.Comparecompany).Name)
-
-			col = "C19"
-			if i == 1 {
-				col = "D19"
-			}
-			f.SetCellValue(sheet, col, v.Price)
-		}
-
-		f.SetCellStr(sheet, "B5", fmt.Sprintf("%v%v 견적서", name, typeStr))
-		f.SetCellStr(sheet, "B7", fmt.Sprintf("상기 금액은 %v 용역대가임.", typeStr))
-
-		sheet = "에이앤비 갑지"
+		f.SetCellStr(sheet, "F6", no)
+		f.SetCellStr(sheet, "F7", fmt.Sprintf("%v년 %v월 %v일", writedate[0], writedate[1], writedate[2]))
+		f.SetCellStr(sheet, "F8", fmt.Sprintf("%v", apt.Name))
 
 		if estimateType == 2 {
-			f.SetCellStr(sheet, "D40", fmt.Sprintf("가) 시설물의 안전 및 유지관리에 관한 특별법 제11조에 의거한 건축물 %v", typeStr))
-		} else {
-			f.SetCellStr(sheet, "D40", fmt.Sprintf("가) %v%v 용역", name, typeStr))
-			f.SetCellStr(sheet, "D41", fmt.Sprintf("나) %v 용역 보고서 1부", typeStr))
-			f.SetCellStr(sheet, "D42", "")
-			f.SetCellStr(sheet, "D43", "")
-			f.SetCellStr(sheet, "D44", "")
-			f.SetCellStr(sheet, "I46", "")
-			f.SetCellStr(sheet, "G48", fmt.Sprintf("%v 보고서 납품후 10일내 지불조건", typeStr))
-
-			f.SetCellStr(sheet, "D51", fmt.Sprintf("과업 수행 기간 : %v일", duration))
+			f.SetCellStr(sheet, "F10", title)
 		}
+		f.SetCellStr(sheet, "K10", fmt.Sprintf("%v 견적건", typeStr))
+		f.SetCellStr(sheet, "B36", fmt.Sprintf("※ 첨    부 :  1. %v 용역 견적서 1부 끝.", typeStr))
+
+		f.SetCellStr(sheet, "L21", apt.Name)
+		f.SetCellStr(sheet, "L22", buildingSize)
+		f.SetCellStr(sheet, "L23", apt.Address)
+		f.SetCellStr(sheet, "L24", complateyear)
+		f.SetCellStr(sheet, "L25", apt.Tel)
+		f.SetCellStr(sheet, "S25", apt.Fax)
 
 		sheet = "대가산출"
 
 		f.SetCellStr(sheet, "B1", fmt.Sprintf("%v 용역", typeStr))
 
-		f.SetCellValue(sheet, "E9", estimate.Personprice7)
-		f.SetCellValue(sheet, "E10", estimate.Personprice8)
-		f.SetCellValue(sheet, "E11", estimate.Personprice9)
-		f.SetCellValue(sheet, "E12", estimate.Personprice10)
+		f.SetCellValue(sheet, "G9", estimate.Personprice7)
+		f.SetCellValue(sheet, "G10", estimate.Personprice8)
+		f.SetCellValue(sheet, "G11", estimate.Personprice9)
+		f.SetCellValue(sheet, "G12", estimate.Personprice10)
 
-		f.SetCellValue(sheet, "E13", estimate.Personprice2)
-		f.SetCellValue(sheet, "E14", estimate.Personprice3)
-		f.SetCellValue(sheet, "E15", estimate.Personprice4)
-		f.SetCellValue(sheet, "E16", estimate.Personprice5)
+		f.SetCellValue(sheet, "G13", estimate.Personprice2)
+		f.SetCellValue(sheet, "G14", estimate.Personprice3)
+		f.SetCellValue(sheet, "G15", estimate.Personprice4)
+		f.SetCellValue(sheet, "G16", estimate.Personprice5)
 
-		f.SetCellValue(sheet, "G9", estimate.Person7*estimate.Days)
-		f.SetCellValue(sheet, "G10", estimate.Person8*estimate.Days)
-		f.SetCellValue(sheet, "G11", estimate.Person9*estimate.Days)
-		f.SetCellValue(sheet, "G12", estimate.Person10*estimate.Days)
+		f.SetCellValue(sheet, "F9", estimate.Person7*estimate.Days)
+		f.SetCellValue(sheet, "F10", estimate.Person8*estimate.Days)
+		f.SetCellValue(sheet, "F11", estimate.Person9*estimate.Days)
+		f.SetCellValue(sheet, "F12", estimate.Person10*estimate.Days)
 
-		f.SetCellValue(sheet, "G13", estimate.Person2)
-		f.SetCellValue(sheet, "G14", estimate.Person3)
-		f.SetCellValue(sheet, "G15", estimate.Person4)
-		f.SetCellValue(sheet, "G16", estimate.Person5)
+		f.SetCellValue(sheet, "F13", estimate.Person2)
+		f.SetCellValue(sheet, "F14", estimate.Person3)
+		f.SetCellValue(sheet, "F15", estimate.Person4)
+		f.SetCellValue(sheet, "F16", estimate.Person5)
 
-		f.SetCellValue(sheet, "F21", 1)
-		f.SetCellValue(sheet, "F22", 1)
+		f.SetCellValue(sheet, "E21", 1)
+		f.SetCellValue(sheet, "E22", 1)
 
 		outPersons := (estimate.Person7 + estimate.Person8 + estimate.Person9 + estimate.Person10) * estimate.Days
-		f.SetCellValue(sheet, "G21", outPersons)
-		f.SetCellValue(sheet, "G22", outPersons)
+		f.SetCellValue(sheet, "F21", outPersons)
+		f.SetCellValue(sheet, "F22", outPersons)
 
 		if estimateType == 6 {
 			f.SetCellValue(sheet, "H26", estimate.Stability)
@@ -281,23 +244,23 @@ func Detail(estimateType int, id int64, typeid int, conn *models.Connection, est
 		// 	f.SetCellValue(sheet, "I16", fmt.Sprintf("%v인 * 1일", estimate.Person5))
 		// }
 
-		f.SetCellValue(sheet, "G17", estimate.Financialprice)
-		f.SetCellValue(sheet, "G18", estimate.Techprice)
+		f.SetCellValue(sheet, "F17", estimate.Financialprice)
+		f.SetCellValue(sheet, "F18", estimate.Techprice)
 
 		f.SetCellValue(sheet, "I17", fmt.Sprintf("직접인건비 * %v%%", estimate.Financialprice))
 		f.SetCellValue(sheet, "I18", fmt.Sprintf("(직접인건비 + 제경비) * %v%%", estimate.Techprice))
 
-		f.SetCellValue(sheet, "E21", estimate.Travelprice)
-		f.SetCellValue(sheet, "E22", estimate.Carprice)
+		f.SetCellValue(sheet, "G21", estimate.Travelprice)
+		f.SetCellValue(sheet, "G22", estimate.Carprice)
 
-		f.SetCellValue(sheet, "G23", estimate.Danger)
+		f.SetCellValue(sheet, "F23", estimate.Danger)
 		f.SetCellValue(sheet, "I23", fmt.Sprintf("외업인건비의 %v%%", estimate.Danger))
 
-		f.SetCellValue(sheet, "G24", estimate.Machine)
+		f.SetCellValue(sheet, "F24", estimate.Machine)
 		f.SetCellValue(sheet, "I24", fmt.Sprintf("직접인건비의 %v%%", estimate.Machine))
 
-		f.SetCellValue(sheet, "E25", estimate.Printprice)
-		f.SetCellValue(sheet, "G25", estimate.Print)
+		f.SetCellValue(sheet, "G25", estimate.Printprice)
+		f.SetCellValue(sheet, "F25", estimate.Print)
 
 		if estimateType != 6 {
 			f.SetCellValue(sheet, "H28", estimate.Saleprice)
@@ -307,17 +270,7 @@ func Detail(estimateType int, id int64, typeid int, conn *models.Connection, est
 
 		f.SetCellStr(sheet, "D3", priceStr)
 
-		sheet = "에이앤비 갑지"
-
-		if estimateType == 2 {
-			f.SetCellStr(sheet, "I46", title)
-		}
-
 		sheet = "계약서1"
-
-		f.SetCellStr(sheet, "G38", priceStr)
-		priceStr = fmt.Sprintf("일금 %v원정(₩%v)", global.HumanMoney(int64(estimate.Price)), humanize.Comma(int64(estimate.Price)))
-		f.SetCellStr(sheet, "G39", priceStr)
 
 		contractManager := models.NewContractManager(conn)
 		contract := contractManager.GetByEstimate(estimate.Id)
@@ -328,33 +281,73 @@ func Detail(estimateType int, id int64, typeid int, conn *models.Connection, est
 			contractDate := time.ParseDate(contract.Contractdate)
 
 			if startdate != nil && enddate != nil {
-				f.SetCellStr(sheet, "G41", fmt.Sprintf("%04d   .  %02d .  %02d .   ~   %04d .  %02d .  %02d . ", startdate.Year(), startdate.Month(), startdate.Day(), enddate.Year(), enddate.Month(), enddate.Day()))
+				f.SetCellStr(sheet, "C73", fmt.Sprintf("① 계약기간은 %04d년 %2d월 %2d일부터 %04d년 %2d월 %2d일로 종료한다.",
+					startdate.Year(), startdate.Month(), startdate.Day(),
+					enddate.Year(), enddate.Month(), enddate.Day()))
+				f.SetCellStr(sheet, "G39", fmt.Sprintf("%04d   .  %02d .  %02d .   ~   %04d .  %02d .  %02d . ", startdate.Year(), startdate.Month(), startdate.Day(), enddate.Year(), enddate.Month(), enddate.Day()))
 			} else if enddate != nil {
-				f.SetCellStr(sheet, "G41", fmt.Sprintf("%04d   .     .     .   ~   %04d .  %02d .  %02d . ", t.Year(), enddate.Year(), enddate.Month(), enddate.Day()))
+				f.SetCellStr(sheet, "G39", fmt.Sprintf("%04d   .     .     .   ~   %04d .  %02d .  %02d . ", t.Year(), enddate.Year(), enddate.Month(), enddate.Day()))
 			} else {
-				f.SetCellStr(sheet, "G41", fmt.Sprintf("%04d   .     .     .   ~   %04d .     .     . ", t.Year(), t.Year()))
+				f.SetCellStr(sheet, "G39", fmt.Sprintf("%04d   .     .     .   ~   %04d .     .     . ", t.Year(), t.Year()))
 			}
 			if contractDate != nil {
-				f.SetCellStr(sheet, "E53", contractDate.Humandate())
+				f.SetCellStr(sheet, "E51", contractDate.Humandate())
 			} else {
-				f.SetCellStr(sheet, "E53", fmt.Sprintf("%v년", t.Year()))
+				f.SetCellStr(sheet, "E51", fmt.Sprintf("%v년", t.Year()))
 			}
 		} else {
-			f.SetCellStr(sheet, "G41", fmt.Sprintf("%04d   .     .     .   ~   %04d .     .     . ", t.Year(), t.Year()))
-			f.SetCellStr(sheet, "E53", fmt.Sprintf("%v년", t.Year()))
+			f.SetCellStr(sheet, "G39", fmt.Sprintf("%04d   .     .     .   ~   %04d .     .     . ", t.Year(), t.Year()))
+			f.SetCellStr(sheet, "E51", fmt.Sprintf("%v년", t.Year()))
 		}
 
-		f.SetCellStr(sheet, "G42", apt.Address)
+		f.SetCellStr(sheet, "G40", apt.Address)
 
-		f.SetCellStr(sheet, "G43", tel)
+		f.SetCellStr(sheet, "I41", apt.Tel)
+		f.SetCellStr(sheet, "Q41", apt.Fax)
 
-		f.SetCellStr(sheet, "G45", fmt.Sprintf("상기 금액은 %v년 %v%v 용역대가임.", start[0], part, typeStr))
+		f.SetCellStr(sheet, "G43", fmt.Sprintf("상기 금액은 %v년 %v%v 용역대가임.", start[0], part, typeStr))
 		if apt.Type == "아파트" || apt.Familycount3 > 0 {
-			f.SetCellStr(sheet, "F71", "공동주택")
+			f.SetCellStr(sheet, "F69", "공동주택")
 		} else {
-			f.SetCellStr(sheet, "F71", "공동주택외 건축물")
+			f.SetCellStr(sheet, "F69", "공동주택외 건축물")
 		}
-		f.SetCellStr(sheet, "J72", buildingSize)
+		//f.SetCellStr(sheet, "J72", buildingSize)
+
+		f.SetCellValue(sheet, "I142", estimate.Personprice7)
+		f.SetCellValue(sheet, "I143", estimate.Personprice8)
+		f.SetCellValue(sheet, "I144", estimate.Personprice9)
+		f.SetCellValue(sheet, "I145", estimate.Personprice10)
+
+		f.SetCellValue(sheet, "I146", estimate.Personprice2)
+		f.SetCellValue(sheet, "I147", estimate.Personprice3)
+		f.SetCellValue(sheet, "I148", estimate.Personprice4)
+		f.SetCellValue(sheet, "I149", estimate.Personprice5)
+
+		f.SetCellValue(sheet, "P142", estimate.Person7*estimate.Days)
+		f.SetCellValue(sheet, "P143", estimate.Person8*estimate.Days)
+		f.SetCellValue(sheet, "P144", estimate.Person9*estimate.Days)
+		f.SetCellValue(sheet, "P145", estimate.Person10*estimate.Days)
+
+		f.SetCellValue(sheet, "P146", estimate.Person2)
+		f.SetCellValue(sheet, "P147", estimate.Person3)
+		f.SetCellValue(sheet, "P148", estimate.Person4)
+		f.SetCellValue(sheet, "P149", estimate.Person5)
+
+		f.SetCellValue(sheet, "P150", estimate.Financialprice)
+		f.SetCellValue(sheet, "P151", estimate.Techprice)
+		f.SetCellValue(sheet, "I154", estimate.Carprice)
+		f.SetCellValue(sheet, "I155", estimate.Travelprice)
+		f.SetCellValue(sheet, "P154", outPersons)
+		f.SetCellValue(sheet, "P155", outPersons)
+		f.SetCellValue(sheet, "I156", fmt.Sprintf("외업인건비의 %v%%", estimate.Danger))
+		f.SetCellFormula(sheet, "R156", fmt.Sprintf("=ROUND(SUM(R142:R145)*%v%%, 0)", estimate.Danger))
+		f.SetCellValue(sheet, "I157", fmt.Sprintf("직접인건비의 %v%%", estimate.Machine))
+		f.SetCellFormula(sheet, "R157", fmt.Sprintf("=ROUND(R141*%v%%, 0)", estimate.Machine))
+		f.SetCellValue(sheet, "R158", estimate.Printprice)
+
+		f.SetCellValue(sheet, "R161", estimate.Saleprice)
+		f.SetCellValue(sheet, "R162", estimate.Price)
+		f.SetCellValue(sheet, "R164", estimate.Price)
 
 		f.SetCellStr(sheet, "B8", fmt.Sprintf("%v 용역 계약서", typeStr))
 		if estimateType != 2 {
@@ -386,6 +379,27 @@ func Detail(estimateType int, id int64, typeid int, conn *models.Connection, est
 			f.SetCellStr(sheet, "B125", fmt.Sprintf("%v%v 과업내용", name2, typeStr))
 			f.SetCellStr(sheet, "B150", fmt.Sprintf("%v%v 대가산출 내역서", name2, typeStr))
 		}
+
+		sheet = "계획서"
+		f.SetCellStr(sheet, "F5", fmt.Sprintf("%v %v년 %v 용역", apt.Name, start[0], typeStr))
+		f.SetCellStr(sheet, "H14", apt.Area)
+
+		floorInfo := ""
+		if apt.Undergroundfloor > 0 {
+			floorInfo = fmt.Sprintf("지하%v층~", apt.Undergroundfloor)
+		}
+		if apt.Groundfloor != 0 {
+			floorInfo += fmt.Sprintf("지상%v층", apt.Groundfloor)
+		} else {
+			floorInfo += fmt.Sprintf("지상%v층", apt.Floor)
+		}
+		f.SetCellStr(sheet, "G16", floorInfo)
+
+		housingType := "공동주택외 건축물"
+		if apt.Type == "아파트" || apt.Familycount3 > 0 {
+			housingType = "공동주택"
+		}
+		f.SetCellStr(sheet, "G17", housingType)
 
 		f.UpdateLinkedValue()
 	} else if typeid == 1 {
