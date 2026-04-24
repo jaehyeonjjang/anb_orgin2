@@ -47,10 +47,30 @@ const materialHorizontal = 402;
 const crackLineRed = 121;
 const crackLineBlue = 122;
 const crackLineViolet = 123;
+const crackLineGreen = 124;
 
 const crackCurveRed = 126;
 const crackCurveBlue = 127;
 const crackCurveViolet = 128;
+const crackCurveGreen = 129;
+
+// 철근노출 X: red=130, blue=101, green=131, violet=135
+const rebarXViolet = 135;
+// 부식 ◇: red=132, blue=102, green=136, violet=137
+const corrosionGreen = 136;
+const corrosionViolet = 137;
+// 보 ▲(fill): red=133, blue=103, green=138, violet=139
+const beamGreen = 138;
+const beamViolet = 139;
+// 기타 ■(fill): red=104, blue=134, green=140, violet=141
+const otherGreen = 140;
+const otherViolet = 141;
+// 배관누수 ●(fill mid): red=111, blue=112, green=142, violet=143
+const pipeLeakGreen = 142;
+const pipeLeakViolet = 143;
+// 누수 ○(stroke mid): violet=115, blue=105, red=144, green=145
+const leakRed = 144;
+const leakGreen = 145;
 
 class Point {
   List<Offset> items = <Offset>[];
@@ -175,9 +195,11 @@ class Point {
     if (icon == crackLineRed ||
         icon == crackLineBlue ||
         icon == crackLineViolet ||
+        icon == crackLineGreen ||
         icon == crackCurveRed ||
         icon == crackCurveBlue ||
-        icon == crackCurveViolet) {
+        icon == crackCurveViolet ||
+        icon == crackCurveGreen) {
       return true;
     } else {
       return false;
@@ -187,11 +209,36 @@ class Point {
   isCrackCurve() {
     if (icon == crackCurveRed ||
         icon == crackCurveBlue ||
-        icon == crackCurveViolet) {
+        icon == crackCurveViolet ||
+        icon == crackCurveGreen) {
       return true;
     } else {
       return false;
     }
+  }
+
+  Point clone() {
+    final p = Point(
+        items: List<Offset>.from(items),
+        color: color,
+        width: width,
+        type: type,
+        icon: icon,
+        number: number,
+        part: part,
+        member: member,
+        shape: shape,
+        weight: weight,
+        length: length,
+        count: count,
+        progress: progress,
+        remark: remark,
+        order: order,
+        images: List<String>.from(images),
+        onlineimages: List<String>.from(onlineimages));
+    p.selected = selected;
+    p.grouped = grouped;
+    return p;
   }
 }
 
@@ -321,6 +368,11 @@ class PainterController extends GetxController {
   final _lastWeight = '0.2'.obs;
   String get lastWeight => _lastWeight.value;
   set lastWeight(String value) => _lastWeight.value = value;
+
+  // 데이터박스 위치 (true: 상단, false: 하단)
+  final _databoxTop = false.obs;
+  bool get databoxTop => _databoxTop.value;
+  set databoxTop(bool value) => _databoxTop.value = value;
 
   int get iconset => _iconset.value;
   set iconset(int value) => _iconset.value = value;
@@ -660,7 +712,7 @@ class PainterController extends GetxController {
     points.add(point);
 
     clearUndo();
-    _works.add(points.toList());
+    _works.add(_snapshotPoints());
     _works.refresh();
 
     if (type == DrawType.number || type == DrawType.numberLine) {
@@ -690,7 +742,7 @@ class PainterController extends GetxController {
 
     clearUndo();
 
-    _works[_works.length - 1] = points.toList();
+    _works[_works.length - 1] = _snapshotPoints();
     _works.refresh();
   }
 
@@ -700,14 +752,20 @@ class PainterController extends GetxController {
 
     clearUndo();
 
-    _works[_works.length - 1] = points.toList();
+    _works[_works.length - 1] = _snapshotPoints();
     _works.refresh();
+  }
+
+  // points 리스트를 깊은 복사하여 스냅샷으로 반환
+  // (undo/redo 히스토리가 같은 Point 인스턴스를 공유해 번호 등이 변형되는 것을 방지)
+  List<Point> _snapshotPoints() {
+    return points.map<Point>((p) => (p as Point).clone()).toList();
   }
 
   pointClear() {
     points.clear();
 
-    _works.add(points.toList());
+    _works.add(_snapshotPoints());
     _works.refresh();
 
     modified = true;
@@ -916,7 +974,9 @@ class PainterController extends GetxController {
     if (_works.isEmpty) {
       points.clear();
     } else {
-      points = [..._works[_works.length - 1]];
+      points = _works[_works.length - 1]
+          .map<Point>((p) => (p as Point).clone())
+          .toList();
       modified = true;
     }
 
@@ -935,7 +995,8 @@ class PainterController extends GetxController {
 
     var last = _undos[_undos.length - 1];
     _works.add(last);
-    points = [...last];
+    points =
+        (last as List).map<Point>((p) => (p as Point).clone()).toList();
     modified = true;
     _undos.removeLast();
 
@@ -1027,6 +1088,9 @@ class PainterController extends GetxController {
     } else if (value == crackLineViolet) {
       setColor(LineColor.violet);
       setType(DrawType.line);
+    } else if (value == crackLineGreen) {
+      setColor(LineColor.green);
+      setType(DrawType.line);
     } else if (value == crackCurveRed) {
       setColor(LineColor.red);
       setType(DrawType.curve);
@@ -1035,6 +1099,9 @@ class PainterController extends GetxController {
       setType(DrawType.curve);
     } else if (value == crackCurveViolet) {
       setColor(LineColor.violet);
+      setType(DrawType.curve);
+    } else if (value == crackCurveGreen) {
+      setColor(LineColor.green);
       setType(DrawType.curve);
     } else {
       setType(DrawType.icon);
@@ -1108,12 +1175,11 @@ class PainterController extends GetxController {
       materialbox = false;
     }
 
-    _works.add(points.toList());
-    _works.refresh();
-
     renumberMaterial();
     setMode(Mode.selectEnd);
     groupSort();
+    _works.add(_snapshotPoints());
+    _works.refresh();
     updateCanvas();
 
     if (find == true) {
@@ -1177,11 +1243,10 @@ class PainterController extends GetxController {
     fiberbox = false;
     materialbox = false;
 
-    _works.add(points.toList());
-    _works.refresh();
-
     renumberMaterial();
     setMode(Mode.selectEnd);
+    _works.add(_snapshotPoints());
+    _works.refresh();
     updateCanvas();
 
     if (find == true) {
@@ -1448,7 +1513,7 @@ class PainterController extends GetxController {
 
     if (str == null || str == '') {
       modified = false;
-      _works.add(points.toList());
+      _works.add(_snapshotPoints());
       _works.refresh();
       return;
     }
@@ -1507,7 +1572,7 @@ class PainterController extends GetxController {
     }
 
     _points.value = items;
-    _works.add(points.toList());
+    _works.add(_snapshotPoints());
     _works.refresh();
     _points.refresh();
     updateCanvas();

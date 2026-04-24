@@ -17,7 +17,11 @@ func CORSMiddleware() gin.HandlerFunc {
 		origin := c.Request.Header.Get("Origin")
 
 		// localhost의 모든 포트 허용
-		if strings.HasPrefix(origin, "http://localhost:") {
+		if strings.HasPrefix(origin, "http://localhost:") || strings.HasPrefix(origin, "http://127.0.0.1:") {
+			c.Header("Access-Control-Allow-Origin", origin)
+			c.Header("Access-Control-Allow-Credentials", "true")
+		} else if strings.HasPrefix(origin, "http://192.168.") {
+			// 로컬 네트워크 IP 허용 (개발 환경)
 			c.Header("Access-Control-Allow-Origin", origin)
 			c.Header("Access-Control-Allow-Credentials", "true")
 		} else {
@@ -95,7 +99,7 @@ func Http() {
 		go router.Run(":" + config.Port)
 
 		s := &http.Server{
-			Addr:           ":" + config.Port,
+			Addr:           "0.0.0.0:" + config.Port,  // 모든 네트워크 인터페이스에서 접근 가능
 			Handler:        r,
 			ReadTimeout:    10 * time.Minute,
 			WriteTimeout:   10 * time.Minute,
@@ -104,7 +108,7 @@ func Http() {
 		s.ListenAndServeTLS(config.Tls.Cert, config.Tls.Key)
 	} else {
 		s := &http.Server{
-			Addr:           ":" + config.Port,
+			Addr:           "0.0.0.0:" + config.Port,  // 모든 네트워크 인터페이스에서 접근 가능
 			Handler:        r,
 			ReadTimeout:    10 * time.Minute,
 			WriteTimeout:   10 * time.Minute,

@@ -324,8 +324,17 @@ func Periodic(id int64, typeid int, conn *models.Connection, estimate *models.Es
 		f.SetCellStr(sheet, "N23", apt.Address)
 		f.SetCellStr(sheet, "N22", buildingSize)
 		f.SetCellStr(sheet, "N24", complateyear)
-		f.SetCellStr(sheet, "N25", apt.Tel)
-		f.SetCellStr(sheet, "U25", apt.Fax)
+
+		// N25: 전화 / 팩스 형식으로 출력
+		telFaxStr := ""
+		if apt.Tel != "" && apt.Fax != "" {
+			telFaxStr = fmt.Sprintf("%v / %v", apt.Tel, apt.Fax)
+		} else if apt.Tel != "" {
+			telFaxStr = apt.Tel
+		} else if apt.Fax != "" {
+			telFaxStr = apt.Fax
+		}
+		f.SetCellStr(sheet, "N25", telFaxStr)
 
 		// I30~I34: 계약 기간의 모든 상반기/하반기 나열 (periodic3, periodic4만)
 		if periodicType == 3 || periodicType == 4 {
@@ -399,23 +408,30 @@ func Periodic(id int64, typeid int, conn *models.Connection, estimate *models.Es
 					totalCellY := fmt.Sprintf("Y%d", totalRow)
 					totalCellZ := fmt.Sprintf("Z%d", totalRow)
 
-					f.SetCellStr(sheet, totalCellI, fmt.Sprintf("※총액(연%d회)", len(periodList)))
+					// periodicType에 따라 텍스트 구분: 3=연간(연n회), 4=연속(총n회)
+					totalText := ""
+					if periodicType == 3 {
+						totalText = fmt.Sprintf("※총액(연%d회)", len(periodList))
+					} else {
+						totalText = fmt.Sprintf("※총액(총%d회)", len(periodList))
+					}
+					f.SetCellStr(sheet, totalCellI, totalText)
 
 					// R열 총합 계산 (1회 금액 * 회수)
 					totalAmount := estimate.Price * len(periodList)
 					humanAmount := global.HumanMoney(totalAmount)
 
-					f.SetCellStr(sheet, totalCellN, fmt.Sprintf("일금 %v원정 ($%v)", humanAmount, humanize.Comma(int64(totalAmount))))
+					f.SetCellStr(sheet, totalCellN, fmt.Sprintf("일금 %v원정 (₩%v)", humanAmount, humanize.Comma(int64(totalAmount))))
 					f.SetCellStr(sheet, totalCellY, "")
 					f.SetCellStr(sheet, totalCellZ, "-VAT별도※")
 
 					// 총액 행 스타일 (굵게 + 정렬)
 					boldCenterStyle, _ := f.NewStyle(&excelize.Style{
-						Font:      &excelize.Font{Bold: true, Family: "함초롱바탕"},
+						Font:      &excelize.Font{Bold: true, Family: "바탕체", Size: 12},
 						Alignment: &excelize.Alignment{Horizontal: "center"},
 					})
 					boldRightStyle, _ := f.NewStyle(&excelize.Style{
-						Font:      &excelize.Font{Bold: true, Family: "함초롱바탕"},
+						Font:      &excelize.Font{Bold: true, Family: "바탕체", Size: 12},
 						Alignment: &excelize.Alignment{Horizontal: "right"},
 					})
 					f.SetCellStyle(sheet, totalCellI, totalCellI, boldCenterStyle)
@@ -599,11 +615,11 @@ func Periodic(id int64, typeid int, conn *models.Connection, estimate *models.Es
 				f.SetCellStr(sheet, periodCell, fmt.Sprintf("① 계약기간은 %04d년 %2d월 %2d일부터 %04d년 %2d월 %2d일로 종료한다.",
 					startdate.Year(), startdate.Month(), startdate.Day(),
 					enddate.Year(), enddate.Month(), enddate.Day()))
-				f.SetCellStr(sheet, "G38", fmt.Sprintf("%04d   .  %02d .  %02d .   ~   %04d .  %02d .  %02d . ", startdate.Year(), startdate.Month(), startdate.Day(), enddate.Year(), enddate.Month(), enddate.Day()))
+				f.SetCellStr(sheet, "G38", fmt.Sprintf("%04d .  %02d .  %02d .   ~   %04d .  %02d .  %02d . ", startdate.Year(), startdate.Month(), startdate.Day(), enddate.Year(), enddate.Month(), enddate.Day()))
 			} else if enddate != nil {
-				f.SetCellStr(sheet, "G38", fmt.Sprintf("%04d   .     .     .   ~   %04d .  %02d .  %02d . ", t.Year(), enddate.Year(), enddate.Month(), enddate.Day()))
+				f.SetCellStr(sheet, "G38", fmt.Sprintf("%04d .     .     .   ~   %04d .  %02d .  %02d . ", t.Year(), enddate.Year(), enddate.Month(), enddate.Day()))
 			} else {
-				f.SetCellStr(sheet, "G38", fmt.Sprintf("%04d   .     .     .   ~   %04d .     .     . ", t.Year(), t.Year()))
+				f.SetCellStr(sheet, "G38", fmt.Sprintf("%04d .     .     .   ~   %04d .     .     . ", t.Year(), t.Year()))
 			}
 
 			// J43: 년도 정보 (회수 없이, periodic3, periodic4만)
@@ -617,14 +633,15 @@ func Periodic(id int64, typeid int, conn *models.Connection, estimate *models.Es
 				f.SetCellStr(sheet, hCell, fmt.Sprintf("%v년", t.Year()))
 			}
 		} else {
-			f.SetCellStr(sheet, "G39", fmt.Sprintf("%04d   .     .     .   ~   %04d .     .     . ", t.Year(), t.Year()))
+			f.SetCellStr(sheet, "G39", fmt.Sprintf("%04d .     .     .   ~   %04d .     .     . ", t.Year(), t.Year()))
 			f.SetCellStr(sheet, hCell, fmt.Sprintf("%v년", t.Year()))
 		}
 
 		//f.SetCellStr(sheet, "G42", apt.Address)
 
 		//f.SetCellStr(sheet, "G43", tel)
-
+		f.SetCellStr(sheet, "I40", apt.Tel)
+		f.SetCellStr(sheet, "Q40", apt.Fax)
 		/*if periodicType == 4 {
 			f.SetCellStr(sheet, "G43", fmt.Sprintf("상기 금액은 %v 정기안전점검 용역대가임. (연 2회)\n  - 1회 : %v", h10Text, priceStr3))
 		} else {

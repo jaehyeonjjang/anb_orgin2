@@ -10,10 +10,11 @@ const pathSrc = path.resolve(__dirname, 'src')
 // https://vitejs.dev/config/
 export default defineConfig({
   server: {
+    host: '0.0.0.0',  // 모든 네트워크 인터페이스에서 접근 가능
     port: 4000,
     proxy: {
       '/api': {
-        target: 'http://localhost:9107',
+        target: 'http://192.168.0.163:9107',
         changeOrigin: true,
       }
     }

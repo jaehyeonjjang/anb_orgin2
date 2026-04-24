@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"repair/global/config"
 	"repair/global/log"
-	
+
 	"database/sql"
 	"time"
 
@@ -64,10 +64,10 @@ func Limit(limit int) LimitType {
 }
 
 type Connection struct {
-	Conn *sql.DB
-    Tx    *sql.Tx    
+	Conn        *sql.DB
+	Tx          *sql.Tx
 	Transaction bool
-	Isolation bool
+	Isolation   bool
 }
 
 func (c *Connection) Close() {
@@ -80,18 +80,18 @@ func (c *Connection) IsConnect() bool {
 
 func (c *Connection) Exec(query string, params ...interface{}) (sql.Result, error) {
 	if c.Transaction {
-       return c.Tx.Exec(query, params...)    
+		return c.Tx.Exec(query, params...)
 	} else {
-       return c.Conn.Exec(query, params...)
-    }
+		return c.Conn.Exec(query, params...)
+	}
 }
 
 func (c *Connection) Query(query string, params ...interface{}) (*sql.Rows, error) {
 	if c.Transaction {
-       return c.Tx.Query(query, params...)    
+		return c.Tx.Query(query, params...)
 	} else {
-       return c.Conn.Query(query, params...)
-    }
+		return c.Conn.Query(query, params...)
+	}
 }
 
 func (c *Connection) Begin() {
@@ -129,14 +129,14 @@ func GetConnection() *Connection {
 	}
 
 	// 연결 풀 설정 개선
-	conn.SetMaxOpenConns(50)           // 최대 오픈 연결 감소 (100 -> 50)
-	conn.SetMaxIdleConns(25)           // 유휴 연결 증가 (10 -> 25) - 연결 재사용 향상
-	conn.SetConnMaxLifetime(10 * time.Minute)  // 연결 수명 증가 (5분 -> 10분)
-	conn.SetConnMaxIdleTime(5 * time.Minute)   // 유휴 연결 타임아웃 추가
+	conn.SetMaxOpenConns(50)                  // 최대 오픈 연결 감소 (100 -> 50)
+	conn.SetMaxIdleConns(25)                  // 유휴 연결 증가 (10 -> 25) - 연결 재사용 향상
+	conn.SetConnMaxLifetime(10 * time.Minute) // 연결 수명 증가 (5분 -> 10분)
+	conn.SetConnMaxIdleTime(5 * time.Minute)  // 유휴 연결 타임아웃 추가
 
 	return &Connection{
-		Conn: conn,
-		Tx: nil,
+		Conn:        conn,
+		Tx:          nil,
 		Transaction: false,
 	}
 }

@@ -34,6 +34,37 @@ class ToolBox extends StatelessWidget {
             padding: const EdgeInsets.all(5.0), child: Image.asset(title)));
   }
 
+  // 기존 PNG 아이콘을 지정된 색상으로 다시 칠해서 보여주는 버튼
+  // 그리기는 painter_drawer.dart 에서 icon 코드에 따라 직접 그린다.
+  Widget drawTinted(int index, String title, Color color) {
+    final image = ColorFiltered(
+      colorFilter: ColorFilter.mode(color, BlendMode.srcIn),
+      child: Image.asset(title),
+    );
+
+    if (index == c.index && c.mode == Mode.draw) {
+      return InkWell(
+          onTap: () {
+            c.setMode(Mode.draw);
+            c.setIndex(index);
+          },
+          child: Container(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(5.0),
+                color: Colors.yellow,
+              ),
+              padding: const EdgeInsets.all(5.0),
+              child: image));
+    }
+
+    return InkWell(
+        onTap: () {
+          c.setMode(Mode.draw);
+          c.setIndex(index);
+        },
+        child: Container(padding: const EdgeInsets.all(5.0), child: image));
+  }
+
   Widget drawText(int index, String title, Color color) {
     if (index == c.index && c.mode == Mode.draw) {
       return InkWell(
@@ -204,6 +235,7 @@ class ToolBox extends StatelessWidget {
             textStyle: const TextStyle(fontSize: 14, color: Colors.black)),
         drawButton(crackLineRed, 'assets/imgs/i021.png'),
         drawButton(crackLineBlue, 'assets/imgs/i007.png'),
+        drawTinted(crackLineGreen, 'assets/imgs/i021.png', Colors.green),
         drawButton(crackLineViolet, 'assets/imgs/i017.png'),
       ]),
       Row(children: [
@@ -212,6 +244,8 @@ class ToolBox extends StatelessWidget {
             textStyle: const TextStyle(fontSize: 14, color: Colors.black)),
         drawButton(crackCurveRed, 'assets/imgs/curve_red_os.png'),
         drawButton(crackCurveBlue, 'assets/imgs/curve_blue_os.png'),
+        drawTinted(
+            crackCurveGreen, 'assets/imgs/curve_red_os.png', Colors.green),
         drawButton(crackCurveViolet, 'assets/imgs/curve_violet_os.png'),
       ]),
       const SizedBox(height: 5.0),
@@ -261,6 +295,8 @@ class ToolBox extends StatelessWidget {
         drawButton(130, 'assets/imgs/i130.png'),
         drawButton(101, 'assets/imgs/i001.png'),
         drawButton(131, 'assets/imgs/i131.png'),
+        drawTinted(rebarXViolet, 'assets/imgs/i130.png',
+            const Color(0xffa000a0)),
       ]),
       Row(children: [
         CText('부식',
@@ -268,6 +304,9 @@ class ToolBox extends StatelessWidget {
             textStyle: const TextStyle(fontSize: 14, color: Colors.black)),
         drawButton(132, 'assets/imgs/i132.png'),
         drawButton(102, 'assets/imgs/i002.png'),
+        drawTinted(corrosionGreen, 'assets/imgs/i132.png', Colors.green),
+        drawTinted(corrosionViolet, 'assets/imgs/i132.png',
+            const Color(0xffa000a0)),
       ]),
       Row(children: [
         CText('보',
@@ -275,6 +314,9 @@ class ToolBox extends StatelessWidget {
             textStyle: const TextStyle(fontSize: 14, color: Colors.black)),
         drawButton(133, 'assets/imgs/i133.png'),
         drawButton(103, 'assets/imgs/i003.png'),
+        drawTinted(beamGreen, 'assets/imgs/i133.png', Colors.green),
+        drawTinted(
+            beamViolet, 'assets/imgs/i133.png', const Color(0xffa000a0)),
       ]),
       Row(children: [
         CText('기타',
@@ -282,6 +324,9 @@ class ToolBox extends StatelessWidget {
             textStyle: const TextStyle(fontSize: 14, color: Colors.black)),
         drawButton(104, 'assets/imgs/i004.png'),
         drawButton(134, 'assets/imgs/i134.png'),
+        drawTinted(otherGreen, 'assets/imgs/i004.png', Colors.green),
+        drawTinted(
+            otherViolet, 'assets/imgs/i004.png', const Color(0xffa000a0)),
       ]),
       Row(children: [
         CText('배관누수',
@@ -289,13 +334,18 @@ class ToolBox extends StatelessWidget {
             textStyle: const TextStyle(fontSize: 14, color: Colors.black)),
         drawButton(111, 'assets/imgs/i011.png'),
         drawButton(112, 'assets/imgs/i302.png'),
+        drawTinted(pipeLeakGreen, 'assets/imgs/i011.png', Colors.green),
+        drawTinted(pipeLeakViolet, 'assets/imgs/i011.png',
+            const Color(0xffa000a0)),
       ]),
       Row(children: [
         CText('누수',
             width: 65,
             textStyle: const TextStyle(fontSize: 14, color: Colors.black)),
-        drawButton(115, 'assets/imgs/i015.png'),
+        drawTinted(leakRed, 'assets/imgs/i015.png', Colors.red),
         drawButton(105, 'assets/imgs/i005.png'),
+        drawTinted(leakGreen, 'assets/imgs/i015.png', Colors.green),
+        drawButton(115, 'assets/imgs/i015.png'),
       ]),
       // Row(children: [
       //   CText('균열누수',
@@ -430,16 +480,25 @@ class ToolBox extends StatelessWidget {
       const SizedBox(width: 1),
       InkWell(
           onTap: () {
-            c.setIconZoom(c.iconZoom + authController.zoomlevel.toDouble());
+            if (c.iconset == 2 || c.iconset == 4) {
+              c.setNumberZoom(
+                  c.numberZoom + authController.zoomlevel.toDouble());
+            } else {
+              c.setIconZoom(c.iconZoom + authController.zoomlevel.toDouble());
+            }
           },
           child: const Icon(CupertinoIcons.add, size: 24.0)),
       const SizedBox(height: 5.0),
       InkWell(
           onTap: () {
-            c.setIconZoom(c.iconZoom - authController.zoomlevel.toDouble());
+            if (c.iconset == 2 || c.iconset == 4) {
+              c.setNumberZoom(
+                  c.numberZoom - authController.zoomlevel.toDouble());
+            } else {
+              c.setIconZoom(c.iconZoom - authController.zoomlevel.toDouble());
+            }
           },
-          child: const Icon(CupertinoIcons.minus, size: 24.0)),
-      const SizedBox(width: 2),
+          child: const Icon(CupertinoIcons.minus, size: 24.0)),      const SizedBox(width: 2),
     ]));
 
     return Align(

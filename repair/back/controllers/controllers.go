@@ -53,7 +53,7 @@ func (c *Controller) Init(g *gin.Context) {
 	c.Vars = make(jet.VarMap)
 	c.Result = make(gin.H)
 	c.Result["code"] = "ok"
-	c.Connection = nil  // 초기화는 nil로 설정, 필요시 NewConnection()으로 생성
+	c.Connection = nil // 초기화는 nil로 설정, 필요시 NewConnection()으로 생성
 	c.Code = http.StatusOK
 
 	t := time.Now()
@@ -423,12 +423,30 @@ func (c *Controller) Download(filename string, downloadFilename string) {
 		log.Println(err)
 	}
 	log.Println("filesize", filesize.Size())
-	c.Context.Header("Content-Type", "application/octet-stream")
+	
+	// 파일 확장자에 따라 적절한 Content-Type 설정
+	contentType := "application/octet-stream"
+	ext := strings.ToLower(filepath.Ext(downloadFilename))
+	switch ext {
+	case ".xlsx":
+		contentType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+	case ".xls":
+		contentType = "application/vnd.ms-excel"
+	case ".pdf":
+		contentType = "application/pdf"
+	case ".zip":
+		contentType = "application/zip"
+	}
+	
+	c.Context.Header("Content-Type", contentType)
 	c.Context.Header("Content-Length", fmt.Sprintf("%v", filesize.Size()))
 	c.Context.Header("Content-Disposition", fmt.Sprintf("attachment; filename=\"%v\";", filepath.Base(downloadFilename)))
 	c.Context.Header("Content-Transfer-Encoding", "binary")
+	c.Context.Header("X-Content-Type-Options", "nosniff")
+	c.Context.Header("X-Download-Options", "noopen")
 	c.Context.Header("Pragma", "no-cache")
 	c.Context.Header("Expires", "0")
+	c.Context.Header("Cache-Control", "must-revalidate, post-check=0, pre-check=0")
 
 	c.Context.File(filename)
 }

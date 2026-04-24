@@ -67,6 +67,10 @@ class PainterDrawer extends CustomPainter {
     ..style = PaintingStyle.fill
     ..color = const Color(0xff0000ff);
 
+  Paint paintFillGreen = Paint()
+    ..style = PaintingStyle.fill
+    ..color = Colors.green;
+
   Paint paintFillWhite = Paint()
     ..style = PaintingStyle.fill
     ..color = Colors.white;
@@ -121,7 +125,7 @@ class PainterDrawer extends CustomPainter {
         }
       }
 
-      if (c.iconset != 2 && c.iconset != 4) {
+      if (c.iconset != 2) {
         if (points.type == DrawType.icon ||
             points.type == DrawType.number ||
             points.type == DrawType.material) {
@@ -306,6 +310,9 @@ class PainterDrawer extends CustomPainter {
       } else if (points.icon == crackLineViolet ||
           points.icon == crackCurveViolet) {
         canvas.drawPath(path, paintViolet);
+      } else if (points.icon == crackLineGreen ||
+          points.icon == crackCurveGreen) {
+        canvas.drawPath(path, paintGreen);
       } else if (points.icon == lineGreen || points.icon == curveGreen) {
         canvas.drawPath(path, paintGreen);
       } else if (points.icon == 34 || points.icon == 44) {
@@ -591,9 +598,11 @@ class PainterDrawer extends CustomPainter {
     if (points.icon == crackLineRed ||
         points.icon == crackLineBlue ||
         points.icon == crackLineViolet ||
+        points.icon == crackLineGreen ||
         points.icon == crackCurveRed ||
         points.icon == crackCurveBlue ||
-        points.icon == crackCurveViolet) {
+        points.icon == crackCurveViolet ||
+        points.icon == crackCurveGreen) {
       step = (c.crackZoom / 2.0) * zoom;
       stepMiddle = step * 0.66;
       stepSmall = step * 0.33;
@@ -746,6 +755,20 @@ class PainterDrawer extends CustomPainter {
 
       path.moveTo(x + step, y - step);
       path.lineTo(x - step, y + step);
+    } else if (points.icon == rebarXViolet) {
+      paint = paintViolet;
+
+      if (points.selected == true) {
+        paint = paintSelect;
+      }
+
+      paint.strokeWidth = strokeWidth;
+
+      path.moveTo(x - step, y - step);
+      path.lineTo(x + step, y + step);
+
+      path.moveTo(x + step, y - step);
+      path.lineTo(x - step, y + step);
     } else if (points.icon == 102) {
       paint = paintLightblue;
 
@@ -762,6 +785,34 @@ class PainterDrawer extends CustomPainter {
       path.lineTo(x - step, y);
     } else if (points.icon == 132) {
       paint = paintRed;
+
+      if (points.selected == true) {
+        paint = paintSelect;
+      }
+
+      paint.strokeWidth = strokeWidth;
+
+      path.moveTo(x - step, y);
+      path.lineTo(x, y - step);
+      path.lineTo(x + step, y);
+      path.lineTo(x, y + step);
+      path.lineTo(x - step, y);
+    } else if (points.icon == corrosionGreen) {
+      paint = paintGreen;
+
+      if (points.selected == true) {
+        paint = paintSelect;
+      }
+
+      paint.strokeWidth = strokeWidth;
+
+      path.moveTo(x - step, y);
+      path.lineTo(x, y - step);
+      path.lineTo(x + step, y);
+      path.lineTo(x, y + step);
+      path.lineTo(x - step, y);
+    } else if (points.icon == corrosionViolet) {
+      paint = paintViolet;
 
       if (points.selected == true) {
         paint = paintSelect;
@@ -808,6 +859,40 @@ class PainterDrawer extends CustomPainter {
           y + sin(270.0 * 3.14 / 180.0) * step);
       path.lineTo(x + cos(30.0 * 3.14 / 180.0) * step,
           y + sin(30.0 * 3.14 / 180.0) * step);
+    } else if (points.icon == beamGreen) {
+      paint = paintFillGreen;
+
+      if (points.selected == true) {
+        paint = paintFillSelect;
+      }
+
+      paint.strokeWidth = strokeWidth;
+
+      path.moveTo(x + cos(30.0 * 3.14 / 180.0) * step,
+          y + sin(30.0 * 3.14 / 180.0) * step);
+      path.lineTo(x + cos(150.0 * 3.14 / 180.0) * step,
+          y + sin(150.0 * 3.14 / 180.0) * step);
+      path.lineTo(x + cos(270.0 * 3.14 / 180.0) * step,
+          y + sin(270.0 * 3.14 / 180.0) * step);
+      path.lineTo(x + cos(30.0 * 3.14 / 180.0) * step,
+          y + sin(30.0 * 3.14 / 180.0) * step);
+    } else if (points.icon == beamViolet) {
+      paint = paintFillViolet;
+
+      if (points.selected == true) {
+        paint = paintFillSelect;
+      }
+
+      paint.strokeWidth = strokeWidth;
+
+      path.moveTo(x + cos(30.0 * 3.14 / 180.0) * step,
+          y + sin(30.0 * 3.14 / 180.0) * step);
+      path.lineTo(x + cos(150.0 * 3.14 / 180.0) * step,
+          y + sin(150.0 * 3.14 / 180.0) * step);
+      path.lineTo(x + cos(270.0 * 3.14 / 180.0) * step,
+          y + sin(270.0 * 3.14 / 180.0) * step);
+      path.lineTo(x + cos(30.0 * 3.14 / 180.0) * step,
+          y + sin(30.0 * 3.14 / 180.0) * step);
     } else if (points.icon == 104) {
       paint = paintFillRed;
 
@@ -836,8 +921,56 @@ class PainterDrawer extends CustomPainter {
       path.lineTo(x + step, y + step);
       path.lineTo(x - step, y + step);
       path.lineTo(x - step, y - step);
+    } else if (points.icon == otherGreen) {
+      paint = paintFillGreen;
+
+      if (points.selected == true) {
+        paint = paintFillSelect;
+      }
+
+      paint.strokeWidth = strokeWidth;
+
+      path.moveTo(x - step, y - step);
+      path.lineTo(x + step, y - step);
+      path.lineTo(x + step, y + step);
+      path.lineTo(x - step, y + step);
+      path.lineTo(x - step, y - step);
+    } else if (points.icon == otherViolet) {
+      paint = paintFillViolet;
+
+      if (points.selected == true) {
+        paint = paintFillSelect;
+      }
+
+      paint.strokeWidth = strokeWidth;
+
+      path.moveTo(x - step, y - step);
+      path.lineTo(x + step, y - step);
+      path.lineTo(x + step, y + step);
+      path.lineTo(x - step, y + step);
+      path.lineTo(x - step, y - step);
     } else if (points.icon == 105) {
       paint = paintBlue;
+
+      if (points.selected == true) {
+        paint = paintSelect;
+      }
+
+      paint.strokeWidth = strokeWidth;
+
+      canvas.drawCircle(Offset(x, y), stepMiddle, paint);
+    } else if (points.icon == leakRed) {
+      paint = paintRed;
+
+      if (points.selected == true) {
+        paint = paintSelect;
+      }
+
+      paint.strokeWidth = strokeWidth;
+
+      canvas.drawCircle(Offset(x, y), stepMiddle, paint);
+    } else if (points.icon == leakGreen) {
+      paint = paintGreen;
 
       if (points.selected == true) {
         paint = paintSelect;
@@ -895,6 +1028,9 @@ class PainterDrawer extends CustomPainter {
       } else if (points.icon == crackLineViolet ||
           points.icon == crackCurveViolet) {
         paint = paintViolet;
+      } else if (points.icon == crackLineGreen ||
+          points.icon == crackCurveGreen) {
+        paint = paintGreen;
       }
 
       if (points.selected == true) {
@@ -1030,6 +1166,26 @@ class PainterDrawer extends CustomPainter {
       canvas.drawCircle(Offset(x, y), stepMiddle, paint);
     } else if (points.icon == 112) {
       paint = paintFillBlue;
+
+      if (points.selected == true) {
+        paint = paintFillSelect;
+      }
+
+      paint.strokeWidth = strokeWidth;
+
+      canvas.drawCircle(Offset(x, y), stepMiddle, paint);
+    } else if (points.icon == pipeLeakGreen) {
+      paint = paintFillGreen;
+
+      if (points.selected == true) {
+        paint = paintFillSelect;
+      }
+
+      paint.strokeWidth = strokeWidth;
+
+      canvas.drawCircle(Offset(x, y), stepMiddle, paint);
+    } else if (points.icon == pipeLeakViolet) {
+      paint = paintFillViolet;
 
       if (points.selected == true) {
         paint = paintFillSelect;

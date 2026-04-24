@@ -129,8 +129,11 @@
     :before-close="handleClose"
     width="1100px"
     title="세부내역 추가"
+    :close-on-click-modal="false"
+    :close-on-press-escape="false"
+    top="5vh"
   >
-    <el-form :model="data.item" label-width="100px" style="margin-top: 10px;">
+    <el-form :model="data.item" label-width="100px" style="margin-top: 10px; max-height: 75vh; overflow-y: auto;">
 
       <div style="text-align:left;">
         <el-tree-select 
@@ -147,7 +150,7 @@
       </div>
 
       
-      <el-table :data="[data.item]" border :max-height="data.height" :key="data.width+''+data.height" style="margin-top:15px;">        
+      <el-table :data="[data.item]" border max-height="200px" :key="data.width+''+data.height" style="margin-top:15px;">        
         <el-table-column label="시설물" align="center" width="90">
           <template #default="scope">
             <el-select v-model.number="data.item.dong" class="m-2" placeholder="시설물" @change="changeDongForEvelator(scope.row)">           
@@ -1731,6 +1734,8 @@ function changeCategory(item, updateFlag) {
     }
   }
 
+  // 가나다순 정렬
+  standards.sort((a, b) => a.name.localeCompare(b.name, 'ko'))
   data.standards = standards
   if (standards.length == 2) {
     flag = true
@@ -2413,6 +2418,8 @@ function clickCategory(row) {
     }
   }
 
+  // 가나다순 정렬
+  standards.sort((a, b) => a.label.localeCompare(b.label, 'ko'))
   data.batchstandards = standards
 
   let category = getCategory(row.value)
@@ -3055,5 +3062,11 @@ async function clickSubmitDiff() {
 .el-dialog__headerbtn {
   top: -15px !important;
   right: -10px !important;
+}
+
+/* dialog footer 버튼들이 보이도록 여백 추가 */
+.el-dialog__footer {
+  margin-top: 20px !important;
+  padding-top: 20px !important;
 }
 </style>

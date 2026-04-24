@@ -284,8 +284,17 @@ func Program(id int64, typeid int, conn *models.Connection, estimate *models.Est
 	f.SetCellStr(sheet, "R21", apt.Address)
 	f.SetCellStr(sheet, "R22", buildingSize)
 	f.SetCellStr(sheet, "R23", complateyear)
-	f.SetCellStr(sheet, "R24", apt.Tel)
-	f.SetCellStr(sheet, "AA24", apt.Fax)
+
+	// R24: 전화 / 팩스 형식으로 출력
+	telFaxStr := ""
+	if apt.Tel != "" && apt.Fax != "" {
+		telFaxStr = fmt.Sprintf("%v / %v", apt.Tel, apt.Fax)
+	} else if apt.Tel != "" {
+		telFaxStr = apt.Tel
+	} else if apt.Fax != "" {
+		telFaxStr = apt.Fax
+	}
+	f.SetCellStr(sheet, "R24", telFaxStr)
 
 	// K40: 년도 + 회수 정보
 	k40Text := ""
@@ -299,7 +308,7 @@ func Program(id int64, typeid int, conn *models.Connection, estimate *models.Est
 				periodCount += len(p.Periods)
 			}
 			if j10Text != "" {
-				k40Text = fmt.Sprintf("나.점검프로그램 사용 기간 - %v (%d회)", j10Text, periodCount)
+				k40Text = fmt.Sprintf("나. 점검프로그램 사용 기간 - %v (%d회)", j10Text, periodCount)
 			}
 		}
 	} else if contract != nil {
@@ -338,12 +347,12 @@ func Program(id int64, typeid int, conn *models.Connection, estimate *models.Est
 	}
 
 	if k40Text != "" {
-		// 파일별 K셀 위치 다름
-		kCell := "K39" // periodic3 기본값
-		if periodicType == 1 {
-			kCell = "K33" // periodic1
-		} else if periodicType == 2 {
-			kCell = "K36" // periodic2
+		// 파일별 K셀 위치 다름 (templateNum 기준)
+		kCell := "K39" // program-periodic3 기본값
+		if templateNum == 1 {
+			kCell = "K33" // program-periodic1
+		} else if templateNum == 2 {
+			kCell = "K36" // program-periodic2
 		}
 		f.SetCellStr(sheet, kCell, k40Text)
 	}
@@ -419,7 +428,14 @@ func Program(id int64, typeid int, conn *models.Connection, estimate *models.Est
 				totalCellAB := fmt.Sprintf("AB%d", totalRow)
 				totalCellAC := fmt.Sprintf("AC%d", totalRow)
 
-				f.SetCellStr(sheet, totalCellL, fmt.Sprintf("※총액(연%d회)", len(periodList)))
+				// 총액 텍스트 설정 (연간/무상1회는 "연n회", 연속은 "총n회")
+				var totalText string
+				if periodicType == 3 || periodicType == 5 {
+					totalText = fmt.Sprintf("※총액(연%d회)", len(periodList))
+				} else {
+					totalText = fmt.Sprintf("※총액(총%d회)", len(periodList))
+				}
+				f.SetCellStr(sheet, totalCellL, totalText)
 
 				// R열 총합 계산 (1회 금액 * 회수)
 				totalAmount := estimate.Price * len(periodList)
@@ -431,11 +447,11 @@ func Program(id int64, typeid int, conn *models.Connection, estimate *models.Est
 
 				// 총액 행 스타일 (굵게 + 정렬)
 				boldCenterStyle, _ := f.NewStyle(&excelize.Style{
-					Font:      &excelize.Font{Bold: true, Family: "함초롱바탕"},
+					Font:      &excelize.Font{Bold: true, Family: "바탕체", Size: 12},
 					Alignment: &excelize.Alignment{Horizontal: "center"},
 				})
 				boldRightStyle, _ := f.NewStyle(&excelize.Style{
-					Font:      &excelize.Font{Bold: true, Family: "함초롱바탕"},
+					Font:      &excelize.Font{Bold: true, Family: "바탕체", Size: 12},
 					Alignment: &excelize.Alignment{Horizontal: "right"},
 				})
 				f.SetCellStyle(sheet, totalCellL, totalCellL, boldCenterStyle)
@@ -493,6 +509,9 @@ func Program(id int64, typeid int, conn *models.Connection, estimate *models.Est
 
 	f.SetCellValue(sheet, "H24", estimate.Saleprice)*/
 
+	// H25: 웹사이트에서 작성한 견적금액
+	f.SetCellValue(sheet, "H25", estimate.Price)
+
 	// G28: 상반기/하반기 횟수 (periodic2, periodic3만)
 	if periodicType != 1 {
 		periodCountG28 := 0
@@ -541,6 +560,9 @@ func Program(id int64, typeid int, conn *models.Connection, estimate *models.Est
 
 	sheet = "계약서"
 
+	f.SetCellStr(sheet, "L40", apt.Tel)
+	f.SetCellStr(sheet, "T40", apt.Fax)
+
 	// 계약일자 셀 위치 (파일별 위치 다름)
 	hCell := "H52" // periodic2, periodic3 기본값
 	if periodicType == 1 {
@@ -571,11 +593,11 @@ func Program(id int64, typeid int, conn *models.Connection, estimate *models.Est
 		}
 
 		if startdate != nil && enddate != nil {
-			f.SetCellStr(sheet, "J38", fmt.Sprintf("%04d   .  %02d .  %02d .   ~   %04d .  %02d .  %02d . ", startdate.Year(), startdate.Month(), startdate.Day(), enddate.Year(), enddate.Month(), enddate.Day()))
+			f.SetCellStr(sheet, "J38", fmt.Sprintf("%04d .  %02d .  %02d .   ~   %04d .  %02d .  %02d . ", startdate.Year(), startdate.Month(), startdate.Day(), enddate.Year(), enddate.Month(), enddate.Day()))
 		} else if enddate != nil {
-			f.SetCellStr(sheet, "J38", fmt.Sprintf("%04d   .     .     .   ~   %04d .  %02d .  %02d . ", t.Year(), enddate.Year(), enddate.Month(), enddate.Day()))
+			f.SetCellStr(sheet, "J38", fmt.Sprintf("%04d .     .     .   ~   %04d .  %02d .  %02d . ", t.Year(), enddate.Year(), enddate.Month(), enddate.Day()))
 		} else {
-			f.SetCellStr(sheet, "J38", fmt.Sprintf("%04d   .     .     .   ~   %04d .     .     . ", t.Year(), t.Year()))
+			f.SetCellStr(sheet, "J38", fmt.Sprintf("%04d .     .     .   ~   %04d .     .     . ", t.Year(), t.Year()))
 		}
 
 		// 계약일자
@@ -585,7 +607,7 @@ func Program(id int64, typeid int, conn *models.Connection, estimate *models.Est
 			f.SetCellStr(sheet, hCell, fmt.Sprintf("%v년", t.Year()))
 		}
 	} else {
-		f.SetCellStr(sheet, "J38", fmt.Sprintf("%04d   .     .     .   ~   %04d .     .     . ", t.Year(), t.Year()))
+		f.SetCellStr(sheet, "J38", fmt.Sprintf("%04d .     .     .   ~   %04d .     .     . ", t.Year(), t.Year()))
 		f.SetCellStr(sheet, hCell, fmt.Sprintf("%v년", t.Year()))
 	}
 

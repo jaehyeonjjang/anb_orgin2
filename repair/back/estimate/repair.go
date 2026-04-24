@@ -93,8 +93,8 @@ func Repair(id int64, typeid int, conn *models.Connection, estimate *models.Esti
 			f.SetCellStr(sheet, "K10", fmt.Sprintf("%v 장기수선계획서 %v 견적건", apt.Name, type2))
 		}
 
-		f.SetCellStr(sheet, "G21", fmt.Sprintf("에서 %v하고자 하는 장기수선계획서 작성에 관한 견적서를 아래와 같이 제출하오니 검토", type1))
-		f.SetCellStr(sheet, "G22", fmt.Sprintf("하시어 %v 대행업무를 위임하여 주시기 바랍니다.", type1))
+		f.SetCellStr(sheet, "G21", fmt.Sprintf("귀 아파트에서 %v하고자 하는 장기수선계획서 작성에 관한 견적서를 아래와 같이 제출하오니", type1))
+		f.SetCellStr(sheet, "G22", fmt.Sprintf("검토하시어 %v 대행업무를 위임하여 주시기 바랍니다.", type1))
 
 		f.SetCellStr(sheet, "G43", fmt.Sprintf("※ 첨    부 :  1. 장기수선계획서 %v 견적서 1부 끝.", type1))
 
@@ -114,8 +114,17 @@ func Repair(id int64, typeid int, conn *models.Connection, estimate *models.Esti
 		f.SetCellStr(sheet, "R26", apt.Address)
 		f.SetCellStr(sheet, "R27", fmt.Sprintf("아파트 %v개동 %v세대", flatcount[0], apt.Familycount))
 		f.SetCellStr(sheet, "R28", complateyear)
-		f.SetCellStr(sheet, "R29", apt.Tel)
-		f.SetCellStr(sheet, "AA29", apt.Fax)
+
+		// Q29: 전화 / 팩스 형식으로 출력
+		telFaxStr := ""
+		if apt.Tel != "" && apt.Fax != "" {
+			telFaxStr = fmt.Sprintf("%v / %v", apt.Tel, apt.Fax)
+		} else if apt.Tel != "" {
+			telFaxStr = apt.Tel
+		} else if apt.Fax != "" {
+			telFaxStr = apt.Fax
+		}
+		f.SetCellStr(sheet, "Q29", telFaxStr)
 
 		if estimate.Parcel == 1 {
 			boldUnderlineStyle, _ := f.NewStyle(&excelize.Style{
@@ -183,21 +192,21 @@ func Repair(id int64, typeid int, conn *models.Connection, estimate *models.Esti
 
 			if startdate != nil && enddate != nil {
 				if estimate.Subtype == 1 {
-					f.SetCellStr(sheet, "G39", fmt.Sprintf("%04d   .  %02d .  %02d .   ~   %04d .  %02d .  %02d . ", startdate.Year(), startdate.Month(), startdate.Day(), enddate.Year(), enddate.Month(), enddate.Day()))
+					f.SetCellStr(sheet, "G39", fmt.Sprintf("%04d .  %02d .  %02d .   ~   %04d .  %02d .  %02d . ", startdate.Year(), startdate.Month(), startdate.Day(), enddate.Year(), enddate.Month(), enddate.Day()))
 				} else {
-					f.SetCellStr(sheet, "M39", fmt.Sprintf("%04d   .  %02d .  %02d .   ~   %04d .  %02d .  %02d . ", startdate.Year(), startdate.Month(), startdate.Day(), enddate.Year(), enddate.Month(), enddate.Day()))
+					f.SetCellStr(sheet, "M39", fmt.Sprintf("%04d .  %02d .  %02d .   ~   %04d .  %02d .  %02d . ", startdate.Year(), startdate.Month(), startdate.Day(), enddate.Year(), enddate.Month(), enddate.Day()))
 				}
 			} else if enddate != nil {
 				if estimate.Subtype == 1 {
-					f.SetCellStr(sheet, "G39", fmt.Sprintf("%04d   .     .     .   ~   %04d .  %02d .  %02d . ", t.Year(), enddate.Year(), enddate.Month(), enddate.Day()))
+					f.SetCellStr(sheet, "G39", fmt.Sprintf("%04d .     .     .   ~   %04d .  %02d .  %02d . ", t.Year(), enddate.Year(), enddate.Month(), enddate.Day()))
 				} else {
-					f.SetCellStr(sheet, "M39", fmt.Sprintf("%04d   .     .     .   ~   %04d .  %02d .  %02d . ", t.Year(), enddate.Year(), enddate.Month(), enddate.Day()))
+					f.SetCellStr(sheet, "M39", fmt.Sprintf("%04d .     .     .   ~   %04d .  %02d .  %02d . ", t.Year(), enddate.Year(), enddate.Month(), enddate.Day()))
 				}
 			} else {
 				if estimate.Subtype == 1 {
-					f.SetCellStr(sheet, "G39", fmt.Sprintf("%04d   .     .     .   ~   %04d .     .     . ", t.Year(), t.Year()))
+					f.SetCellStr(sheet, "G39", fmt.Sprintf("%04d .     .     .   ~   %04d .     .     . ", t.Year(), t.Year()))
 				} else {
-					f.SetCellStr(sheet, "M39", fmt.Sprintf("%04d   .     .     .   ~   %04d .     .     . ", t.Year(), t.Year()))
+					f.SetCellStr(sheet, "M39", fmt.Sprintf("%04d .     .     .   ~   %04d .     .     . ", t.Year(), t.Year()))
 				}
 			}
 			if contractDate != nil {
@@ -215,10 +224,10 @@ func Repair(id int64, typeid int, conn *models.Connection, estimate *models.Esti
 			}
 		} else {
 			if estimate.Subtype == 1 {
-				f.SetCellStr(sheet, "G39", fmt.Sprintf("%04d   .     .     .   ~   %04d .     .     . ", t.Year(), t.Year()))
+				f.SetCellStr(sheet, "G39", fmt.Sprintf("%04d .     .     .   ~   %04d .     .     . ", t.Year(), t.Year()))
 				f.SetCellStr(sheet, "G51", fmt.Sprintf("%v년", t.Year()))
 			} else {
-				f.SetCellStr(sheet, "M39", fmt.Sprintf("%04d   .     .     .   ~   %04d .     .     . ", t.Year(), t.Year()))
+				f.SetCellStr(sheet, "M39", fmt.Sprintf("%04d .     .     .   ~   %04d .     .     . ", t.Year(), t.Year()))
 				f.SetCellStr(sheet, "M51", fmt.Sprintf("%v년", t.Year()))
 			}
 		}

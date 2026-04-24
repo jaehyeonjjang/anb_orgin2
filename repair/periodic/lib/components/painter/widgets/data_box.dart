@@ -160,12 +160,32 @@ class DataBox extends StatelessWidget {
     }
 
     return Positioned(
-        bottom: 0.0,
+        bottom: c.databoxTop ? null : 0.0,
+        top: c.databoxTop ? 0.0 : null,
         left: 0.0,
         child: Container(
           width: Get.width - 20,
           color: Colors.white,
           child: Column(children: [
+            Align(
+              alignment: Alignment.centerRight,
+              child: GestureDetector(
+                onTap: () {
+                  c.databoxTop = !c.databoxTop;
+                },
+                child: Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  child: Icon(
+                    c.databoxTop
+                        ? CupertinoIcons.chevron_down
+                        : CupertinoIcons.chevron_up,
+                    size: 14,
+                    color: Colors.grey[700],
+                  ),
+                ),
+              ),
+            ),
             Table(
               columnWidths: const {
                 0: FixedColumnWidth(50),

@@ -120,73 +120,111 @@ func Supervision(id int64, typeid int, conn *models.Connection, estimate *models
 		sheet = "갑지"
 
 		no := GetEstimateNo(typeid, t, estimate.Date, conn)
-		f.SetCellStr(sheet, "E6", no)
-		f.SetCellStr(sheet, "E7", t.Humandate())
-		f.SetCellStr(sheet, "E8", fmt.Sprintf("%v 입주자대표회의", apt.Name))
-		f.SetCellStr(sheet, "E10", fmt.Sprintf("%v %v 견적건", apt.Name, typeStr))
+		f.SetCellStr(sheet, "F6", no)
+		f.SetCellStr(sheet, "F7", t.Humandate())
+		f.SetCellStr(sheet, "F8", fmt.Sprintf("%v 입주자대표회의", apt.Name))
+		f.SetCellStr(sheet, "F10", fmt.Sprintf("%v %v 견적건", apt.Name, typeStr))
 
-		f.SetCellStr(sheet, "E15", fmt.Sprintf("2. 귀 아파트에서 의뢰하신 %v건에 대한 견적서를 ", typeStr))
+		//f.SetCellStr(sheet, "E15", fmt.Sprintf("2. 귀 아파트에서 의뢰하신 %v건에 대한 견적서를 ", typeStr))
 
-		f.SetCellStr(sheet, "F19", fmt.Sprintf("가.조사대상: %v", apt.Name))
-		f.SetCellStr(sheet, "F20", fmt.Sprintf("나.점검범위: %v %v", buildingSize, estimate.Name))
-		f.SetCellStr(sheet, "F21", fmt.Sprintf("다.소 재 지: %v", apt.Address))
-		f.SetCellStr(sheet, "F22", fmt.Sprintf("라.준 공 일: %v", complateyear))
+		f.SetCellStr(sheet, "L21", apt.Name)
+		//f.SetCellStr(sheet, "L22", buildingSize)
+		f.SetCellStr(sheet, "L22", fmt.Sprintf("%v %v", buildingSize, estimate.Name))
+		f.SetCellStr(sheet, "L23", apt.Address)
+		f.SetCellStr(sheet, "L24", complateyear)
 
-		sheet = "산출내역(감리)"
+		// L25: 전화 / 팩스 형식으로 출력
+		telFaxStr := ""
+		if apt.Tel != "" && apt.Fax != "" {
+			telFaxStr = fmt.Sprintf("%v / %v", apt.Tel, apt.Fax)
+		} else if apt.Tel != "" {
+			telFaxStr = apt.Tel
+		} else if apt.Fax != "" {
+			telFaxStr = apt.Fax
+		}
+		f.SetCellStr(sheet, "L25", telFaxStr)
 
-		f.SetCellStr(sheet, "A5", t.Humandate())
-		f.SetCellStr(sheet, "A6", apt.Name)
+		sheet = "대가산출"
 
-		f.SetCellValue(sheet, "H14", estimate.Personprice7)
-		f.SetCellValue(sheet, "H15", estimate.Personprice8)
-		f.SetCellValue(sheet, "H16", estimate.Personprice9)
-		f.SetCellValue(sheet, "H17", estimate.Personprice10)
+		//f.SetCellStr(sheet, "A5", t.Humandate())
+		//f.SetCellStr(sheet, "A6", apt.Name)
 
-		f.SetCellValue(sheet, "H19", estimate.Personprice2)
-		f.SetCellValue(sheet, "H20", estimate.Personprice3)
-		f.SetCellValue(sheet, "H21", estimate.Personprice4)
-		f.SetCellValue(sheet, "H22", estimate.Personprice5)
+		f.SetCellValue(sheet, "G9", estimate.Personprice7)
+		f.SetCellValue(sheet, "G10", estimate.Personprice8)
+		f.SetCellValue(sheet, "G11", estimate.Personprice9)
+		f.SetCellValue(sheet, "G12", estimate.Personprice10)
 
-		f.SetCellValue(sheet, "F14", estimate.Person7)
-		f.SetCellValue(sheet, "F15", estimate.Person8)
-		f.SetCellValue(sheet, "F16", estimate.Person9)
-		f.SetCellValue(sheet, "F17", estimate.Person10)
+		f.SetCellValue(sheet, "G13", estimate.Personprice2)
+		f.SetCellValue(sheet, "G14", estimate.Personprice3)
+		f.SetCellValue(sheet, "G15", estimate.Personprice4)
+		f.SetCellValue(sheet, "G16", estimate.Personprice5)
+
+		f.SetCellValue(sheet, "F9", estimate.Person7*estimate.Days)
+		f.SetCellValue(sheet, "F10", estimate.Person8*estimate.Days)
+		f.SetCellValue(sheet, "F11", estimate.Person9*estimate.Days)
+		f.SetCellValue(sheet, "F12", estimate.Person10*estimate.Days)
+
+		f.SetCellValue(sheet, "F13", estimate.Person2)
+		f.SetCellValue(sheet, "F14", estimate.Person3)
+		f.SetCellValue(sheet, "F15", estimate.Person4)
+		f.SetCellValue(sheet, "F16", estimate.Person5)
+
+		f.SetCellValue(sheet, "E21", 1)
+		f.SetCellValue(sheet, "E22", 1)
+
+		//f.SetCellValue(sheet, "F14", estimate.Person7)
+		//f.SetCellValue(sheet, "F15", estimate.Person8)
+		//f.SetCellValue(sheet, "F16", estimate.Person9)
+		//f.SetCellValue(sheet, "F17", estimate.Person10)
 
 		outPersons := (estimate.Person7 + estimate.Person8 + estimate.Person9 + estimate.Person10) * estimate.Days
-		f.SetCellValue(sheet, "F27", outPersons)
-		f.SetCellValue(sheet, "F28", outPersons)
+		f.SetCellValue(sheet, "F21", outPersons)
+		f.SetCellValue(sheet, "F22", outPersons)
 
 		if estimate.Person7 > 0 {
-			f.SetCellValue(sheet, "D14", estimate.Days)
+			f.SetCellValue(sheet, "I9", fmt.Sprintf("%v인 * %v일", estimate.Person7, estimate.Days))
 		}
 		if estimate.Person8 > 0 {
-			f.SetCellValue(sheet, "D15", estimate.Days)
+			f.SetCellValue(sheet, "I10", fmt.Sprintf("%v인 * %v일", estimate.Person8, estimate.Days))
 		}
 		if estimate.Person9 > 0 {
-			f.SetCellValue(sheet, "D16", estimate.Days)
+			f.SetCellValue(sheet, "I11", fmt.Sprintf("%v인 * %v일", estimate.Person9, estimate.Days))
 		}
 		if estimate.Person10 > 0 {
-			f.SetCellValue(sheet, "D17", estimate.Days)
+			f.SetCellValue(sheet, "I12", fmt.Sprintf("%v인 * %v일", estimate.Person10, estimate.Days))
 		}
+		/*
+			if estimate.Person7 > 0 {
+				f.SetCellValue(sheet, "D14", estimate.Days)
+			}
+			if estimate.Person8 > 0 {
+				f.SetCellValue(sheet, "D15", estimate.Days)
+			}
+			if estimate.Person9 > 0 {
+				f.SetCellValue(sheet, "D16", estimate.Days)
+			}
+			if estimate.Person10 > 0 {
+				f.SetCellValue(sheet, "D17", estimate.Days)
+			}
 
-		if estimate.Person2 > 0 {
-			f.SetCellValue(sheet, "D19", estimate.Person2)
-			f.SetCellValue(sheet, "F19", 1)
-		}
-		if estimate.Person3 > 0 {
-			f.SetCellValue(sheet, "D20", estimate.Person3)
-			f.SetCellValue(sheet, "F20", 1)
-		}
-		if estimate.Person4 > 0 {
-			f.SetCellValue(sheet, "D21", estimate.Person4)
-			f.SetCellValue(sheet, "F21", 1)
-		}
-		if estimate.Person5 > 0 {
-			f.SetCellValue(sheet, "D22", estimate.Person5)
-			f.SetCellValue(sheet, "F22", 1)
-		}
-
-		f.SetCellFormula(sheet, "I24", fmt.Sprintf("=ROUND(I13*%v%%, 0)", estimate.Financialprice))
+			if estimate.Person2 > 0 {
+				f.SetCellValue(sheet, "D19", estimate.Person2)
+				f.SetCellValue(sheet, "F19", 1)
+			}
+			if estimate.Person3 > 0 {
+				f.SetCellValue(sheet, "D20", estimate.Person3)
+				f.SetCellValue(sheet, "F20", 1)
+			}
+			if estimate.Person4 > 0 {
+				f.SetCellValue(sheet, "D21", estimate.Person4)
+				f.SetCellValue(sheet, "F21", 1)
+			}
+			if estimate.Person5 > 0 {
+				f.SetCellValue(sheet, "D22", estimate.Person5)
+				f.SetCellValue(sheet, "F22", 1)
+			}
+		*/
+		/*f.SetCellFormula(sheet, "I24", fmt.Sprintf("=ROUND(I13*%v%%, 0)", estimate.Financialprice))
 		f.SetCellFormula(sheet, "I25", fmt.Sprintf("=ROUND((I13+I24)*%v%%, 0)", estimate.Techprice))
 
 		f.SetCellValue(sheet, "D24", fmt.Sprintf("직접인건비 * %v%%", estimate.Financialprice))
@@ -199,12 +237,72 @@ func Supervision(id int64, typeid int, conn *models.Connection, estimate *models
 		f.SetCellValue(sheet, "D29", fmt.Sprintf("외업인건비의 %v%%", estimate.Danger))
 
 		f.SetCellFormula(sheet, "I30", fmt.Sprintf("=ROUND(I13*%v%%, 0)", estimate.Machine))
-		f.SetCellValue(sheet, "D30", fmt.Sprintf("직접인건비의 %v%%", estimate.Machine))
+		f.SetCellValue(sheet, "D30", fmt.Sprintf("직접인건비의 %v%%", estimate.Machine))*/
 
-		f.SetCellValue(sheet, "I31", estimate.Printprice)
-		f.SetCellValue(sheet, "I35", estimate.Saleprice)
+		f.SetCellValue(sheet, "F17", estimate.Financialprice)
+		f.SetCellValue(sheet, "F18", estimate.Techprice)
 
-		f.SetCellValue(sheet, "D11", priceStr)
+		f.SetCellValue(sheet, "I17", fmt.Sprintf("직접인건비 * %v%%", estimate.Financialprice))
+		f.SetCellValue(sheet, "I18", fmt.Sprintf("(직접인건비 + 제경비) * %v%%", estimate.Techprice))
+
+		f.SetCellValue(sheet, "G21", estimate.Travelprice)
+		f.SetCellValue(sheet, "G22", estimate.Carprice)
+
+		f.SetCellValue(sheet, "F23", estimate.Danger)
+		f.SetCellValue(sheet, "I23", fmt.Sprintf("외업인건비의 %v%%", estimate.Danger))
+
+		f.SetCellValue(sheet, "F24", estimate.Machine)
+		f.SetCellValue(sheet, "I24", fmt.Sprintf("직접인건비의 %v%%", estimate.Machine))
+
+		f.SetCellValue(sheet, "G25", estimate.Printprice)
+		f.SetCellValue(sheet, "F25", estimate.Print)
+
+		f.SetCellValue(sheet, "H28", estimate.Saleprice)
+
+		f.SetCellValue(sheet, "D3", priceStr)
+
+		sheet = "계약서1"
+
+		contractManager := models.NewContractManager(conn)
+		contract := contractManager.GetByEstimate(estimate.Id)
+
+		if contract != nil {
+			startdate := time.ParseDate(contract.Contractstartdate)
+			enddate := time.ParseDate(contract.Contractenddate)
+			contractDate := time.ParseDate(contract.Contractdate)
+
+			if startdate != nil && enddate != nil {
+				//f.SetCellStr(sheet, "C73", fmt.Sprintf("① 계약기간은 %04d년 %2d월 %2d일부터 %04d년 %2d월 %2d일로 종료한다.",
+				//startdate.Year(), startdate.Month(), startdate.Day(),
+				//enddate.Year(), enddate.Month(), enddate.Day()))
+				f.SetCellStr(sheet, "G39", fmt.Sprintf("%04d .  %02d .  %02d .   ~   %04d .  %02d .  %02d . ", startdate.Year(), startdate.Month(), startdate.Day(), enddate.Year(), enddate.Month(), enddate.Day()))
+			} else if enddate != nil {
+				f.SetCellStr(sheet, "G39", fmt.Sprintf("%04d .     .     .   ~   %04d .  %02d .  %02d . ", t.Year(), enddate.Year(), enddate.Month(), enddate.Day()))
+			} else {
+				f.SetCellStr(sheet, "G39", fmt.Sprintf("%04d .     .     .   ~   %04d .     .     . ", t.Year(), t.Year()))
+			}
+			if contractDate != nil {
+				f.SetCellStr(sheet, "E51", contractDate.Humandate())
+			} else {
+				f.SetCellStr(sheet, "E51", fmt.Sprintf("%v년", t.Year()))
+			}
+		} else {
+			f.SetCellStr(sheet, "G39", fmt.Sprintf("%04d .     .     .   ~   %04d .     .     . ", t.Year(), t.Year()))
+			f.SetCellStr(sheet, "E51", fmt.Sprintf("%v년", t.Year()))
+		}
+
+		f.SetCellStr(sheet, "G40", apt.Address)
+
+		f.SetCellStr(sheet, "I41", apt.Tel)
+		f.SetCellStr(sheet, "Q41", apt.Fax)
+
+		//f.SetCellStr(sheet, "G43", fmt.Sprintf("상기 금액은 %v년 %v%v 용역대가임.", start[0], part, typeStr))
+		f.SetCellStr(sheet, "G43", fmt.Sprintf("상기 금액은 %v%v 용역대가임.", part, typeStr))
+		if apt.Type == "아파트" || apt.Familycount3 > 0 {
+			f.SetCellStr(sheet, "F69", "공동주택")
+		} else {
+			f.SetCellStr(sheet, "F69", "공동주택외 건축물")
+		}
 
 		f.UpdateLinkedValue()
 	} else if typeid == 1 {
