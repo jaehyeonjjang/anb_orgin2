@@ -4,7 +4,10 @@ import 'dart:io';
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart' show ByteData, rootBundle;
 import 'package:get/get.dart';
+import 'package:image_size_getter/file_input.dart';
+import 'package:image_size_getter/image_size_getter.dart';
 import 'package:localstorage/localstorage.dart';
 import 'package:periodic/controllers/auth_controller.dart';
 import 'package:periodic/controllers/blueprint_controller.dart';
@@ -995,8 +998,7 @@ class PainterController extends GetxController {
 
     var last = _undos[_undos.length - 1];
     _works.add(last);
-    points =
-        (last as List).map<Point>((p) => (p as Point).clone()).toList();
+    points = (last as List).map<Point>((p) => (p as Point).clone()).toList();
     modified = true;
     _undos.removeLast();
 
@@ -1629,5 +1631,115 @@ class PainterController extends GetxController {
     debounce(_runSave, (_) {
       save();
     }, time: const Duration(milliseconds: 300));
+  }
+
+  // 이전/다음 층 이동 (mode: 1=이전, 2=다음)
+  // 이동 후 즉시 새 도면 이미지를 로드하여 캔버스를 갱신한다.
+  // 반환값: 실제로 이동했으면 true
+  Future<bool> moveFloor(int mode) async {
+    databox = false;
+    inclinationbox = false;
+    fiberbox = false;
+    materialbox = false;
+
+    final blueprintController = Get.find<BlueprintController>();
+    final authController = Get.find<AuthController>();
+
+    Blueprint prev = Blueprint();
+    Blueprint current = Blueprint();
+
+    var find = false;
+    for (var i = 0; i < blueprintController.items.length; i++) {
+      final item = blueprintController.items[i];
+      if (find == true) {
+        if (mode == 2) {
+          if (item.upload == 1 && item.offlinefilename != '') {
+            current = item;
+            break;
+          }
+        } else {
+          current = prev;
+          break;
+        }
+      } else {
+        if (item.id == blueprint.id) {
+          find = true;
+          if (mode == 1) {
+            current = prev;
+            break;
+          }
+        } else {
+          if (item.upload == 1 && item.offlinefilename != '') {
+            prev = item;
+          }
+        }
+      }
+    }
+
+    if (current.id == 0) {
+      return false;
+    }
+
+    authController.setTitle(current);
+    blueprint = current;
+    reset();
+    load();
+
+    await loadImage(current.offlinefilename);
+
+    return true;
+  }
+
+  // 도면 이미지를 디스크/번들에서 로드하여 c.image 에 반영한다.
+  Future<void> loadImage(String imageAssetPath) async {
+    if (imageAssetPath.isEmpty) return;
+
+    // 1. 이미지 사이즈 측정
+    ui.Size size = const ui.Size(0, 0);
+    if (Platform.isAndroid) {
+      try {
+        final file = File(imageAssetPath);
+        final s = ImageSizeGetter.getSize(FileInput(file));
+        size = ui.Size(s.width.toDouble(), s.height.toDouble());
+      } catch (_) {
+        size = const ui.Size(0, 0);
+      }
+    } else {
+      // iOS는 Image 위젯의 resolve 콜백을 사용 (Painter.getImageSizeIOS와 동일)
+      final completer = Completer<ui.Size>();
+      final image = Image.asset(imageAssetPath);
+      image.image.resolve(const ImageConfiguration()).addListener(
+        ImageStreamListener((info, _) {
+          completer.complete(
+              ui.Size(info.image.width.toDouble(), info.image.height.toDouble()));
+        }, onError: (_, __) {
+          if (!completer.isCompleted) completer.complete(const ui.Size(0, 0));
+        }),
+      );
+      size = await completer.future;
+    }
+
+    imageWidth = size.width;
+    imageHeight = size.height;
+    initZoom();
+
+    // 2. 실제 이미지 디코드
+    ByteData data;
+    if (Platform.isAndroid) {
+      final file = File(imageAssetPath);
+      final bytes = file.readAsBytesSync();
+      data = bytes.buffer.asByteData();
+    } else {
+      data = await rootBundle.load(imageAssetPath);
+    }
+    final codec = await ui.instantiateImageCodec(
+      data.buffer.asUint8List(),
+      targetWidth: imageWidth.toInt(),
+      targetHeight: imageHeight.toInt(),
+    );
+    final frame = await codec.getNextFrame();
+    image = frame.image;
+    isLoaded = true;
+    updateCanvas();
   }
 }

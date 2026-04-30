@@ -98,7 +98,7 @@ func Repair(id int64, typeid int, conn *models.Connection, estimate *models.Esti
 
 		f.SetCellStr(sheet, "G43", fmt.Sprintf("※ 첨    부 :  1. 장기수선계획서 %v 견적서 1부 끝.", type1))
 
-		f.SetCellStr(sheet, "R25", apt.Name)
+		f.SetCellStr(sheet, "Q25", apt.Name)
 
 		complateyear := ""
 		str = strings.Split(apt.Completeyear, "-")
@@ -304,6 +304,7 @@ func Repair(id int64, typeid int, conn *models.Connection, estimate *models.Esti
 
 	filename := fmt.Sprintf("%v.xlsx", global.UniqueId())
 	fullFilename := fmt.Sprintf("%v/%v", config.UploadPath, filename)
+
 	e := f.SaveAs(fullFilename)
 	if e != nil {
 		log.Println(e)

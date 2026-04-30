@@ -641,6 +641,8 @@ class Painter extends StatelessWidget {
       c.movePoint(Offset(x, y));
     } else if (c.type == DrawType.curve) {
       c.addPoint(Offset(x, y));
+    } else if (c.type == DrawType.icon) {
+      c.movePoint(Offset(x, y));
     }
   }
 
@@ -681,6 +683,8 @@ class Painter extends StatelessWidget {
     }
 
     if (c.type == DrawType.line || c.type == DrawType.numberLine) {
+      c.movePoint(Offset(x, y));
+    } else if (c.type == DrawType.icon) {
       c.movePoint(Offset(x, y));
     } else if (c.type == DrawType.multiline) {
       onTap(event);

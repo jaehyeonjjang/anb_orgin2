@@ -99,7 +99,7 @@ func Http() {
 		go router.Run(":" + config.Port)
 
 		s := &http.Server{
-			Addr:           "0.0.0.0:" + config.Port,  // 모든 네트워크 인터페이스에서 접근 가능
+			Addr:           "0.0.0.0:" + config.Port, // 모든 네트워크 인터페이스에서 접근 가능
 			Handler:        r,
 			ReadTimeout:    10 * time.Minute,
 			WriteTimeout:   10 * time.Minute,
@@ -108,7 +108,7 @@ func Http() {
 		s.ListenAndServeTLS(config.Tls.Cert, config.Tls.Key)
 	} else {
 		s := &http.Server{
-			Addr:           "0.0.0.0:" + config.Port,  // 모든 네트워크 인터페이스에서 접근 가능
+			Addr:           "0.0.0.0:" + config.Port, // 모든 네트워크 인터페이스에서 접근 가능
 			Handler:        r,
 			ReadTimeout:    10 * time.Minute,
 			WriteTimeout:   10 * time.Minute,

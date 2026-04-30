@@ -2,12 +2,13 @@ import 'package:common_control/common_control.dart';
 import 'package:periodic/controllers/auth_controller.dart';
 
 class DefaultAppBar extends CWidget {
-  DefaultAppBar({super.key, this.leading, this.actions});
+  DefaultAppBar({super.key, this.leading, this.actions, this.centerActions});
 
   final c = Get.find<AuthController>();
 
   final Widget? leading;
   final List<Widget>? actions;
+  final List<Widget>? centerActions;
 
   @override
   build(BuildContext context) {
@@ -27,12 +28,18 @@ class DefaultAppBar extends CWidget {
       }
     }
 
+    final titleWidget = Obx(() => Text(c.title == '' ? title : c.title,
+        style:
+            const TextStyle(fontSize: 20, fontWeight: FontWeight.w500)));
+
+    final hasCenter =
+        centerActions != null && centerActions!.isNotEmpty;
+
     return AppBar(
       iconTheme: IconThemeData(
         color: Theme.of(context).primaryColor,
       ),
-      title: Obx(() => Text(c.title == '' ? title : c.title,
-          style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w500))),
+      title: titleWidget,
       backgroundColor: titleBackgroundColor,
       titleTextStyle: const TextStyle(color: Colors.black87),
       bottomOpacity: 0.0,
@@ -40,6 +47,18 @@ class DefaultAppBar extends CWidget {
       centerTitle: true,
       leading: leading,
       actions: actions,
+      flexibleSpace: hasCenter
+          ? SafeArea(
+              child: Align(
+                // 가로축 0.5 = 화면 가운데와 오른쪽 끝의 중간 지점
+                alignment: const Alignment(0.5, 0),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: centerActions!,
+                ),
+              ),
+            )
+          : null,
     );
   }
 }

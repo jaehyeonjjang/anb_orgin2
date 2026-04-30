@@ -1,0 +1,7 @@
+{
+    "python.defaultInterpreterPath": "/opt/homebrew/bin/python3",
+    "python.disableInstallationCheck": true,
+    "python.terminal.activateEnvironment": false,
+    "python.experiments.enabled": false,
+    "python.languageServer": "None"
+}

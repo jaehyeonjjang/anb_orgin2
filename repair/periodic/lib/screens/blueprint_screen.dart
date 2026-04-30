@@ -167,41 +167,37 @@ class BlueprintScreen extends CWidget {
 
       return renderItem(item, hasChildren);
     }).toList();
-    items.insert(
-        0,
-        CContainer(
-          border: Border.all(color: Colors.black),
-          backgroundColor: c.modifiedOther == true
-              ? const Color.fromRGBO(255, 200, 200, 1.0)
-              : Colors.white,
-          width: double.infinity,
-          margin: const EdgeInsets.only(bottom: 10),
-          child: CText(
-            '부대시설',
-            margin: const EdgeInsets.all(20),
-          ),
-          onTap: () {
-            Get.toNamed('/other');
-          },
-        ));
+    items.add(CContainer(
+      border: Border.all(color: Colors.black),
+      backgroundColor: c.modifiedOther == true
+          ? const Color.fromRGBO(255, 200, 200, 1.0)
+          : Colors.white,
+      width: double.infinity,
+      margin: const EdgeInsets.only(bottom: 10),
+      child: CText(
+        '부대시설',
+        margin: const EdgeInsets.all(20),
+      ),
+      onTap: () {
+        Get.toNamed('/other');
+      },
+    ));
 
-    items.insert(
-        1,
-        CContainer(
-          border: Border.all(color: Colors.black),
-          backgroundColor: c.modifiedImage == true
-              ? const Color.fromRGBO(255, 200, 200, 1.0)
-              : Colors.white,
-          width: double.infinity,
-          margin: const EdgeInsets.only(bottom: 10),
-          child: CText(
-            '사진 자료',
-            margin: const EdgeInsets.all(20),
-          ),
-          onTap: () {
-            Get.toNamed('/image');
-          },
-        ));
+    items.add(CContainer(
+      border: Border.all(color: Colors.black),
+      backgroundColor: c.modifiedImage == true
+          ? const Color.fromRGBO(255, 200, 200, 1.0)
+          : Colors.white,
+      width: double.infinity,
+      margin: const EdgeInsets.only(bottom: 10),
+      child: CText(
+        '사진 자료',
+        margin: const EdgeInsets.all(20),
+      ),
+      onTap: () {
+        Get.toNamed('/image');
+      },
+    ));
 
     return CFixedBottom(
         padding: const EdgeInsets.all(10),

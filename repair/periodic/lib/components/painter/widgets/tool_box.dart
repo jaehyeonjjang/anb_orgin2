@@ -295,8 +295,8 @@ class ToolBox extends StatelessWidget {
         drawButton(130, 'assets/imgs/i130.png'),
         drawButton(101, 'assets/imgs/i001.png'),
         drawButton(131, 'assets/imgs/i131.png'),
-        drawTinted(rebarXViolet, 'assets/imgs/i130.png',
-            const Color(0xffa000a0)),
+        drawTinted(
+            rebarXViolet, 'assets/imgs/i130.png', const Color(0xffa000a0)),
       ]),
       Row(children: [
         CText('부식',
@@ -305,8 +305,8 @@ class ToolBox extends StatelessWidget {
         drawButton(132, 'assets/imgs/i132.png'),
         drawButton(102, 'assets/imgs/i002.png'),
         drawTinted(corrosionGreen, 'assets/imgs/i132.png', Colors.green),
-        drawTinted(corrosionViolet, 'assets/imgs/i132.png',
-            const Color(0xffa000a0)),
+        drawTinted(
+            corrosionViolet, 'assets/imgs/i132.png', const Color(0xffa000a0)),
       ]),
       Row(children: [
         CText('보',
@@ -315,8 +315,7 @@ class ToolBox extends StatelessWidget {
         drawButton(133, 'assets/imgs/i133.png'),
         drawButton(103, 'assets/imgs/i003.png'),
         drawTinted(beamGreen, 'assets/imgs/i133.png', Colors.green),
-        drawTinted(
-            beamViolet, 'assets/imgs/i133.png', const Color(0xffa000a0)),
+        drawTinted(beamViolet, 'assets/imgs/i133.png', const Color(0xffa000a0)),
       ]),
       Row(children: [
         CText('기타',
@@ -335,8 +334,8 @@ class ToolBox extends StatelessWidget {
         drawButton(111, 'assets/imgs/i011.png'),
         drawButton(112, 'assets/imgs/i302.png'),
         drawTinted(pipeLeakGreen, 'assets/imgs/i011.png', Colors.green),
-        drawTinted(pipeLeakViolet, 'assets/imgs/i011.png',
-            const Color(0xffa000a0)),
+        drawTinted(
+            pipeLeakViolet, 'assets/imgs/i011.png', const Color(0xffa000a0)),
       ]),
       Row(children: [
         CText('누수',
@@ -498,7 +497,8 @@ class ToolBox extends StatelessWidget {
               c.setIconZoom(c.iconZoom - authController.zoomlevel.toDouble());
             }
           },
-          child: const Icon(CupertinoIcons.minus, size: 24.0)),      const SizedBox(width: 2),
+          child: const Icon(CupertinoIcons.minus, size: 24.0)),
+      const SizedBox(width: 2),
     ]));
 
     return Align(

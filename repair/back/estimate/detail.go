@@ -156,7 +156,7 @@ func Detail(estimateType int, id int64, typeid int, conn *models.Connection, est
 
 	//title := fmt.Sprintf("%v년 %v%v", start[0], part, typeStr)
 	title := fmt.Sprintf("%v년 %v", start[0], part)
-	priceStr := fmt.Sprintf("일금 %v원정(₩%v) - VAT 별도", global.HumanMoney(int64(estimate.Price)), humanize.Comma(int64(estimate.Price)))
+	priceStr := fmt.Sprintf("일금%v원정(₩%v) - VAT 별도", global.HumanMoney(int64(estimate.Price)), humanize.Comma(int64(estimate.Price)))
 
 	if estimate.Days == 0 {
 		estimate.Days = 1
@@ -167,16 +167,16 @@ func Detail(estimateType int, id int64, typeid int, conn *models.Connection, est
 	if typeid == 0 {
 		f.SetCellStr(sheet, "F6", no)
 		f.SetCellStr(sheet, "F7", fmt.Sprintf("%v년 %v월 %v일", writedate[0], writedate[1], writedate[2]))
-		f.SetCellStr(sheet, "F8", fmt.Sprintf("%v", apt.Name))
+		f.SetCellStr(sheet, "F8", fmt.Sprintf("%v 입주자대표회의", apt.Name))
 
-		if estimateType == 2 {
-			f.SetCellStr(sheet, "F10", title)
-		}
-
-		// K10 또는 F10 셀에 견적건 텍스트 설정 (estimateType에 따라 다르게)
-		if estimateType == 5 || estimateType == 6 {
+		// estimateType 2,5,6은 F10에 출력, 그 외는 K10에 출력
+		// estimateType 2일 때는 title(년도/반기) + typeStr을 한 줄에 합쳐서 출력
+		switch estimateType {
+		case 2:
+			f.SetCellStr(sheet, "F10", fmt.Sprintf("%v%v 견적건", title, typeStr))
+		case 5, 6:
 			f.SetCellStr(sheet, "F10", fmt.Sprintf("%v 견적건", typeStr))
-		} else {
+		default:
 			f.SetCellStr(sheet, "K10", fmt.Sprintf("%v 견적건", typeStr))
 		}
 
@@ -198,7 +198,16 @@ func Detail(estimateType int, id int64, typeid int, conn *models.Connection, est
 		}
 		f.SetCellStr(sheet, "L25", telFaxStr)
 		if estimateType != 2 {
-			f.SetCellStr(sheet, "B18", fmt.Sprintf("           3. 귀 아파트(사)에서 의뢰하신 %v에 대한 견적서를 제출하오니 업무에 참고하시기 바랍니다.", typeStr))
+			f.SetCellRichText(sheet, "B18", []excelize.RichTextRun{
+				{
+					Text: "  ",
+					Font: &excelize.Font{Size: 14, Family: "바탕체"},
+				},
+				{
+					Text: fmt.Sprintf("        3. 귀 아파트(사)에서 의뢰하신 %v에 대한 견적서를 제출하오니 업무에 참고하시기 바랍니다.", typeStr),
+					Font: &excelize.Font{Size: 12, Family: "바탕체"},
+				},
+			})
 
 			// F28 셀 내용 설정 (estimateType에 따라 다르게)
 			if estimateType == 5 {
@@ -299,6 +308,13 @@ func Detail(estimateType int, id int64, typeid int, conn *models.Connection, est
 
 		sheet = "계약서1"
 
+		// B16: 202x년 x반기 (estimateType 8인 경우 갑지!F7 참조)
+		if estimateType == 4 || estimateType == 5 || estimateType == 6 || estimateType == 8 {
+			f.SetCellFormula(sheet, "B16", "갑지!F7")
+		} else {
+			f.SetCellStr(sheet, "B16", strings.TrimSpace(title))
+		}
+
 		contractManager := models.NewContractManager(conn)
 		contract := contractManager.GetByEstimate(estimate.Id)
 
@@ -332,15 +348,15 @@ func Detail(estimateType int, id int64, typeid int, conn *models.Connection, est
 		f.SetCellStr(sheet, "I41", apt.Tel)
 		f.SetCellStr(sheet, "Q41", apt.Fax)
 
-		if estimateType == 8 {
+		if estimateType == 6 || estimateType == 8 || estimateType == 4 || estimateType == 5 {
 			f.SetCellStr(sheet, "G43", fmt.Sprintf("상기 금액은 %v%v 용역대가임.", part, typeStr))
 		} else {
 			f.SetCellStr(sheet, "G43", fmt.Sprintf("상기 금액은 %v년 %v%v 용역대가임.", start[0], part, typeStr))
 		}
 		if apt.Type == "아파트" || apt.Familycount3 > 0 {
-			f.SetCellStr(sheet, "F69", "공동주택")
+			f.SetCellStr(sheet, "C69", "③ 용      도 : 공동주택")
 		} else {
-			f.SetCellStr(sheet, "F69", "공동주택외 건축물")
+			f.SetCellStr(sheet, "C69", "③ 용      도 : 공동주택외 건축물")
 		}
 		//f.SetCellStr(sheet, "J72", buildingSize)
 
@@ -395,10 +411,10 @@ func Detail(estimateType int, id int64, typeid int, conn *models.Connection, est
 			f.SetCellStr(sheet, "E49", fmt.Sprintf("3. %v%v 대가산출 내역서 1부.", name2, typeStr))
 
 			f.SetCellStr(sheet, "B57", fmt.Sprintf("%v%v 표준계약조건", name2, typeStr))
-			f.SetCellStr(sheet, "B61", fmt.Sprintf("%v의 실시자인 ㈜에이앤비(이하 \"수주자\"라 한다)는 다음과 같이 계약을 체결한다.", typeStr))
+			f.SetCellStr(sheet, "C61", fmt.Sprintf("%v의 실시자인 ㈜에이앤비(이하 \"수주자\"라 한다)는 다음과 같이 계약을 체결한다.", typeStr))
 			f.SetCellStr(sheet, "C64", fmt.Sprintf("이 계약은 \"발주자\"가 관리하고 있는 시설물에 대하여 \"수주자\"는 %v 실시하여 구조적・기능적 결함을 발견하고, 그에 대한 신속하고 적절한 조치를 취하기 위하여 구조적 안전성 및 결함의 원인 등을 조사・측정・평가하고 보수・보강 등의 방법을 제시함으로써 재해 및 재난을 예방하고 시설물의 효용증진과 공공의 안전을 확보하는데 그 목적이 있다.", global.GetJosa(typeStr, hangul.EUL_REUL)))
 			f.SetCellStr(sheet, "C66", fmt.Sprintf("제2조(점검의 범위) %v의 범위는 다음과 같다.", typeStr))
-			f.SetCellStr(sheet, "C70", fmt.Sprintf("④ %v 대상시설물의 범위 : ", typeStr))
+			f.SetCellFormula(sheet, "C70", fmt.Sprintf("=\"④ %v 대상시설물의 범위 : \"&갑지!L22", typeStr))
 			f.SetCellStr(sheet, "C74", fmt.Sprintf("② 다만, 천재지변 및 부득이한 사유로 인하여 %v의 일부 또는 전부의 변경이 불가피한 경우에는 \"발주자\"와 \"수주자\"는 협의하여 그 기간을 변경할 수 있다.", typeStr))
 			f.SetCellStr(sheet, "C79", fmt.Sprintf("③ 제3조 제2항에 따라 %v 업무의 일부 또는 전부의 변경이 불가피한 경우 \"발주자\"와 \"수주자\"는 협의하여 변경할 수 있다.", typeStr))
 			f.SetCellStr(sheet, "C82", fmt.Sprintf("%v 대가 지급은 기획재정부가 회계예규로 정한 기술․용역 계약 일반조건 지급 요령에 의한다. ", typeStr))

@@ -51,10 +51,59 @@ class DataScreen extends CWidget {
                   })
               : Container()),
         ],
+        centerActions: [
+          TextButton(
+              onPressed: () => clickFloor(context, 1),
+              child: const Text('이전 층',
+                  style: TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black))),
+          TextButton(
+              onPressed: () => clickFloor(context, 2),
+              child: const Text('다음 층',
+                  style: TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black))),
+        ],
       ),
       backgroundColor: Colors.white,
       body: Obx(() => body(context)),
     );
+  }
+
+  clickFloor(context, int mode) async {
+    if (c.modified == true) {
+      showDialog<void>(
+        context: context,
+        builder: (context2) {
+          return AlertDialog(
+            title: const Text('층 이동'),
+            content: const Text(
+                '작업내역이 저장되지 않았습니다.\n저장없이 이동하시겠습니까.\n저장없이 이동 선택시 작업한 내역이 모두 삭제됩니다'),
+            actions: <Widget>[
+              ElevatedButton(
+                child: const Text('닫기'),
+                onPressed: () {
+                  navigator!.pop(context2);
+                },
+              ),
+              ElevatedButton(
+                child: const Text('저장없이 이동'),
+                onPressed: () async {
+                  navigator!.pop(context2);
+                  await c.moveFloor(mode);
+                },
+              )
+            ],
+          );
+        },
+      );
+      return;
+    }
+
+    await c.moveFloor(mode);
   }
 
   imageWidget(String filename, int index, int pos, context) {

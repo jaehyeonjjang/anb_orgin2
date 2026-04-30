@@ -318,8 +318,8 @@ func Periodic(id int64, typeid int, conn *models.Connection, estimate *models.Es
 
 		f.SetCellStr(sheet, "H6", no)
 		f.SetCellStr(sheet, "H7", t.Humandate())
-		f.SetCellStr(sheet, "H8", fmt.Sprintf("%v", apt.Name))
-		f.SetCellStr(sheet, "H10", h10Text)
+		f.SetCellStr(sheet, "H8", fmt.Sprintf("%v 입주자대표회의", apt.Name))
+		f.SetCellStr(sheet, "H10", fmt.Sprintf("%v 정기안전점검 견적 건", h10Text))
 		f.SetCellStr(sheet, "N21", apt.Name)
 		f.SetCellStr(sheet, "N23", apt.Address)
 		f.SetCellStr(sheet, "N22", buildingSize)
@@ -335,6 +335,7 @@ func Periodic(id int64, typeid int, conn *models.Connection, estimate *models.Es
 			telFaxStr = apt.Fax
 		}
 		f.SetCellStr(sheet, "N25", telFaxStr)
+		f.SetCellStr(sheet, "N31", fmt.Sprintf("일금%v원정(₩%v)", global.HumanMoney(int64(estimate.Price)), humanize.Comma(int64(estimate.Price))))
 
 		// I30~I34: 계약 기간의 모든 상반기/하반기 나열 (periodic3, periodic4만)
 		if periodicType == 3 || periodicType == 4 {
@@ -389,13 +390,13 @@ func Periodic(id int64, typeid int, conn *models.Connection, estimate *models.Es
 
 			if len(periodList) > 0 {
 
-				// L30부터 L34까지 최대 5개 출력, R열에는 대가산출 H25 참조, AC열에는 '-VAT별도'
-				cellsI := []string{"I32", "I33", "I34", "I35", "I36"}
+				// H32부터 H36까지 최대 5개 출력, N열에는 대가산출 H29 참조, Z열에는 '-VAT별도'
+				cellsH := []string{"H32", "H33", "H34", "H35", "H36"}
 				cellsN := []string{"N32", "N33", "N34", "N35", "N36"}
 				cellsY := []string{"Y32", "Y33", "Y34", "Y35", "Y36"}
 				cellsZ := []string{"Z32", "Z33", "Z34", "Z35", "Z36"}
-				for i := 0; i < len(cellsI) && i < len(periodList); i++ {
-					f.SetCellStr(sheet, cellsI[i], periodList[i])
+				for i := 0; i < len(cellsH) && i < len(periodList); i++ {
+					f.SetCellStr(sheet, cellsH[i], periodList[i])
 					f.SetCellFormula(sheet, cellsN[i], "대가산출!H29")
 					f.SetCellStr(sheet, cellsY[i], "원")
 					f.SetCellStr(sheet, cellsZ[i], "-VAT별도")
@@ -403,7 +404,7 @@ func Periodic(id int64, typeid int, conn *models.Connection, estimate *models.Es
 				// 총액 행 추가
 				totalRow := 32 + len(periodList)
 				if totalRow <= 39 { // 안전 범위 체크
-					totalCellI := fmt.Sprintf("I%d", totalRow)
+					totalCellH := fmt.Sprintf("H%d", totalRow)
 					totalCellN := fmt.Sprintf("N%d", totalRow)
 					totalCellY := fmt.Sprintf("Y%d", totalRow)
 					totalCellZ := fmt.Sprintf("Z%d", totalRow)
@@ -415,13 +416,13 @@ func Periodic(id int64, typeid int, conn *models.Connection, estimate *models.Es
 					} else {
 						totalText = fmt.Sprintf("※총액(총%d회)", len(periodList))
 					}
-					f.SetCellStr(sheet, totalCellI, totalText)
+					f.SetCellStr(sheet, totalCellH, totalText)
 
 					// R열 총합 계산 (1회 금액 * 회수)
 					totalAmount := estimate.Price * len(periodList)
 					humanAmount := global.HumanMoney(totalAmount)
 
-					f.SetCellStr(sheet, totalCellN, fmt.Sprintf("일금 %v원정 (₩%v)", humanAmount, humanize.Comma(int64(totalAmount))))
+					f.SetCellStr(sheet, totalCellN, fmt.Sprintf("일금%v원정 (₩%v)", humanAmount, humanize.Comma(int64(totalAmount))))
 					f.SetCellStr(sheet, totalCellY, "")
 					f.SetCellStr(sheet, totalCellZ, "-VAT별도※")
 
@@ -434,7 +435,7 @@ func Periodic(id int64, typeid int, conn *models.Connection, estimate *models.Es
 						Font:      &excelize.Font{Bold: true, Family: "바탕체", Size: 12},
 						Alignment: &excelize.Alignment{Horizontal: "right"},
 					})
-					f.SetCellStyle(sheet, totalCellI, totalCellI, boldCenterStyle)
+					f.SetCellStyle(sheet, totalCellH, totalCellH, boldCenterStyle)
 					f.SetCellStyle(sheet, totalCellN, totalCellN, boldRightStyle)
 					f.SetCellStyle(sheet, totalCellZ, totalCellZ, boldCenterStyle)
 				}
@@ -516,7 +517,7 @@ func Periodic(id int64, typeid int, conn *models.Connection, estimate *models.Es
 
 		f.SetCellValue(sheet, "H28", estimate.Saleprice)
 
-		f.SetCellStr(sheet, "D3", fmt.Sprintf("일금 %v원정(₩%v)", global.HumanMoney(int64(estimate.Price)), humanize.Comma(int64(estimate.Price))))
+		//f.SetCellStr(sheet, "D3", fmt.Sprintf("일금 %v원정(₩%v) - VAT 별도", global.HumanMoney(int64(estimate.Price)), humanize.Comma(int64(estimate.Price))))
 
 		// G32: 상반기/하반기 횟수 (periodic3, periodic4만)
 		if periodicType == 3 || periodicType == 4 {
@@ -573,6 +574,11 @@ func Periodic(id int64, typeid int, conn *models.Connection, estimate *models.Es
 
 		f.SetCellStr(sheet, "B9", apt.Name)
 
+		// B16: h10Text 내용
+		if h10Text != "" {
+			f.SetCellStr(sheet, "B16", h10Text)
+		}
+
 		/*switch periodicType {
 		case 1:
 			f.SetCellStr(sheet, "B16", fmt.Sprintf("%v년 상반기", t.Year()))
@@ -596,7 +602,7 @@ func Periodic(id int64, typeid int, conn *models.Connection, estimate *models.Es
 
 		// 계약일자 셀 (파일별 위치 다름)
 		hCell := "E52" // periodic3, periodic4 기본값
-		if periodicType == 1 {
+		if periodicType == 1 || periodicType == 2 {
 			hCell = "E51" // periodic1, periodic2
 		}
 
@@ -607,7 +613,7 @@ func Periodic(id int64, typeid int, conn *models.Connection, estimate *models.Es
 
 			// 계약 기간 (파일별 셀 위치 다름)
 			periodCell := "C74" // periodic3, periodic4 기본값
-			if periodicType == 1 {
+			if periodicType == 1 || periodicType == 2 {
 				periodCell = "C73" // periodic1, periodic2
 			}
 
@@ -622,9 +628,9 @@ func Periodic(id int64, typeid int, conn *models.Connection, estimate *models.Es
 				f.SetCellStr(sheet, "G38", fmt.Sprintf("%04d .     .     .   ~   %04d .     .     . ", t.Year(), t.Year()))
 			}
 
-			// J43: 년도 정보 (회수 없이, periodic3, periodic4만)
-			if h10Text != "" && (periodicType == 3 || periodicType == 4) {
-				f.SetCellStr(sheet, "J42", h10Text)
+			// J42: 년도 정보 (periodic1,2는 "202x년 상반기/하반기", periodic3,4는 h10Text 그대로)
+			if h10Text != "" {
+				f.SetCellStr(sheet, "G42", fmt.Sprintf("상기 금액은 %v 정기안전점검 용역대가임", h10Text))
 			}
 
 			if contractDate != nil {
@@ -649,21 +655,21 @@ func Periodic(id int64, typeid int, conn *models.Connection, estimate *models.Es
 		}*/
 
 		// 공동주택 타입 셀 (파일별 위치 다름)
-		buildingTypeCell := "F70" // periodic3, periodic4 기본값
-		if periodicType == 1 {
-			buildingTypeCell = "F69" // periodic1, periodic2
+		buildingTypeCell := "C70" // periodic3, periodic4 기본값
+		if periodicType == 1 || periodicType == 2 {
+			buildingTypeCell = "C69" // periodic1, periodic2
 		}
 
 		if apt.Type == "아파트" || apt.Familycount3 > 0 {
-			f.SetCellStr(sheet, buildingTypeCell, "공동주택")
+			f.SetCellStr(sheet, buildingTypeCell, "③ 용      도 : 공동주택")
 		} else {
-			f.SetCellStr(sheet, buildingTypeCell, "공동주택외 건축물")
+			f.SetCellStr(sheet, buildingTypeCell, "③ 용      도 : 공동주택외 건축물")
 		}
 		//f.SetCellStr(sheet, "K72", buildingSize)
 
 		// 계약서 시트 행 offset (periodic1, periodic2는 한 행씩 위로)
 		rowOffset := 0
-		if periodicType == 1 {
+		if periodicType == 1 || periodicType == 2 {
 			rowOffset = -1
 		}
 
