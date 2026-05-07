@@ -155,7 +155,7 @@
     :before-close="handleClose"
   >
 
-    <div style="margin-top:-20px;display:flex;gap:10px;" :style="{height: height(150)}">
+    <div style="display:flex;gap:10px;" :style="{height: height(150)}">
       <div style="width:400px;">
         <y-table>
           <y-tr>

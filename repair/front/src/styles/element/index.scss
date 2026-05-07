@@ -122,6 +122,11 @@ $--colors: (
   font-size: 12px;
 }
 
+/* 다이얼로그 헤더 간격 줄이기 */
+.el-dialog__header {
+  padding: 0px 20px 10px;
+}
+
 .el-checkbox {
   font-size: 12px;
 }
@@ -131,7 +136,7 @@ $--colors: (
 }
 
 .el-checkbox__label {
-  font-size: 12px;  
+  font-size: 12px;
 }
 
 .el-transfer-panel .el-transfer-panel__header .el-checkbox .el-checkbox__label {

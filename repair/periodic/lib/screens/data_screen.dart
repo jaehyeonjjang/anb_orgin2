@@ -81,7 +81,7 @@ class DataScreen extends CWidget {
           return AlertDialog(
             title: const Text('층 이동'),
             content: const Text(
-                '작업내역이 저장되지 않았습니다.\n저장없이 이동하시겠습니까.\n저장없이 이동 선택시 작업한 내역이 모두 삭제됩니다'),
+                '작업내역이 저장되지 않았습니다.\n저장없이 이동하시겠습니까?\n저장없이 이동 선택시 작업한 내역이 모두 삭제됩니다'),
             actions: <Widget>[
               ElevatedButton(
                 child: const Text('닫기'),

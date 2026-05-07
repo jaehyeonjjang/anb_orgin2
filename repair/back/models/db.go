@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"repair/global/config"
 	"repair/global/log"
+	"sync"
 
 	"database/sql"
 	"time"
@@ -11,6 +12,30 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 	_ "github.com/lib/pq"
 )
+
+// 전역 DB 풀 (싱글톤)
+// *sql.DB 자체가 연결 풀이므로 앱 전체에서 한 개만 생성하고 공유한다.
+// 매 요청마다 sql.Open()을 호출하면 풀이 무한정 늘어나 MySQL max_connections를 초과해 다운된다.
+var (
+	globalDB *sql.DB
+	dbOnce   sync.Once
+)
+
+func initGlobalDB() {
+	db, err := sql.Open(config.Database.TypeString, config.Database.ConnectionString)
+	if err != nil {
+		log.Error().Msg(err.Error())
+		return
+	}
+
+	// 연결 풀 설정
+	db.SetMaxOpenConns(50)                  // 동시 최대 오픈 연결
+	db.SetMaxIdleConns(25)                  // 유휴 연결 유지 수
+	db.SetConnMaxLifetime(10 * time.Minute) // 연결 최대 수명
+	db.SetConnMaxIdleTime(5 * time.Minute)  // 유휴 연결 타임아웃
+
+	globalDB = db
+}
 
 type PagingType struct {
 	Page     int
@@ -70,8 +95,17 @@ type Connection struct {
 	Isolation   bool
 }
 
+// Close는 전역 풀을 닫지 않는다.
+// Connection은 풀에 대한 핸들 wrapper일 뿐이므로,
+// 트랜잭션이 살아있다면 롤백만 수행하고 풀(c.Conn)은 그대로 둔다.
+// (예전 코드는 매 요청마다 풀을 닫아버려서 풀링 효과가 사라지고
+//  다량 요청 시 MySQL 연결이 폭증해 일시 다운되는 문제가 있었다.)
 func (c *Connection) Close() {
-	c.Conn.Close()
+	if c.Transaction && c.Tx != nil {
+		_ = c.Tx.Rollback()
+		c.Transaction = false
+		c.Tx = nil
+	}
 }
 
 func (c *Connection) IsConnect() bool {
@@ -121,21 +155,16 @@ func (c *Connection) Rollback() {
 	c.Transaction = false
 }
 
+// GetConnection은 전역 풀에 대한 새 Connection 핸들을 반환한다.
+// 풀 자체는 앱 시작 시 단 한 번만 초기화된다.
 func GetConnection() *Connection {
-	conn, err := sql.Open(config.Database.TypeString, config.Database.ConnectionString)
-	if err != nil {
-		log.Error().Msg(err.Error())
+	dbOnce.Do(initGlobalDB)
+	if globalDB == nil {
 		return nil
 	}
 
-	// 연결 풀 설정 개선
-	conn.SetMaxOpenConns(50)                  // 최대 오픈 연결 감소 (100 -> 50)
-	conn.SetMaxIdleConns(25)                  // 유휴 연결 증가 (10 -> 25) - 연결 재사용 향상
-	conn.SetConnMaxLifetime(10 * time.Minute) // 연결 수명 증가 (5분 -> 10분)
-	conn.SetConnMaxIdleTime(5 * time.Minute)  // 유휴 연결 타임아웃 추가
-
 	return &Connection{
-		Conn:        conn,
+		Conn:        globalDB,
 		Tx:          nil,
 		Transaction: false,
 	}

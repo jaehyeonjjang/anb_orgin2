@@ -314,43 +314,21 @@ func Program(id int64, typeid int, conn *models.Connection, estimate *models.Est
 			for _, p := range periods {
 				periodCount += len(p.Periods)
 			}
-			if j10Text != "" {
-				k40Text = fmt.Sprintf("나. 점검프로그램 사용 기간 - %v (%d회)", j10Text, periodCount)
-			}
 		}
-	} else if contract != nil {
-		startdate := time.ParseDate(contract.Contractstartdate)
-		enddate := time.ParseDate(contract.Contractenddate)
-
-		if startdate != nil && enddate != nil {
-			// periodList 계산하여 회수 파악
-			startYear := startdate.Year()
-			endYear := enddate.Year()
-
-			var tempPeriodList []string
-			for year := startYear; year <= endYear; year++ {
-				startMonth := 1
-				endMonth := 12
-
-				if year == startYear {
-					startMonth = int(startdate.Month())
-				}
-				if year == endYear {
-					endMonth = int(enddate.Month())
-				}
-
-				if startMonth <= 6 {
-					tempPeriodList = append(tempPeriodList, fmt.Sprintf("%v년 상반기", year))
-				}
-				if endMonth >= 7 {
-					tempPeriodList = append(tempPeriodList, fmt.Sprintf("%v년 하반기", year))
-				}
-			}
-			periodCount = len(tempPeriodList)
-
-			// j10Text 기반으로 K 텍스트 생성
-			k40Text = fmt.Sprintf("나. 점검프로그램 사용 기간 - %v (%d회)", j10Text, periodCount)
+	} else {
+		// 화면에서 선택한 periodicType 기준으로 회수 결정
+		switch periodicType {
+		case 1, 2, 5:
+			// 상반기/하반기/무상1회 → 1회
+			periodCount = 1
+		case 3:
+			// 연간 → 2회 (상반기 + 하반기)
+			periodCount = 2
 		}
+	}
+
+	if j10Text != "" && periodCount > 0 {
+		k40Text = fmt.Sprintf("나. 점검프로그램 사용 기간 - %v (%d회)", j10Text, periodCount)
 	}
 
 	if k40Text != "" {
@@ -382,36 +360,18 @@ func Program(id int64, typeid int, conn *models.Connection, estimate *models.Est
 					}
 				}
 			}
-		} else if contract != nil {
-			startdate := time.ParseDate(contract.Contractstartdate)
-			enddate := time.ParseDate(contract.Contractenddate)
-
-			if startdate != nil && enddate != nil {
-				startYear := startdate.Year()
-				endYear := enddate.Year()
-
-				for year := startYear; year <= endYear; year++ {
-					startMonth := 1
-					endMonth := 12
-
-					if year == startYear {
-						startMonth = int(startdate.Month())
-					}
-					if year == endYear {
-						endMonth = int(enddate.Month())
-					}
-
-					// 상반기 포함 여부 (1-6월)
-					if startMonth <= 6 {
-						periodList = append(periodList, fmt.Sprintf("%v년 상반기 :", year))
-					}
-
-					// 하반기 포함 여부 (7-12월)
-					if endMonth >= 7 {
-						periodList = append(periodList, fmt.Sprintf("%v년 하반기 :", year))
-					}
-				}
+		} else {
+			// 화면에서 선택한 periodicType 기준으로 생성
+			currentYear := t.Year()
+			if periodicType == 3 {
+				// 연간: 상반기 + 하반기
+				periodList = append(periodList, fmt.Sprintf("%v년 상반기 :", currentYear))
+				periodList = append(periodList, fmt.Sprintf("%v년 하반기 :", currentYear))
+			} else if periodicType == 5 {
+				// 무상1회: 1회
+				periodList = append(periodList, fmt.Sprintf("%v년 무상1회 :", currentYear))
 			}
+			// periodicType 4는 multiyear_periods 필수
 		}
 
 		if len(periodList) > 0 {
@@ -448,7 +408,7 @@ func Program(id int64, typeid int, conn *models.Connection, estimate *models.Est
 				totalAmount := estimate.Price * len(periodList)
 				humanAmount := global.HumanMoney(totalAmount)
 
-				f.SetCellStr(sheet, totalCellP, fmt.Sprintf("일금 %v원정 (₩%v)", humanAmount, humanize.Comma(int64(totalAmount))))
+				f.SetCellStr(sheet, totalCellP, fmt.Sprintf("일금%v원정 (₩%v)", humanAmount, humanize.Comma(int64(totalAmount))))
 				f.SetCellStr(sheet, totalCellAB, "")
 				f.SetCellStr(sheet, totalCellAC, "-VAT별도※")
 
@@ -457,12 +417,12 @@ func Program(id int64, typeid int, conn *models.Connection, estimate *models.Est
 					Font:      &excelize.Font{Bold: true, Family: "바탕체", Size: 12},
 					Alignment: &excelize.Alignment{Horizontal: "center"},
 				})
-				boldRightStyle, _ := f.NewStyle(&excelize.Style{
+				boldLeftStyle, _ := f.NewStyle(&excelize.Style{
 					Font:      &excelize.Font{Bold: true, Family: "바탕체", Size: 12},
-					Alignment: &excelize.Alignment{Horizontal: "right"},
+					Alignment: &excelize.Alignment{Horizontal: "left"},
 				})
 				f.SetCellStyle(sheet, totalCellJ, totalCellJ, boldCenterStyle)
-				f.SetCellStyle(sheet, totalCellP, totalCellP, boldRightStyle)
+				f.SetCellStyle(sheet, totalCellP, totalCellP, boldLeftStyle)
 				f.SetCellStyle(sheet, totalCellAC, totalCellAC, boldCenterStyle)
 			}
 		}
@@ -531,32 +491,15 @@ func Program(id int64, typeid int, conn *models.Connection, estimate *models.Est
 					periodCountG28 += len(p.Periods)
 				}
 			}
-		} else if contract != nil {
-			startdate := time.ParseDate(contract.Contractstartdate)
-			enddate := time.ParseDate(contract.Contractenddate)
-
-			if startdate != nil && enddate != nil {
-				startYear := startdate.Year()
-				endYear := enddate.Year()
-
-				for year := startYear; year <= endYear; year++ {
-					startMonth := 1
-					endMonth := 12
-
-					if year == startYear {
-						startMonth = int(startdate.Month())
-					}
-					if year == endYear {
-						endMonth = int(enddate.Month())
-					}
-
-					if startMonth <= 6 {
-						periodCountG28++
-					}
-					if endMonth >= 7 {
-						periodCountG28++
-					}
-				}
+		} else {
+			// 화면에서 선택한 periodicType 기준
+			switch periodicType {
+			case 3:
+				// 연간 → 2회
+				periodCountG28 = 2
+			case 5:
+				// 무상1회 → 1회
+				periodCountG28 = 1
 			}
 		}
 
@@ -599,11 +542,6 @@ func Program(id int64, typeid int, conn *models.Connection, estimate *models.Est
 				enddate.Year(), enddate.Month(), enddate.Day()))
 		}
 
-		// M42: 년도 정보 (회수 없이, 모든 periodicType에 출력)
-		if j10Text != "" {
-			f.SetCellStr(sheet, "J42", fmt.Sprintf("상기 금액은 %v 점검 프로그램사용 대가임", j10Text))
-		}
-
 		if startdate != nil && enddate != nil {
 			f.SetCellStr(sheet, "J38", fmt.Sprintf("%04d .  %02d .  %02d .   ~   %04d .  %02d .  %02d . ", startdate.Year(), startdate.Month(), startdate.Day(), enddate.Year(), enddate.Month(), enddate.Day()))
 		} else if enddate != nil {
@@ -621,6 +559,11 @@ func Program(id int64, typeid int, conn *models.Connection, estimate *models.Est
 	} else {
 		f.SetCellStr(sheet, "J38", fmt.Sprintf("%04d .     .     .   ~   %04d .     .     . ", t.Year(), t.Year()))
 		f.SetCellStr(sheet, hCell, fmt.Sprintf("%v년", t.Year()))
+	}
+
+	// J42: 년도 정보 (계약 정보 유무와 관계없이 항상 출력)
+	if j10Text != "" {
+		f.SetCellStr(sheet, "J42", fmt.Sprintf("상기 금액은 %v 점검 프로그램사용 대가임", j10Text))
 	}
 
 	f.UpdateLinkedValue()

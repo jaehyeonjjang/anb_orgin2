@@ -28,7 +28,7 @@ class OtherScreen extends CWidget {
           title: const Text('데이터 저장'),
           backgroundColor: Colors.white,
           content: const Text(
-              '작업내역이 저장되지 않았습니다.\n저장없이 종료하시겠습니까.\n저장없이 종료 선택시 작업한 내역이 모두 삭제됩니다'),
+              '작업내역이 저장되지 않았습니다.\n저장없이 종료하시겠습니까?\n저장없이 종료 선택시 작업한 내역이 모두 삭제됩니다'),
           actions: <Widget>[
             ElevatedButton(
               child: const Text('닫기'),

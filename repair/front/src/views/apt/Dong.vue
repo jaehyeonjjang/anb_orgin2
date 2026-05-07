@@ -150,7 +150,7 @@
 
     <div style="text-align:left;margin-bottom:10px;">추가할 층 명칭을 입력하세요</div>
     <el-radio-group v-model="data.floortype">
-      <el-radio :label="1" size="small">주하장</el-radio>
+      <el-radio :label="1" size="small">주차장</el-radio>
       <el-radio :label="2" size="small">지하</el-radio>
       <el-radio :label="3" size="small">지상</el-radio>
       <el-radio :label="4" size="small">옥탑</el-radio>

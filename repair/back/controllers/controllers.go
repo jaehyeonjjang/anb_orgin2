@@ -457,10 +457,6 @@ func (c *Controller) NewConnection() *models.Connection {
 	}
 
 	c.Connection = models.NewConnection()
-	if c.Connection != nil {
-		// 컨트롤러가 Close될 때 자동으로 연결을 닫도록 보장
-		// 각 REST 핸들러에서 defer conn.Close() 없이도 연결이 정리됨
-	}
 	return c.Connection
 }
 

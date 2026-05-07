@@ -29,11 +29,9 @@ class DefaultAppBar extends CWidget {
     }
 
     final titleWidget = Obx(() => Text(c.title == '' ? title : c.title,
-        style:
-            const TextStyle(fontSize: 20, fontWeight: FontWeight.w500)));
+        style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w500)));
 
-    final hasCenter =
-        centerActions != null && centerActions!.isNotEmpty;
+    final hasCenter = centerActions != null && centerActions!.isNotEmpty;
 
     return AppBar(
       iconTheme: IconThemeData(

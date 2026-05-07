@@ -299,9 +299,9 @@ func Supervision(id int64, typeid int, conn *models.Connection, estimate *models
 		//f.SetCellStr(sheet, "G43", fmt.Sprintf("상기 금액은 %v년 %v%v 용역대가임.", start[0], part, typeStr))
 		f.SetCellStr(sheet, "G43", fmt.Sprintf("상기 금액은 %v%v 용역대가임.", part, typeStr))
 		if apt.Type == "아파트" || apt.Familycount3 > 0 {
-			f.SetCellStr(sheet, "F69", "공동주택")
+			f.SetCellStr(sheet, "C69", "③ 용      도 : 공동주택")
 		} else {
-			f.SetCellStr(sheet, "F69", "공동주택외 건축물")
+			f.SetCellStr(sheet, "C69", "③ 용      도 : 공동주택외 건축물")
 		}
 
 		f.UpdateLinkedValue()

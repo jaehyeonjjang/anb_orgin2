@@ -1709,13 +1709,14 @@ class PainterController extends GetxController {
       final completer = Completer<ui.Size>();
       final image = Image.asset(imageAssetPath);
       image.image.resolve(const ImageConfiguration()).addListener(
-        ImageStreamListener((info, _) {
-          completer.complete(
-              ui.Size(info.image.width.toDouble(), info.image.height.toDouble()));
-        }, onError: (_, __) {
-          if (!completer.isCompleted) completer.complete(const ui.Size(0, 0));
-        }),
-      );
+            ImageStreamListener((info, _) {
+              completer.complete(ui.Size(
+                  info.image.width.toDouble(), info.image.height.toDouble()));
+            }, onError: (_, __) {
+              if (!completer.isCompleted)
+                completer.complete(const ui.Size(0, 0));
+            }),
+          );
       size = await completer.future;
     }
 
