@@ -187,16 +187,17 @@ class DataBox extends StatelessWidget {
               ),
             ),
             Table(
-              columnWidths: const {
+              columnWidths: {
                 0: FixedColumnWidth(50),
-                1: FixedColumnWidth(120),
-                2: FixedColumnWidth(70),
-                3: FixedColumnWidth(160),
+                1: FixedColumnWidth(150),
+                2: FixedColumnWidth(150),
+                3: FixedColumnWidth(200),
                 4: FixedColumnWidth(60),
                 5: FixedColumnWidth(60),
                 6: FixedColumnWidth(60),
                 7: FixedColumnWidth(90),
-                8: FixedColumnWidth(190),
+                8: FlexColumnWidth(),
+                9: FixedColumnWidth(200),
               },
               border: TableBorder.all(color: Colors.black),
               children: [
@@ -208,7 +209,7 @@ class DataBox extends StatelessWidget {
                   Container(
                       alignment: Alignment.center,
                       padding: const EdgeInsets.all(10),
-                      child: const Text('부위')),
+                      child: const Text('부위(위치)')),
                   Container(
                       alignment: Alignment.center,
                       padding: const EdgeInsets.all(10),
@@ -236,7 +237,7 @@ class DataBox extends StatelessWidget {
                   Container(
                       alignment: Alignment.center,
                       padding: const EdgeInsets.all(10),
-                      child: const Text('비고')),
+                      child: const Text('결함발생원인')),
                   Container(
                       alignment: Alignment.center,
                       padding: const EdgeInsets.all(10),

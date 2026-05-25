@@ -18,6 +18,7 @@ import 'package:periodic/models/datacategory.dart';
 import 'package:periodic/models/periodic.dart';
 import 'package:periodic/models/periodicblueprintzoom.dart';
 import 'package:periodic/models/periodicdata.dart';
+import 'package:periodic/models/periodicimage.dart';
 import 'package:periodic/models/periodicother.dart';
 import 'package:periodic/models/user.dart';
 
@@ -36,10 +37,69 @@ class BlueprintController extends GetxController {
 
   final _modifiedOther = false.obs;
   final _modifiedImage = false.obs;
+  final _modifiedImageTypes = <int>{}.obs;
+  // 이미지 타입별 마지막 미리보기 경로 (offlinefilename 또는 filename)
+  final _lastImagePaths = <int, String>{}.obs;
   bool get modifiedOther => _modifiedOther.value;
   set modifiedOther(value) => _modifiedOther.value = value;
   bool get modifiedImage => _modifiedImage.value;
   set modifiedImage(value) => _modifiedImage.value = value;
+  Set<int> get modifiedImageTypes => _modifiedImageTypes;
+  addModifiedImageType(int type) {
+    _modifiedImageTypes.add(type);
+    _modifiedImageTypes.refresh();
+  }
+
+  clearModifiedImageTypes() {
+    _modifiedImageTypes.clear();
+    _modifiedImageTypes.refresh();
+  }
+
+  Map<int, String> get lastImagePaths => _lastImagePaths;
+  String? getLastImagePath(int type) => _lastImagePaths[type];
+  setLastImagePath(int type, String path) {
+    _lastImagePaths[type] = path;
+    _lastImagePaths.refresh();
+    // 타입별 경로 리스트에도 추가
+    final list = _imagePathsByType[type] ?? <String>[];
+    list.add(path);
+    _imagePathsByType[type] = list;
+    _imagePathsByType.refresh();
+  }
+
+  // 이미지 타입별 전체 경로 목록 (미리보기용)
+  final _imagePathsByType = <int, List<String>>{}.obs;
+  List<String> getImagePathsByType(int type) =>
+      _imagePathsByType[type] ?? const <String>[];
+
+  // periodic.json 에서 이미지 목록을 읽어 각 타입의 경로들을 캐싱
+  Future<void> refreshLastImagePaths() async {
+    try {
+      final LocalStorage storage = LocalStorage('periodic.json');
+      await storage.ready;
+      final str = await storage.getItem('periodicimages');
+      _lastImagePaths.clear();
+      _imagePathsByType.clear();
+      if (str != null && str != '') {
+        final list = json.decode(str) as List;
+        for (var raw in list) {
+          final img = Periodicimage.fromJson(raw);
+          final path = img.offlinefilename.isNotEmpty
+              ? img.offlinefilename
+              : img.filename;
+          if (path.isEmpty) continue;
+          _lastImagePaths[img.type] = path; // 마지막 항목으로 덮어쓰기
+          final l = _imagePathsByType[img.type] ?? <String>[];
+          l.add(path);
+          _imagePathsByType[img.type] = l;
+        }
+      }
+      _lastImagePaths.refresh();
+      _imagePathsByType.refresh();
+    } catch (_) {
+      // 무시
+    }
+  }
 
   Periodic get periodic => _periodic.value;
   set periodic(value) => _periodic.value = value;
@@ -79,6 +139,37 @@ class BlueprintController extends GetxController {
 
   bool get sendError => _sendError.value;
   set sendError(value) => _sendError.value = value;
+
+  // 특정 탭에 수정사항이 있는지 확인
+  bool isTabModified(int tab) {
+    for (var other in periodicothers) {
+      if (other.category == tab && other.change == 1) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  // 공중이 이용하는 부위 전체에 수정사항이 있는지 확인
+  bool get hasOtherModified {
+    final tabs = [3, 10, 11, 12, 13, 14, 15];
+    for (var tab in tabs) {
+      if (isTabModified(tab)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  // 특정 이미지 타입에 수정사항이 있는지 확인
+  bool isImageTypeModified(int imageType) {
+    return _modifiedImageTypes.contains(imageType);
+  }
+
+  // 사진 자료 전체에 수정사항이 있는지 확인
+  bool get hasImageModified {
+    return modifiedImage;
+  }
 
   setModified(target) {
     for (var i = 0; i < items.length; i++) {
@@ -238,6 +329,8 @@ class BlueprintController extends GetxController {
 
       modified = true;
       loading = true;
+
+      await refreshLastImagePaths();
 
       return;
     }
@@ -426,6 +519,107 @@ class BlueprintController extends GetxController {
     }
 
     items = blueprints;
+
+    // '사진 자료' 하위 항목 추가
+    final imageParent = Blueprint(
+        id: -2,
+        name: '사진 자료',
+        level: 1,
+        upload: 0,
+        filename: '',
+        collapsed: true,
+        extra: {'isImage': true});
+    items.add(imageParent);
+
+    final imageItems = [
+      {'id': -101, 'name': '위치도', 'type': 1},
+      {'id': -102, 'name': '전경', 'type': 2},
+      {'id': -103, 'name': '부위별', 'type': 3},
+      {'id': -110, 'name': '주변공사', 'type': 10},
+    ];
+
+    for (var item in imageItems) {
+      items.add(Blueprint(
+          id: item['id'] as int,
+          name: item['name'] as String,
+          level: 2,
+          upload: 0,
+          filename: '',
+          extra: {'isImage': true, 'imageType': item['type']}));
+    }
+
+    // '공중이 이용하는 부위' 하위 항목 추가
+    final otherParent = Blueprint(
+        id: -1,
+        name: '공중이 이용하는 부위',
+        level: 1,
+        upload: 0,
+        filename: '',
+        collapsed: true,
+        extra: {'isOther': true});
+    items.add(otherParent);
+
+    final otherItems = [
+      {'id': -10, 'name': '추락방지시설', 'tab': 10},
+      {'id': -11, 'name': '도로포장', 'tab': 11},
+      {'id': -12, 'name': '도로부 신축 이음부', 'tab': 12},
+      {'id': -13, 'name': '환기구 등의 덮개', 'tab': 13},
+      {'id': -14, 'name': '외벽 마감제', 'tab': 14},
+      {'id': -15, 'name': '강재구조 노후', 'tab': 15},
+      {'id': -3, 'name': '부대 점검사항', 'tab': 3},
+    ];
+
+    for (var item in otherItems) {
+      items.add(Blueprint(
+          id: item['id'] as int,
+          name: item['name'] as String,
+          level: 2,
+          upload: 0,
+          filename: '',
+          extra: {'isOther': true, 'tab': item['tab']}));
+    }
+
+    // '장비사진' 항목 추가
+    final equipmentParent = Blueprint(
+        id: -4,
+        name: '장비사진',
+        level: 1,
+        upload: 0,
+        filename: '',
+        collapsed: true,
+        extra: {'isImage': true});
+    items.add(equipmentParent);
+
+    final equipmentItems = [
+      {'id': -201, 'name': '지상층 벽체 해머', 'type': 20},
+      {'id': -202, 'name': '지하층 벽체 해머', 'type': 21},
+      {'id': -203, 'name': '지상층 슬래브 해머', 'type': 22},
+      {'id': -204, 'name': '지하층 슬래브 해머', 'type': 23},
+      {'id': -205, 'name': '지상층 벽체 탄산화', 'type': 24},
+      {'id': -206, 'name': '균열 팁 측정', 'type': 25},
+    ];
+
+    for (var item in equipmentItems) {
+      items.add(Blueprint(
+          id: item['id'] as int,
+          name: item['name'] as String,
+          level: 2,
+          upload: 0,
+          filename: '',
+          extra: {'isImage': true, 'imageType': item['type']}));
+    }
+
+    // '동입구' 항목 추가
+    items.add(Blueprint(
+      id: -5,
+      name: '동입구',
+      level: 1,
+      upload: 0,
+      filename: '',
+      collapsed: false,
+      extra: {'isImage': true, 'imageType': 11}
+    ));
+
     datacategorys = datacategoryItems;
     periodicothers = periodicotherItems;
 

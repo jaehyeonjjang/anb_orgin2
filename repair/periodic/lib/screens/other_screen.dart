@@ -53,6 +53,12 @@ class OtherScreen extends CWidget {
 
   @override
   Widget build(BuildContext context) {
+    // arguments로 tab이 전달되면 설정
+    final arguments = Get.arguments;
+    if (arguments != null && arguments['tab'] != null) {
+      c.tab = arguments['tab'];
+    }
+
     return WillPopScope(
         onWillPop: () {
           return clickBack(context);

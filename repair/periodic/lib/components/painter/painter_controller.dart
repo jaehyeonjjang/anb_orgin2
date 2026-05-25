@@ -37,6 +37,10 @@ const lineRed = 42;
 const lineGreen = 43;
 const lineViolet = 44;
 
+// 크기 조절 가능한 점선 사각형 (drag로 대각선 끝점 지정)
+const dashedRectRed = 51;
+const dashedRectBlue = 52;
+
 const inclinationLine = 201;
 const inclinationHorizontal = 202;
 const inclinationVertical = 203;
@@ -1040,6 +1044,12 @@ class PainterController extends GetxController {
       setType(DrawType.line);
     } else if (value == lineViolet) {
       setColor(LineColor.violet);
+      setType(DrawType.line);
+    } else if (value == dashedRectRed) {
+      setColor(LineColor.red);
+      setType(DrawType.line);
+    } else if (value == dashedRectBlue) {
+      setColor(LineColor.blue);
       setType(DrawType.line);
     } else if (value == inclinationLine) {
     } else if (value == inclinationLine) {

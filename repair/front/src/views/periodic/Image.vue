@@ -16,9 +16,16 @@
         <span v-if="scope.row.type==1">위치도</span>
         <span v-if="scope.row.type==2">전경</span>
         <span v-if="scope.row.type==3">부위별</span>
-        <span v-if="scope.row.type==10">주변공사</span>        
         <span v-if="scope.row.type==4">과업수행계획서 승인</span>
         <span v-if="scope.row.type==5">전회점검 결과표</span>
+        <span v-if="scope.row.type==10">주변공사</span>        
+        <span v-if="scope.row.type==11">동입구</span>
+        <span v-if="scope.row.type==20">지상층 벽체 해머</span>
+        <span v-if="scope.row.type==21">지하층 벽체 해머</span>
+        <span v-if="scope.row.type==22">지상층 슬래브 해머</span>
+        <span v-if="scope.row.type==23">지하층 슬래브 해머</span>
+        <span v-if="scope.row.type==24">지상층 벽체 탄산화</span>
+        <span v-if="scope.row.type==25">균열 팁 측정</span>
       </template>
     </el-table-column>
     <el-table-column prop="name" label="명칭" align="center" />
@@ -47,10 +54,21 @@
           <y-th>구분</y-th>
           <y-td>
             <el-radio-group v-model.number="data.item.type">
-              <el-radio-button size="small" label="1">위치도</el-radio-button>
-              <el-radio-button size="small" label="2">전경</el-radio-button>
-              <el-radio-button size="small" label="3">부위별</el-radio-button>
-              <el-radio-button size="small" label="10">주변공사</el-radio-button>
+              <div>
+                <el-radio-button size="small" label="1">위치도</el-radio-button>
+                <el-radio-button size="small" label="2">전경</el-radio-button>
+                <el-radio-button size="small" label="3">부위별</el-radio-button>
+                <el-radio-button size="small" label="10">주변공사</el-radio-button>
+                <el-radio-button size="small" label="11">동입구</el-radio-button>
+              </div>
+              <div style="margin-top: 10px;">
+                <el-radio-button size="small" label="20">지상층 벽체 해머</el-radio-button>
+                <el-radio-button size="small" label="21">지하층 벽체 해머</el-radio-button>
+                <el-radio-button size="small" label="22">지상층 슬래브 해머</el-radio-button>
+                <el-radio-button size="small" label="23">지하층 슬래브 해머</el-radio-button>
+                <el-radio-button size="small" label="24">지상층 벽체 탄산화</el-radio-button>
+                <el-radio-button size="small" label="25">균열 팁 측정</el-radio-button>
+              </div>
             </el-radio-group>
           </y-td>
         </y-tr>
@@ -61,7 +79,7 @@
           </y-td>
         </y-tr>
         <y-tr>
-          <y-th>사용 여부</y-th>
+          <y-th style="width: 80px; white-space: nowrap;">사용 여부</y-th>
           <y-td>
             <el-radio-group v-model.number="data.item.use">
               <el-radio-button size="small" label="1">사용</el-radio-button>
@@ -176,7 +194,9 @@ async function getItems() {
   for (let i = 0; i < res.items.length; i++) {
     let item = res.items[i]
 
-    if (item.type > 3 && item.type != 10) {
+    // 사진자료 화면에 표시할 타입: 1위치도, 2전경, 3부위별, 10주변공사, 11동입구, 20-25 장비사진
+    const allowedTypes = [1, 2, 3, 10, 11, 20, 21, 22, 23, 24, 25]
+    if (!allowedTypes.includes(item.type)) {
       continue
     }
     
@@ -294,3 +314,17 @@ const submitUpload = () => {
 }
 
 </script>
+
+<style scoped>
+:deep(.el-radio-button__original-radio:checked + .el-radio-button__inner) {
+  background-color: #409eff;
+  border-color: #409eff;
+  color: #fff;
+  font-weight: bold;
+  box-shadow: 0 2px 4px rgba(64, 158, 255, 0.4);
+}
+
+:deep(.el-radio-button__inner:hover) {
+  color: #409eff;
+}
+</style>

@@ -19,7 +19,7 @@ class PainterDrawer extends CustomPainter {
 
   Paint paintGreen = Paint()
     ..style = PaintingStyle.stroke
-    ..color = Colors.green
+    ..color = const Color(0xff228B22)
     ..strokeWidth = 2;
 
   Paint paintBlue = Paint()
@@ -69,7 +69,7 @@ class PainterDrawer extends CustomPainter {
 
   Paint paintFillGreen = Paint()
     ..style = PaintingStyle.fill
-    ..color = Colors.green;
+    ..color = const Color(0xff228B22);
 
   Paint paintFillWhite = Paint()
     ..style = PaintingStyle.fill
@@ -133,6 +133,33 @@ class PainterDrawer extends CustomPainter {
 
           //continue;
         }
+      }
+
+      // 크기 조절 가능한 점선 사각형 (대각선 두 끝점으로 정의)
+      if (points.icon == dashedRectRed || points.icon == dashedRectBlue) {
+        if (points.items.length >= 2) {
+          var p1 = points.items[0];
+          var p2 = points.items[points.items.length - 1];
+          var rect = Rect.fromLTRB(
+            (p1.dx < p2.dx ? p1.dx : p2.dx) * zoom + dx,
+            (p1.dy < p2.dy ? p1.dy : p2.dy) * zoom + dy,
+            (p1.dx > p2.dx ? p1.dx : p2.dx) * zoom + dx,
+            (p1.dy > p2.dy ? p1.dy : p2.dy) * zoom + dy,
+          );
+
+          Paint dashPaint;
+          if (points.selected == true) {
+            dashPaint = paintSelect;
+          } else if (points.icon == dashedRectBlue) {
+            dashPaint = paintBlue;
+          } else {
+            dashPaint = paintRed;
+          }
+          dashPaint.strokeWidth = 2.0;
+
+          _drawDashedRect(canvas, rect, dashPaint);
+        }
+        continue;
       }
 
       Paint paint = paintFillRed;
@@ -404,6 +431,56 @@ class PainterDrawer extends CustomPainter {
       path.lineTo(c.startSx, c.endSy);
       path.lineTo(c.startSx, c.startSy);
       canvas.drawPath(path, paintSelectbox);
+    }
+  }
+
+  // 점선 사각형 그리기 (대시 패턴 적용)
+  void _drawDashedRect(Canvas canvas, Rect rect, Paint paint) {
+    const double dash = 8.0;
+    const double gap = 5.0;
+
+    // 위쪽 변
+    _drawDashedLine(canvas, rect.topLeft, rect.topRight, dash, gap, paint);
+    // 오른쪽 변
+    _drawDashedLine(
+        canvas, rect.topRight, rect.bottomRight, dash, gap, paint);
+    // 아래쪽 변
+    _drawDashedLine(
+        canvas, rect.bottomRight, rect.bottomLeft, dash, gap, paint);
+    // 왼쪽 변
+    _drawDashedLine(canvas, rect.bottomLeft, rect.topLeft, dash, gap, paint);
+  }
+
+  void _drawDashedLine(Canvas canvas, Offset start, Offset end, double dash,
+      double gap, Paint paint) {
+    final dx = end.dx - start.dx;
+    final dy = end.dy - start.dy;
+    final distance = sqrt(dx * dx + dy * dy);
+    if (distance <= 0) {
+      return;
+    }
+    final stepCount = (distance / (dash + gap)).floor();
+    final ux = dx / distance;
+    final uy = dy / distance;
+
+    double drawn = 0.0;
+    for (var i = 0; i < stepCount; i++) {
+      final s = Offset(start.dx + ux * drawn, start.dy + uy * drawn);
+      final e = Offset(
+          start.dx + ux * (drawn + dash), start.dy + uy * (drawn + dash));
+      canvas.drawLine(s, e, paint);
+      drawn += dash + gap;
+    }
+
+    // 남는 길이에 마지막 짧은 대시 처리
+    if (drawn < distance) {
+      final remaining =
+          (distance - drawn) < dash ? (distance - drawn) : dash;
+      final s = Offset(start.dx + ux * drawn, start.dy + uy * drawn);
+      final e = Offset(
+          start.dx + ux * (drawn + remaining),
+          start.dy + uy * (drawn + remaining));
+      canvas.drawLine(s, e, paint);
     }
   }
 

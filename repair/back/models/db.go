@@ -99,7 +99,8 @@ type Connection struct {
 // Connection은 풀에 대한 핸들 wrapper일 뿐이므로,
 // 트랜잭션이 살아있다면 롤백만 수행하고 풀(c.Conn)은 그대로 둔다.
 // (예전 코드는 매 요청마다 풀을 닫아버려서 풀링 효과가 사라지고
-//  다량 요청 시 MySQL 연결이 폭증해 일시 다운되는 문제가 있었다.)
+//
+//	다량 요청 시 MySQL 연결이 폭증해 일시 다운되는 문제가 있었다.)
 func (c *Connection) Close() {
 	if c.Transaction && c.Tx != nil {
 		_ = c.Tx.Rollback()

@@ -38,6 +38,9 @@ const (
 	lineGreen   = 43
 	lineViolet  = 44
 
+	dashedRectRed  = 51
+	dashedRectBlue = 52
+
 	inclinationLine       = 201
 	inclinationHorizontal = 202
 	inclinationVertical   = 203
@@ -51,15 +54,34 @@ const (
 	crackLineRed    = 121
 	crackLineBlue   = 122
 	crackLineViolet = 123
+	crackLineGreen  = 124
 
 	crackCurveRed    = 126
 	crackCurveBlue   = 127
 	crackCurveViolet = 128
+	crackCurveGreen  = 129
+
+	rebarXViolet = 135
+
+	corrosionGreen  = 136
+	corrosionViolet = 137
+
+	beamGreen  = 138
+	beamViolet = 139
+
+	otherGreen  = 140
+	otherViolet = 141
+
+	pipeLeakGreen  = 142
+	pipeLeakViolet = 143
+
+	leakRed   = 144
+	leakGreen = 145
 )
 
 func IsCrack(v int) bool {
-	if v == crackLineRed || v == crackLineBlue || v == crackLineViolet ||
-		v == crackCurveRed || v == crackCurveBlue || v == crackCurveViolet {
+	if v == crackLineRed || v == crackLineBlue || v == crackLineViolet || v == crackLineGreen ||
+		v == crackCurveRed || v == crackCurveBlue || v == crackCurveViolet || v == crackCurveGreen {
 		return true
 	}
 
@@ -67,7 +89,7 @@ func IsCrack(v int) bool {
 }
 
 func IsCrackCurve(v int) bool {
-	if v == crackCurveRed || v == crackCurveBlue || v == crackCurveViolet {
+	if v == crackCurveRed || v == crackCurveBlue || v == crackCurveViolet || v == crackCurveGreen {
 		return true
 	}
 
@@ -115,7 +137,7 @@ func MakeImage(periodic int64, blueprint models.Blueprint, items []models.Period
 	blue := color.RGBA{0x00, 0x00, 0xff, 0xff}
 	// red := color.RGBA{0xf4, 0x43, 0x37, 0xff}
 	red := color.RGBA{0xff, 0x00, 0x00, 0xff}
-	green := color.RGBA{0x4b, 0xaf, 0x50, 0xff}
+	green := color.RGBA{0x22, 0x8B, 0x22, 0xff}
 	violet := color.RGBA{0xa0, 0x00, 0xa0, 0xff}
 
 	for _, v := range items {
@@ -501,7 +523,62 @@ func MakeImage(periodic int64, blueprint models.Blueprint, items []models.Period
 			}
 
 			gc.Stroke()
-		} else if v.Type == 101 || v.Type == 130 || v.Type == 131 {
+		} else if v.Type == dashedRectRed || v.Type == dashedRectBlue {
+			// 크기 조절 가능한 점선 사각형: 두 끝점이 대각선 모서리
+			if len(results) >= 2 {
+				p1 := results[0]
+				p2 := results[len(results)-1]
+
+				if v.Type == dashedRectBlue {
+					gc.SetStrokeColor(blue)
+				} else {
+					gc.SetStrokeColor(red)
+				}
+				gc.SetLineWidth(2.0)
+
+				x1 := p1.Dx
+				y1 := p1.Dy
+				x2 := p2.Dx
+				y2 := p2.Dy
+				if x1 > x2 {
+					x1, x2 = x2, x1
+				}
+				if y1 > y2 {
+					y1, y2 = y2, y1
+				}
+
+				dashLen := 10.0
+				gapLen := 6.0
+
+				drawDashed := func(sx, sy, ex, ey float64) {
+					ddx := ex - sx
+					ddy := ey - sy
+					dist := math.Sqrt(ddx*ddx + ddy*ddy)
+					if dist <= 0 {
+						return
+					}
+					ux := ddx / dist
+					uy := ddy / dist
+					drawn := 0.0
+					for drawn < dist {
+						segLen := dashLen
+						if dist-drawn < dashLen {
+							segLen = dist - drawn
+						}
+						gc.BeginPath()
+						gc.MoveTo(sx+ux*drawn, sy+uy*drawn)
+						gc.LineTo(sx+ux*(drawn+segLen), sy+uy*(drawn+segLen))
+						gc.Stroke()
+						drawn += dashLen + gapLen
+					}
+				}
+
+				drawDashed(x1, y1, x2, y1) // top
+				drawDashed(x2, y1, x2, y2) // right
+				drawDashed(x1, y2, x2, y2) // bottom
+				drawDashed(x1, y1, x1, y2) // left
+			}
+		} else if v.Type == 101 || v.Type == 130 || v.Type == 131 || v.Type == rebarXViolet {
 			gc.BeginPath()
 
 			if v.Type == 101 {
@@ -513,6 +590,9 @@ func MakeImage(periodic int64, blueprint models.Blueprint, items []models.Period
 			} else if v.Type == 131 {
 				gc.SetStrokeColor(green)
 				gc.SetFillColor(green)
+			} else if v.Type == rebarXViolet {
+				gc.SetStrokeColor(violet)
+				gc.SetFillColor(violet)
 			}
 
 			gc.MoveTo(x-step, y-step)
@@ -522,12 +602,18 @@ func MakeImage(periodic int64, blueprint models.Blueprint, items []models.Period
 			gc.LineTo(x-step, y+step)
 
 			gc.Stroke()
-		} else if v.Type == 102 || v.Type == 132 {
+		} else if v.Type == 102 || v.Type == 132 || v.Type == corrosionGreen || v.Type == corrosionViolet {
 			gc.BeginPath()
 
 			if v.Type == 102 {
 				gc.SetStrokeColor(lightblue)
 				gc.SetFillColor(lightblue)
+			} else if v.Type == corrosionGreen {
+				gc.SetStrokeColor(green)
+				gc.SetFillColor(green)
+			} else if v.Type == corrosionViolet {
+				gc.SetStrokeColor(violet)
+				gc.SetFillColor(violet)
 			} else {
 				gc.SetStrokeColor(red)
 				gc.SetFillColor(red)
@@ -540,12 +626,18 @@ func MakeImage(periodic int64, blueprint models.Blueprint, items []models.Period
 			gc.LineTo(x-step, y)
 
 			gc.Stroke()
-		} else if v.Type == 103 || v.Type == 133 {
+		} else if v.Type == 103 || v.Type == 133 || v.Type == beamGreen || v.Type == beamViolet {
 			gc.BeginPath()
 
 			if v.Type == 103 {
 				gc.SetStrokeColor(lightblue)
 				gc.SetFillColor(lightblue)
+			} else if v.Type == beamGreen {
+				gc.SetStrokeColor(green)
+				gc.SetFillColor(green)
+			} else if v.Type == beamViolet {
+				gc.SetStrokeColor(violet)
+				gc.SetFillColor(violet)
 			} else {
 				gc.SetStrokeColor(red)
 				gc.SetFillColor(red)
@@ -557,12 +649,18 @@ func MakeImage(periodic int64, blueprint models.Blueprint, items []models.Period
 			gc.LineTo(x+math.Cos(30.0*3.14/180.0)*step, y+math.Sin(30.0*3.14/180.0)*step)
 
 			gc.Fill()
-		} else if v.Type == 104 || v.Type == 134 {
+		} else if v.Type == 104 || v.Type == 134 || v.Type == otherGreen || v.Type == otherViolet {
 			gc.BeginPath()
 
 			if v.Type == 104 {
 				gc.SetStrokeColor(red)
 				gc.SetFillColor(red)
+			} else if v.Type == otherGreen {
+				gc.SetStrokeColor(green)
+				gc.SetFillColor(green)
+			} else if v.Type == otherViolet {
+				gc.SetStrokeColor(violet)
+				gc.SetFillColor(violet)
 			} else {
 				gc.SetStrokeColor(lightblue)
 				gc.SetFillColor(lightblue)
@@ -681,6 +779,9 @@ func MakeImage(periodic int64, blueprint models.Blueprint, items []models.Period
 			} else if v.Type == crackLineViolet || v.Type == crackCurveViolet {
 				gc.SetStrokeColor(violet)
 				gc.SetFillColor(violet)
+			} else if v.Type == crackLineGreen || v.Type == crackCurveGreen {
+				gc.SetStrokeColor(green)
+				gc.SetFillColor(green)
 			}
 
 			for i, v := range results {
@@ -772,6 +873,42 @@ func MakeImage(periodic int64, blueprint models.Blueprint, items []models.Period
 			gc.ArcTo(x, y, stepMiddle, stepMiddle, 0, math.Pi*2)
 
 			gc.Fill()
+		} else if v.Type == pipeLeakGreen {
+			gc.BeginPath()
+
+			gc.SetStrokeColor(green)
+			gc.SetFillColor(green)
+
+			gc.ArcTo(x, y, stepMiddle, stepMiddle, 0, math.Pi*2)
+
+			gc.Fill()
+		} else if v.Type == pipeLeakViolet {
+			gc.BeginPath()
+
+			gc.SetStrokeColor(violet)
+			gc.SetFillColor(violet)
+
+			gc.ArcTo(x, y, stepMiddle, stepMiddle, 0, math.Pi*2)
+
+			gc.Fill()
+		} else if v.Type == leakRed {
+			gc.BeginPath()
+
+			gc.SetStrokeColor(red)
+			gc.SetFillColor(red)
+
+			gc.ArcTo(x, y, stepMiddle, stepMiddle, 0, math.Pi*2)
+
+			gc.Stroke()
+		} else if v.Type == leakGreen {
+			gc.BeginPath()
+
+			gc.SetStrokeColor(green)
+			gc.SetFillColor(green)
+
+			gc.ArcTo(x, y, stepMiddle, stepMiddle, 0, math.Pi*2)
+
+			gc.Stroke()
 		}
 
 	}

@@ -129,8 +129,8 @@ func Supervision(id int64, typeid int, conn *models.Connection, estimate *models
 
 		f.SetCellStr(sheet, "L21", apt.Name)
 		//f.SetCellStr(sheet, "L22", buildingSize)
-		f.SetCellStr(sheet, "L22", fmt.Sprintf("%v %v", buildingSize, estimate.Name))
-		f.SetCellStr(sheet, "L23", apt.Address)
+		f.SetCellStr(sheet, "L23", fmt.Sprintf("%v %v", buildingSize, estimate.Name))
+		f.SetCellStr(sheet, "L22", apt.Address)
 		f.SetCellStr(sheet, "L24", complateyear)
 
 		// L25: 전화 / 팩스 형식으로 출력

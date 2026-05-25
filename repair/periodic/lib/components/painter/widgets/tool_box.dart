@@ -91,6 +91,36 @@ class ToolBox extends StatelessWidget {
             child: CText(title, textStyle: TextStyle(color: color))));
   }
 
+  // 점선 사각형 미리보기 버튼
+  Widget drawDashedRectButton(int index, Color color) {
+    final preview = CustomPaint(
+      size: const Size(20, 20),
+      painter: _DashedRectPreviewPainter(color: color),
+    );
+
+    if (index == c.index && c.mode == Mode.draw) {
+      return InkWell(
+          onTap: () {
+            c.setMode(Mode.draw);
+            c.setIndex(index);
+          },
+          child: Container(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(5.0),
+                color: Colors.yellow,
+              ),
+              padding: const EdgeInsets.all(5.0),
+              child: preview));
+    }
+
+    return InkWell(
+        onTap: () {
+          c.setMode(Mode.draw);
+          c.setIndex(index);
+        },
+        child: Container(padding: const EdgeInsets.all(5.0), child: preview));
+  }
+
   Widget toolBoxNumber(int index, Color color) {
     Color background = Colors.white;
 
@@ -185,7 +215,7 @@ class ToolBox extends StatelessWidget {
         CText('',
             width: 65,
             textStyle: const TextStyle(fontSize: 14, color: Colors.black)),
-        const SizedBox(width: 28),
+        drawDashedRectButton(dashedRectRed, Colors.red),
         drawText(basicVerticalLineV, '세로(정)', Colors.red),
         drawText(basicVerticalBreakV, '세로(역)', Colors.red),
       ]),
@@ -193,7 +223,8 @@ class ToolBox extends StatelessWidget {
         CText('',
             width: 65,
             textStyle: const TextStyle(fontSize: 14, color: Colors.black)),
-        const SizedBox(width: 28),
+        drawDashedRectButton(
+            dashedRectBlue, const Color.fromRGBO(0, 0, 255, 1.0)),
         drawText(basicVerticalLineFree, '자유(정)', Colors.red),
         drawText(basicVerticalBreakFree, '자유(역)', Colors.red),
       ]),
@@ -235,7 +266,8 @@ class ToolBox extends StatelessWidget {
             textStyle: const TextStyle(fontSize: 14, color: Colors.black)),
         drawButton(crackLineRed, 'assets/imgs/i021.png'),
         drawButton(crackLineBlue, 'assets/imgs/i007.png'),
-        drawTinted(crackLineGreen, 'assets/imgs/i021.png', Colors.green),
+        drawTinted(
+            crackLineGreen, 'assets/imgs/i021.png', const Color(0xff228B22)),
         drawButton(crackLineViolet, 'assets/imgs/i017.png'),
       ]),
       Row(children: [
@@ -244,8 +276,8 @@ class ToolBox extends StatelessWidget {
             textStyle: const TextStyle(fontSize: 14, color: Colors.black)),
         drawButton(crackCurveRed, 'assets/imgs/curve_red_os.png'),
         drawButton(crackCurveBlue, 'assets/imgs/curve_blue_os.png'),
-        drawTinted(
-            crackCurveGreen, 'assets/imgs/curve_red_os.png', Colors.green),
+        drawTinted(crackCurveGreen, 'assets/imgs/curve_red_os.png',
+            const Color(0xff228B22)),
         drawButton(crackCurveViolet, 'assets/imgs/curve_violet_os.png'),
       ]),
       const SizedBox(height: 5.0),
@@ -304,7 +336,8 @@ class ToolBox extends StatelessWidget {
             textStyle: const TextStyle(fontSize: 14, color: Colors.black)),
         drawButton(132, 'assets/imgs/i132.png'),
         drawButton(102, 'assets/imgs/i002.png'),
-        drawTinted(corrosionGreen, 'assets/imgs/i132.png', Colors.green),
+        drawTinted(
+            corrosionGreen, 'assets/imgs/i132.png', const Color(0xff228B22)),
         drawTinted(
             corrosionViolet, 'assets/imgs/i132.png', const Color(0xffa000a0)),
       ]),
@@ -314,7 +347,7 @@ class ToolBox extends StatelessWidget {
             textStyle: const TextStyle(fontSize: 14, color: Colors.black)),
         drawButton(133, 'assets/imgs/i133.png'),
         drawButton(103, 'assets/imgs/i003.png'),
-        drawTinted(beamGreen, 'assets/imgs/i133.png', Colors.green),
+        drawTinted(beamGreen, 'assets/imgs/i133.png', const Color(0xff228B22)),
         drawTinted(beamViolet, 'assets/imgs/i133.png', const Color(0xffa000a0)),
       ]),
       Row(children: [
@@ -323,7 +356,7 @@ class ToolBox extends StatelessWidget {
             textStyle: const TextStyle(fontSize: 14, color: Colors.black)),
         drawButton(104, 'assets/imgs/i004.png'),
         drawButton(134, 'assets/imgs/i134.png'),
-        drawTinted(otherGreen, 'assets/imgs/i004.png', Colors.green),
+        drawTinted(otherGreen, 'assets/imgs/i004.png', const Color(0xff228B22)),
         drawTinted(
             otherViolet, 'assets/imgs/i004.png', const Color(0xffa000a0)),
       ]),
@@ -333,7 +366,8 @@ class ToolBox extends StatelessWidget {
             textStyle: const TextStyle(fontSize: 14, color: Colors.black)),
         drawButton(111, 'assets/imgs/i011.png'),
         drawButton(112, 'assets/imgs/i302.png'),
-        drawTinted(pipeLeakGreen, 'assets/imgs/i011.png', Colors.green),
+        drawTinted(
+            pipeLeakGreen, 'assets/imgs/i011.png', const Color(0xff228B22)),
         drawTinted(
             pipeLeakViolet, 'assets/imgs/i011.png', const Color(0xffa000a0)),
       ]),
@@ -343,7 +377,7 @@ class ToolBox extends StatelessWidget {
             textStyle: const TextStyle(fontSize: 14, color: Colors.black)),
         drawTinted(leakRed, 'assets/imgs/i015.png', Colors.red),
         drawButton(105, 'assets/imgs/i005.png'),
-        drawTinted(leakGreen, 'assets/imgs/i015.png', Colors.green),
+        drawTinted(leakGreen, 'assets/imgs/i015.png', const Color(0xff228B22)),
         drawButton(115, 'assets/imgs/i015.png'),
       ]),
       // Row(children: [
@@ -593,5 +627,54 @@ class ToolBox extends StatelessWidget {
         ),
       ),
     );
+  }
+}
+
+// 툴박스 버튼 안에 표시할 점선 사각형 미리보기
+class _DashedRectPreviewPainter extends CustomPainter {
+  final Color color;
+
+  _DashedRectPreviewPainter({required this.color});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..style = PaintingStyle.stroke
+      ..color = color
+      ..strokeWidth = 1.5;
+
+    const double dash = 3.0;
+    const double gap = 2.0;
+
+    final rect = Rect.fromLTWH(1.0, 1.0, size.width - 2.0, size.height - 2.0);
+
+    void drawLine(Offset a, Offset b) {
+      final dx = b.dx - a.dx;
+      final dy = b.dy - a.dy;
+      final dist = (dx == 0 ? dy.abs() : (dy == 0 ? dx.abs() : 0));
+      if (dist <= 0) return;
+      final ux = dx == 0 ? 0.0 : dx / dist;
+      final uy = dy == 0 ? 0.0 : dy / dist;
+
+      double drawn = 0.0;
+      while (drawn < dist) {
+        final segLen = (dist - drawn) < dash ? (dist - drawn) : dash;
+        final s = Offset(a.dx + ux * drawn, a.dy + uy * drawn);
+        final e =
+            Offset(a.dx + ux * (drawn + segLen), a.dy + uy * (drawn + segLen));
+        canvas.drawLine(s, e, paint);
+        drawn += dash + gap;
+      }
+    }
+
+    drawLine(rect.topLeft, rect.topRight);
+    drawLine(rect.topRight, rect.bottomRight);
+    drawLine(rect.bottomLeft, rect.bottomRight);
+    drawLine(rect.topLeft, rect.bottomLeft);
+  }
+
+  @override
+  bool shouldRepaint(covariant _DashedRectPreviewPainter oldDelegate) {
+    return oldDelegate.color != color;
   }
 }

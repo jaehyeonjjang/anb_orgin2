@@ -387,10 +387,8 @@ func Detail0(id int64, conn *models.Connection) string {
 
 	v.Set("periodicchecks", periodicchecks)
 
-	pastdate := ""
-	if len(periodicpasts) > 0 {
-		pastdate = periodicpasts[0].Repairenddate
-	}
+	// 최종점검일: 현재 정기점검의 점검기간 마지막 날
+	pastdate := periodic.Enddate
 	v.Set("periodicpasts", periodicpasts)
 	v.Set("pastdate", pastdate)
 	v.Set("pastCounts", len(periodicpasts))

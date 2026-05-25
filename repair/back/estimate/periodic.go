@@ -41,7 +41,7 @@ func Periodic(id int64, typeid int, conn *models.Connection, estimate *models.Es
 	excelFilename := fmt.Sprintf("periodic%v.xlsx", templateNum)
 
 	var complex int64 = 1
-	if periodicType == 4 {
+	if periodicType == 3 || periodicType == 4 {
 		complex = 2
 	}
 
@@ -207,8 +207,8 @@ func Periodic(id int64, typeid int, conn *models.Connection, estimate *models.Es
 		f.SetCellStr(sheet, "H8", fmt.Sprintf("%v 입주자대표회의", apt.Name))
 		f.SetCellStr(sheet, "H10", fmt.Sprintf("%v 정기안전점검 견적 건", h10Text))
 		f.SetCellStr(sheet, "N21", apt.Name)
-		f.SetCellStr(sheet, "N23", apt.Address)
-		f.SetCellStr(sheet, "N22", buildingSize)
+		f.SetCellStr(sheet, "N22", apt.Address)
+		f.SetCellStr(sheet, "N23", buildingSize)
 		f.SetCellStr(sheet, "N24", complateyear)
 
 		// N25: 전화 / 팩스 형식으로 출력
@@ -558,13 +558,13 @@ func Periodic(id int64, typeid int, conn *models.Connection, estimate *models.Es
 		title := ""
 		switch estimate.Subtype {
 		case 1:
-			title = fmt.Sprintf("%v %v년 상반기 정기안전점검", apt.Name, t.Year())
+			title = fmt.Sprintf("%v %v년 상반기 건축물 정기안전점검", apt.Name, t.Year())
 		case 2:
-			title = fmt.Sprintf("%v %v년 하반기 정기안전점검", apt.Name, t.Year())
+			title = fmt.Sprintf("%v %v년 하반기 건축물 정기안전점검", apt.Name, t.Year())
 		case 3:
-			title = fmt.Sprintf("%v %v년 연간 정기안전점검", apt.Name, t.Year())
+			title = fmt.Sprintf("%v %v년 연간 건축물 정기안전점검", apt.Name, t.Year())
 		default:
-			title = fmt.Sprintf("%v %v년 정기안전점검", apt.Name, t.Year())
+			title = fmt.Sprintf("%v %v년 건축물 정기안전점검", apt.Name, t.Year())
 		}
 
 		priceStr := fmt.Sprintf("일금 %v원정(₩%v) - VAT 별도", global.HumanMoney(int64(compareestimate.Price)*complex), humanize.Comma(int64(compareestimate.Price)*complex))
@@ -673,24 +673,25 @@ func Periodic(id int64, typeid int, conn *models.Connection, estimate *models.Es
 
 		switch estimate.Subtype {
 		case 1:
-			title = fmt.Sprintf("%v년 상반기 정기안전점검", t.Year())
+			title = fmt.Sprintf("%v년 상반기 건축물 정기안전점검", t.Year())
 		case 2:
-			title = fmt.Sprintf("%v년 하반기 정기안전점검", t.Year())
+			title = fmt.Sprintf("%v년 하반기 건축물 정기안전점검", t.Year())
 		case 3:
-			title = fmt.Sprintf("%v년 연간 정기안전점검", t.Year())
+			title = fmt.Sprintf("%v년 연간 건축물 정기안전점검", t.Year())
 		default:
-			title = fmt.Sprintf("%v년 정기안전점검", t.Year())
+			title = fmt.Sprintf("%v년 건축물 정기안전점검", t.Year())
 		}
 
 		t = time.ParseDate(compareestimate.Writedate)
 		f.SetCellStr(sheet, "A6", apt.Name)
 
 		if estimate.Subtype == 3 {
-			title = fmt.Sprintf("%v년 상반기 정기안전점검", t.Year())
+			title = fmt.Sprintf("%v년 상반기 건축물 정기안전점검", t.Year())
 		}
 
 		f.SetCellStr(sheet, "A9", title)
 		f.SetCellStr(sheet, "D24", buildingSize)
+		f.SetCellStr(sheet, "D25", "시설물의 안전 및 유지관리에 관한 특별법 제 11조의 의거 건축물 정기안전점검")
 		f.SetCellStr(sheet, "I10", t.Humandate())
 
 		sheet = "을지"
@@ -769,24 +770,25 @@ func Periodic(id int64, typeid int, conn *models.Connection, estimate *models.Es
 
 		switch estimate.Subtype {
 		case 1:
-			title = fmt.Sprintf("%v년 상반기 정기안전점검", t.Year())
+			title = fmt.Sprintf("%v년 상반기 건축물 정기안전점검", t.Year())
 		case 2:
-			title = fmt.Sprintf("%v년 하반기 정기안전점검", t.Year())
+			title = fmt.Sprintf("%v년 하반기 건축물 정기안전점검", t.Year())
 		case 3:
-			title = fmt.Sprintf("%v년 연간 정기안전점검", t.Year())
+			title = fmt.Sprintf("%v년 연간 건축물 정기안전점검", t.Year())
 		default:
-			title = fmt.Sprintf("%v년 정기안전점검", t.Year())
+			title = fmt.Sprintf("%v년 건축물 정기안전점검", t.Year())
 		}
 
 		t = time.ParseDate(compareestimate.Writedate)
 		f.SetCellStr(sheet, "A6", apt.Name)
 
 		if estimate.Subtype == 3 {
-			title = fmt.Sprintf("%v년 하반기 정기안전점검", t.Year())
+			title = fmt.Sprintf("%v년 하반기 건축물 정기안전점검", t.Year())
 		}
 
 		f.SetCellStr(sheet, "A9", title)
 		f.SetCellStr(sheet, "D24", buildingSize)
+		f.SetCellStr(sheet, "D25", "시설물의 안전 및 유지관리에 관한 특별법 제 11조의 의거 건축물 정밀안전점검")
 		f.SetCellStr(sheet, "I10", t.Humandate())
 
 		sheet = "을지"

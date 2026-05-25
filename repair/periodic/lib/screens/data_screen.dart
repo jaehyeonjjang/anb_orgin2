@@ -362,7 +362,7 @@ class DataScreen extends CWidget {
       Container(
           alignment: Alignment.center,
           padding: const EdgeInsets.all(10),
-          child: const Text('부위')),
+          child: const Text('부위(위치)')),
       Container(
           alignment: Alignment.center,
           padding: const EdgeInsets.all(10),
@@ -390,7 +390,7 @@ class DataScreen extends CWidget {
       Container(
           alignment: Alignment.center,
           padding: const EdgeInsets.all(10),
-          child: const Text('비고')),
+          child: const Text('결함발생원인')),
       Container(
           alignment: Alignment.center,
           padding: const EdgeInsets.all(10),
@@ -399,6 +399,8 @@ class DataScreen extends CWidget {
 
     items.add(title);
 
+    // 번호가 있는 항목들만 필터링하고 번호 기준 내림차순 정렬
+    List<MapEntry<int, Point>> numberedItems = [];
     for (var i = 0; i < c.points.length; i++) {
       Point item = c.points[i];
 
@@ -406,23 +408,31 @@ class DataScreen extends CWidget {
         continue;
       }
 
-      items.add(makeRow(i, item, context));
+      numberedItems.add(MapEntry(i, item));
+    }
+
+    // number 기준 오름차순 정렬
+    numberedItems.sort((a, b) => a.value.number.compareTo(b.value.number));
+
+    for (var entry in numberedItems) {
+      items.add(makeRow(entry.key, entry.value, context));
     }
 
     return Container(
         padding: const EdgeInsets.all(10),
         child: SingleChildScrollView(
             child: Table(
-          columnWidths: const {
+          columnWidths: {
             0: FixedColumnWidth(50),
-            1: FixedColumnWidth(120),
-            2: FixedColumnWidth(70),
-            3: FixedColumnWidth(160),
+            1: FixedColumnWidth(150),
+            2: FixedColumnWidth(150),
+            3: FixedColumnWidth(200),
             4: FixedColumnWidth(60),
             5: FixedColumnWidth(60),
             6: FixedColumnWidth(60),
             7: FixedColumnWidth(90),
-            8: FixedColumnWidth(190),
+            8: FlexColumnWidth(),
+            9: FixedColumnWidth(200),
           },
           border: TableBorder.all(color: Colors.black),
           children: items,

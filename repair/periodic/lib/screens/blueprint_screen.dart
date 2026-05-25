@@ -3,12 +3,14 @@ import 'dart:io';
 
 import 'package:common_control/common_control.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:localstorage/localstorage.dart';
 import 'package:percent_indicator/percent_indicator.dart';
 import 'package:periodic/components/default_app_bar.dart';
 import 'package:periodic/components/painter/painter_controller.dart';
 import 'package:periodic/controllers/auth_controller.dart';
 import 'package:periodic/controllers/blueprint_controller.dart';
+import 'package:periodic/controllers/image_controller.dart';
 import 'package:periodic/models/blueprint.dart';
 import 'package:periodic/models/periodic.dart';
 import 'package:periodic/models/periodicimage.dart';
@@ -20,6 +22,7 @@ class BlueprintScreen extends CWidget {
 
   final AuthController authController = Get.find<AuthController>();
   final c = Get.find<BlueprintController>();
+  final picker = ImagePicker();
 
   endProcess() async {
     final LocalStorage storageLogin = LocalStorage('login.json');
@@ -55,9 +58,8 @@ class BlueprintScreen extends CWidget {
             ElevatedButton(
               child: const Text('저장없이 종료'),
               onPressed: () {
-                endProcess();
-                Navigator.pop(context2, true);
-                Get.back();
+                Navigator.pop(context2, false);
+                showExitCodeDialog(context);
               },
             )
           ],
@@ -66,6 +68,64 @@ class BlueprintScreen extends CWidget {
     );
 
     return ret;
+  }
+
+  showExitCodeDialog(context) {
+    final TextEditingController codeController = TextEditingController();
+
+    showDialog<void>(
+      context: context,
+      builder: (context3) {
+        return AlertDialog(
+          title: const Text('종료 코드 입력'),
+          backgroundColor: Colors.white,
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text('저장없이 종료하려면 \'1234\' 코드를 입력하세요'),
+              const SizedBox(height: 20),
+              TextField(
+                controller: codeController,
+                autofocus: true,
+                decoration: const InputDecoration(
+                  border: OutlineInputBorder(),
+                  labelText: '코드',
+                  filled: true,
+                  fillColor: Colors.white,
+                ),
+              ),
+            ],
+          ),
+          actions: <Widget>[
+            ElevatedButton(
+              child: const Text('취소'),
+              onPressed: () {
+                Navigator.pop(context3);
+              },
+            ),
+            ElevatedButton(
+              child: const Text('확인'),
+              onPressed: () {
+                if (codeController.text == '1234') {
+                  Navigator.pop(context3);
+                  endProcess();
+                  Get.back();
+                } else {
+                  Fluttertoast.showToast(
+                      msg: '코드가 올바르지 않습니다',
+                      toastLength: Toast.LENGTH_SHORT,
+                      gravity: ToastGravity.CENTER,
+                      timeInSecForIosWeb: 1,
+                      backgroundColor: Colors.red,
+                      textColor: Colors.white,
+                      fontSize: 16.0);
+                }
+              },
+            )
+          ],
+        );
+      },
+    );
   }
 
   @override
@@ -167,37 +227,6 @@ class BlueprintScreen extends CWidget {
 
       return renderItem(item, hasChildren);
     }).toList();
-    items.add(CContainer(
-      border: Border.all(color: Colors.black),
-      backgroundColor: c.modifiedOther == true
-          ? const Color.fromRGBO(255, 200, 200, 1.0)
-          : Colors.white,
-      width: double.infinity,
-      margin: const EdgeInsets.only(bottom: 10),
-      child: CText(
-        '부대시설',
-        margin: const EdgeInsets.all(20),
-      ),
-      onTap: () {
-        Get.toNamed('/other');
-      },
-    ));
-
-    items.add(CContainer(
-      border: Border.all(color: Colors.black),
-      backgroundColor: c.modifiedImage == true
-          ? const Color.fromRGBO(255, 200, 200, 1.0)
-          : Colors.white,
-      width: double.infinity,
-      margin: const EdgeInsets.only(bottom: 10),
-      child: CText(
-        '사진 자료',
-        margin: const EdgeInsets.all(20),
-      ),
-      onTap: () {
-        Get.toNamed('/image');
-      },
-    ));
 
     return CFixedBottom(
         padding: const EdgeInsets.all(10),
@@ -215,9 +244,34 @@ class BlueprintScreen extends CWidget {
   }
 
   Widget renderItem(Blueprint item, bool hasChildren) {
+    // 동적으로 수정 여부 확인
+    bool isModified = item.extra["modified"] != null;
+    
+    // '공중이 이용하는 부위' 관련 항목의 수정 여부 확인
+    if (item.extra['isOther'] == true) {
+      if (item.level == 1) {
+        // 부모 항목: 수정 여부 표시 안함
+        isModified = false;
+      } else if (item.level == 2 && item.extra['tab'] != null) {
+        // 하위 항목: 해당 탭만 확인
+        isModified = c.isTabModified(item.extra['tab'] as int);
+      }
+    }
+
+    // '사진 자료' 관련 항목의 수정 여부 확인
+    if (item.extra['isImage'] == true) {
+      if (item.level == 1 && hasChildren) {
+        // 부모 항목(하위 항목 있음): 수정 여부 표시 안함
+        isModified = false;
+      } else if (item.extra['imageType'] != null) {
+        // 하위 항목 또는 단일 항목(동입구): 해당 타입 확인
+        isModified = c.isImageTypeModified(item.extra['imageType'] as int);
+      }
+    }
+
     return CContainer(
       border: Border.all(color: Colors.black),
-      backgroundColor: item.extra["modified"] != null
+      backgroundColor: isModified
           ? const Color.fromRGBO(255, 200, 200, 1.0)
           : Colors.white,
       width: double.infinity,
@@ -239,6 +293,74 @@ class BlueprintScreen extends CWidget {
                   : const EdgeInsets.all(20),
             ),
           ),
+          // '사진 자료' 하위 항목 및 동입구(level 1) 항목에 카메라/갤러리 아이콘 추가
+          if (item.extra['isImage'] == true && 
+              item.extra['imageType'] != null &&
+              (item.level == 2 || (item.level == 1 && !hasChildren))) ...[
+            IconButton(
+              icon: const Icon(Icons.add_a_photo),
+              onPressed: () => getImageForType(item.extra['imageType'] as int, ImageSource.camera),
+            ),
+            IconButton(
+              icon: const Icon(Icons.add_photo_alternate),
+              onPressed: () => getImageForType(item.extra['imageType'] as int, ImageSource.gallery),
+            ),
+            const SizedBox(width: 40),
+            // 썸네일 영역: 고정 폭. 왼쪽부터 채워짐
+            SizedBox(
+              width: 220, // 5 * (36 + 4 right margin) = 200, 여유 포함
+              height: 40,
+              child: Obx(() {
+                final paths =
+                    c.getImagePathsByType(item.extra['imageType'] as int);
+                if (paths.isEmpty) {
+                  return const SizedBox.shrink();
+                }
+                // 최근 5장 (뒤에서부터)
+                final recent =
+                    paths.length > 5 ? paths.sublist(paths.length - 5) : paths;
+                final thumbs = <Widget>[];
+                for (var i = 0; i < recent.length; i++) {
+                  final path = recent[i];
+                  Widget img;
+                  if (path.startsWith('http')) {
+                    img = Image.network(path,
+                        fit: BoxFit.cover,
+                        errorBuilder: (_, __, ___) =>
+                            const Icon(Icons.broken_image, size: 20));
+                  } else {
+                    final file = File(path);
+                    if (!file.existsSync()) {
+                      continue;
+                    }
+                    img = Image.file(file, fit: BoxFit.cover);
+                  }
+                  thumbs.add(Padding(
+                    padding: const EdgeInsets.only(right: 4),
+                    child: InkWell(
+                      onTap: () => showPreview(path),
+                      child: Container(
+                        width: 36,
+                        height: 36,
+                        decoration: BoxDecoration(
+                          border: Border.all(color: Colors.grey[400]!),
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        clipBehavior: Clip.antiAlias,
+                        child: img,
+                      ),
+                    ),
+                  ));
+                }
+                return Row(
+                  mainAxisSize: MainAxisSize.min,
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  children: thumbs,
+                );
+              }),
+            ),
+            const SizedBox(width: 10),
+          ],
         ],
       ),
       onTap: () {
@@ -246,6 +368,22 @@ class BlueprintScreen extends CWidget {
         if (item.level == 1 && hasChildren) {
           final index = c.items.indexOf(item);
           c.toggleCollapse(index);
+          return;
+        }
+
+        // '공중이 이용하는 부위' 하위 항목 처리
+        if (item.extra['isOther'] == true && item.level == 2) {
+          final tab = item.extra['tab'];
+          Get.toNamed('/other', arguments: {'tab': tab});
+          return;
+        }
+
+        // '사진 자료' 하위 항목 및 동입구(level 1) 항목 처리
+        if (item.extra['isImage'] == true && 
+            item.extra['imageType'] != null &&
+            (item.level == 2 || (item.level == 1 && !hasChildren))) {
+          final imageType = item.extra['imageType'];
+          Get.toNamed('/image', arguments: {'type': imageType});
           return;
         }
 
@@ -688,5 +826,93 @@ class BlueprintScreen extends CWidget {
     c.modified = false;
     Get.back();
     Get.back();
+  }
+
+  void showPreview(String path) {
+    final ctx = Get.context;
+    if (ctx == null) return;
+    showGeneralDialog(
+      barrierDismissible: false,
+      context: ctx,
+      pageBuilder: (popContext, __, ___) {
+        Widget image;
+        if (path.startsWith('http')) {
+          image = Image.network(path);
+        } else {
+          image = Image.file(File(path));
+        }
+        return Scaffold(
+          body: InkWell(
+            onTap: () => Navigator.of(popContext).pop(),
+            child: Stack(children: [
+              SizedBox(
+                width: double.infinity,
+                height: double.infinity,
+                child: image,
+              ),
+              Positioned(
+                top: 30.0,
+                right: 10.0,
+                child: IconButton(
+                  icon: const Icon(Icons.close, size: 30.0),
+                  onPressed: () => Navigator.of(popContext).pop(),
+                ),
+              ),
+            ]),
+          ),
+        );
+      },
+    );
+  }
+
+  Future getImageForType(int imageType, ImageSource imageSource) async {
+    final image = await picker.pickImage(source: imageSource);
+
+    if (image == null) {
+      return;
+    }
+
+    var path = image.path;
+    var item = Periodicimage();
+    item.type = imageType;
+    item.offlinefilename = path;
+
+    final LocalStorage storage = LocalStorage('periodic.json');
+    await storage.ready;
+    final str = await storage.getItem('periodicimages');
+
+    List<Periodicimage> images = [];
+    if (str != null && str != '') {
+      images = json
+          .decode(str)
+          .map<Periodicimage>((json) => Periodicimage.fromJson(json))
+          .toList();
+    }
+
+    images.add(item);
+    final newStr = json.encode(images);
+    await storage.setItem('periodicimages', newStr);
+
+    // ImageController 업데이트
+    try {
+      final imageController = Get.find<ImageController>();
+      imageController.onInit(); // 이미지 목록 다시 로드
+    } catch (e) {
+      // ImageController가 없으면 무시
+    }
+
+    c.modified = true;
+    c.modifiedImage = true;
+    c.addModifiedImageType(imageType);
+    c.setLastImagePath(imageType, path);
+
+    Fluttertoast.showToast(
+        msg: '사진이 추가되었습니다',
+        toastLength: Toast.LENGTH_SHORT,
+        gravity: ToastGravity.CENTER,
+        timeInSecForIosWeb: 1,
+        backgroundColor: Colors.grey[700],
+        textColor: Colors.white,
+        fontSize: 16.0);
   }
 }

@@ -21,6 +21,12 @@ class ImageScreen extends CWidget {
   final TextEditingController textEditingController = TextEditingController();
   @override
   Widget build(BuildContext context) {
+    // arguments로 type이 전달되면 설정
+    final arguments = Get.arguments;
+    if (arguments != null && arguments['type'] != null) {
+      c.type = arguments['type'];
+    }
+
     return CScaffold(
       appBar: DefaultAppBar(
         leading: IconButton(
@@ -45,26 +51,54 @@ class ImageScreen extends CWidget {
   }
 
   bottom() {
-    return CRow(children: [
-      Obx(() => Checkbox(value: c.type == 1, onChanged: (value) => c.type = 1)),
-      const Text('위치도'),
-      Obx(() => Checkbox(value: c.type == 2, onChanged: (value) => c.type = 2)),
-      const Text('전경'),
-      Obx(() => Checkbox(value: c.type == 3, onChanged: (value) => c.type = 3)),
-      const Text('부위별'),
-      Obx(() =>
-          Checkbox(value: c.type == 10, onChanged: (value) => c.type = 10)),
-      const Text('주변공사'),
-      const SizedBox(width: 20),
-      Expanded(child: TextField(controller: textEditingController)),
-      const SizedBox(width: 20),
-      ElevatedButton(
-          onPressed: () => getImage(ImageSource.camera),
-          child: const Text('카메라')),
-      const SizedBox(width: 10),
-      ElevatedButton(
-          onPressed: () => getImage(ImageSource.gallery),
-          child: const Text('갤러리')),
+    return CColumn(children: [
+      CRow(children: [
+        Obx(() =>
+            Checkbox(value: c.type == 1, onChanged: (value) => c.type = 1)),
+        const Text('위치도'),
+        Obx(() =>
+            Checkbox(value: c.type == 2, onChanged: (value) => c.type = 2)),
+        const Text('전경'),
+        Obx(() =>
+            Checkbox(value: c.type == 3, onChanged: (value) => c.type = 3)),
+        const Text('부위별'),
+        Obx(() =>
+            Checkbox(value: c.type == 10, onChanged: (value) => c.type = 10)),
+        const Text('주변공사'),
+        Obx(() =>
+            Checkbox(value: c.type == 11, onChanged: (value) => c.type = 11)),
+        const Text('동입구'),
+      ]),
+      CRow(children: [
+        Obx(() =>
+            Checkbox(value: c.type == 20, onChanged: (value) => c.type = 20)),
+        const Text('지상층 벽체 해머'),
+        Obx(() =>
+            Checkbox(value: c.type == 21, onChanged: (value) => c.type = 21)),
+        const Text('지하층 벽체 해머'),
+        Obx(() =>
+            Checkbox(value: c.type == 22, onChanged: (value) => c.type = 22)),
+        const Text('지상층 슬래브 해머'),
+        Obx(() =>
+            Checkbox(value: c.type == 23, onChanged: (value) => c.type = 23)),
+        const Text('지하층 슬래브 해머'),
+        Obx(() =>
+            Checkbox(value: c.type == 24, onChanged: (value) => c.type = 24)),
+        const Text('지상층 벽체 탄산화'),
+        Obx(() =>
+            Checkbox(value: c.type == 25, onChanged: (value) => c.type = 25)),
+        const Text('균열 팁 측정'),
+        const SizedBox(width: 20),
+        Expanded(child: TextField(controller: textEditingController)),
+        const SizedBox(width: 20),
+        ElevatedButton(
+            onPressed: () => getImage(ImageSource.camera),
+            child: const Text('카메라')),
+        const SizedBox(width: 10),
+        ElevatedButton(
+            onPressed: () => getImage(ImageSource.gallery),
+            child: const Text('갤러리')),
+      ]),
     ]);
   }
 
@@ -90,11 +124,25 @@ class ImageScreen extends CWidget {
     c.saveImage();
 
     blueprintController.modified = true;
+    blueprintController.addModifiedImageType(c.type);
+    blueprintController.setLastImagePath(c.type, path);
   }
 
   Widget _tab(Periodicimage item, int index, context) {
-    final types = ['', '위치도', '전경', '부위별', '', '', '', '', '', '', '주변공사'];
-    final type = types[item.type];
+    final typeNames = <int, String>{
+      1: '위치도',
+      2: '전경',
+      3: '부위별',
+      10: '주변공사',
+      11: '동입구',
+      20: '지상층 벽체 해머',
+      21: '지하층 벽체 해머',
+      22: '지상층 슬래브 해머',
+      23: '지하층 슬래브 해머',
+      24: '지상층 벽체 탄산화',
+      25: '균열 팁 측정',
+    };
+    final type = typeNames[item.type] ?? '기타';
 
     return InkWell(
         onTap: () {
@@ -181,8 +229,7 @@ class ImageScreen extends CWidget {
                     child: Text(type,
                         style: const TextStyle(color: Colors.white))),
                 const SizedBox(width: 10),
-                SizedBox(
-                    width: 200,
+                Expanded(
                     child: Text(
                       item.name,
                       overflow: TextOverflow.ellipsis,

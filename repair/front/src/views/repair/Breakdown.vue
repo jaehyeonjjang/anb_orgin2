@@ -140,12 +140,15 @@
           style="width:290px;" 
           v-model="data.item.category" 
           :data="data.categorys" 
+          :props="{ label: 'label', value: 'value', children: 'children' }"
+          check-strictly
+          filterable
           :default-expand-all="false" 
           :render-after-expand="false" 
           @node-click="changeCategory" 
           placeholder="공사종별"
           popper-class="breakdown-tree-select-popper"
-          :teleported="true"
+          :teleported="false"
         />        
       </div>
 

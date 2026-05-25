@@ -423,7 +423,7 @@ func (c *Controller) Download(filename string, downloadFilename string) {
 		log.Println(err)
 	}
 	log.Println("filesize", filesize.Size())
-	
+
 	// 파일 확장자에 따라 적절한 Content-Type 설정
 	contentType := "application/octet-stream"
 	ext := strings.ToLower(filepath.Ext(downloadFilename))
@@ -437,7 +437,7 @@ func (c *Controller) Download(filename string, downloadFilename string) {
 	case ".zip":
 		contentType = "application/zip"
 	}
-	
+
 	c.Context.Header("Content-Type", contentType)
 	c.Context.Header("Content-Length", fmt.Sprintf("%v", filesize.Size()))
 	c.Context.Header("Content-Disposition", fmt.Sprintf("attachment; filename=\"%v\";", filepath.Base(downloadFilename)))

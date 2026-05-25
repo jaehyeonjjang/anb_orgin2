@@ -183,8 +183,8 @@ func Detail(estimateType int, id int64, typeid int, conn *models.Connection, est
 		f.SetCellStr(sheet, "B36", fmt.Sprintf("※ 첨    부 :  1. %v 용역 견적서 1부 끝.", typeStr))
 
 		f.SetCellStr(sheet, "L21", apt.Name)
-		f.SetCellStr(sheet, "L22", buildingSize)
-		f.SetCellStr(sheet, "L23", apt.Address)
+		f.SetCellStr(sheet, "L23", buildingSize)
+		f.SetCellStr(sheet, "L22", apt.Address)
 		f.SetCellStr(sheet, "L24", complateyear)
 
 		// L25: 전화 / 팩스 형식으로 출력
