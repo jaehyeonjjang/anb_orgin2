@@ -1049,9 +1049,7 @@ func (p *AptdongetcManager) GetByAptAptdongParentName(apt int64, aptdong int64, 
     if aptdong != 0 {
         rets = append(rets, Where{Column:"aptdong", Value:aptdong, Compare:"="})        
     }
-    if parent != 0 {
-        rets = append(rets, Where{Column:"parent", Value:parent, Compare:"="})        
-    }
+    rets = append(rets, Where{Column:"parent", Value:parent, Compare:"="})
     if name != "" {
         rets = append(rets, Where{Column:"name", Value:name, Compare:"="})        
     }

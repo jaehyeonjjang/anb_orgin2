@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:common_control/common_control.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:localstorage/localstorage.dart';
@@ -23,6 +24,7 @@ class BlueprintScreen extends CWidget {
   final AuthController authController = Get.find<AuthController>();
   final c = Get.find<BlueprintController>();
   final picker = ImagePicker();
+  final TextEditingController buwibyeolNameController = TextEditingController();
 
   endProcess() async {
     final LocalStorage storageLogin = LocalStorage('login.json');
@@ -228,25 +230,29 @@ class BlueprintScreen extends CWidget {
       return renderItem(item, hasChildren);
     }).toList();
 
-    return CFixedBottom(
-        padding: const EdgeInsets.all(10),
-        bottom: ElevatedButton(
-          style: ElevatedButton.styleFrom(
-            minimumSize: const Size.fromHeight(60), // NEW
+    return GestureDetector(
+      onTap: () => FocusScope.of(context).unfocus(),
+      behavior: HitTestBehavior.translucent,
+      child: CFixedBottom(
+          padding: const EdgeInsets.all(10),
+          bottom: ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              minimumSize: const Size.fromHeight(60), // NEW
+            ),
+            onPressed: () => clickSend(context),
+            child: const Text(
+              '전송',
+              style: TextStyle(fontSize: 20),
+            ),
           ),
-          onPressed: () => clickSend(context),
-          child: const Text(
-            '전송',
-            style: TextStyle(fontSize: 20),
-          ),
-        ),
-        children: items);
+          children: items),
+    );
   }
 
   Widget renderItem(Blueprint item, bool hasChildren) {
     // 동적으로 수정 여부 확인
     bool isModified = item.extra["modified"] != null;
-    
+
     // '공중이 이용하는 부위' 관련 항목의 수정 여부 확인
     if (item.extra['isOther'] == true) {
       if (item.level == 1) {
@@ -271,9 +277,8 @@ class BlueprintScreen extends CWidget {
 
     return CContainer(
       border: Border.all(color: Colors.black),
-      backgroundColor: isModified
-          ? const Color.fromRGBO(255, 200, 200, 1.0)
-          : Colors.white,
+      backgroundColor:
+          isModified ? const Color.fromRGBO(255, 200, 200, 1.0) : Colors.white,
       width: double.infinity,
       margin: EdgeInsets.only(bottom: 10, left: (item.level - 1) * 50),
       child: Row(
@@ -294,16 +299,36 @@ class BlueprintScreen extends CWidget {
             ),
           ),
           // '사진 자료' 하위 항목 및 동입구(level 1) 항목에 카메라/갤러리 아이콘 추가
-          if (item.extra['isImage'] == true && 
+          if (item.extra['isImage'] == true &&
               item.extra['imageType'] != null &&
               (item.level == 2 || (item.level == 1 && !hasChildren))) ...[
+            if (item.extra['imageType'] == 3) ...[          
+              SizedBox(
+                width: 180,
+                height: 36,
+                child: TextField(
+                  controller: buwibyeolNameController,
+                  autofocus: false,
+                  decoration: const InputDecoration(
+                    hintText: '명칭',
+                    hintStyle: TextStyle(color: Color(0xFF757575)),
+                    isDense: true,
+                    contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+                    border: OutlineInputBorder(),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+            ],
             IconButton(
               icon: const Icon(Icons.add_a_photo),
-              onPressed: () => getImageForType(item.extra['imageType'] as int, ImageSource.camera),
+              onPressed: () => getImageForType(
+                  item.extra['imageType'] as int, ImageSource.camera),
             ),
             IconButton(
               icon: const Icon(Icons.add_photo_alternate),
-              onPressed: () => getImageForType(item.extra['imageType'] as int, ImageSource.gallery),
+              onPressed: () => getImageForType(
+                  item.extra['imageType'] as int, ImageSource.gallery),
             ),
             const SizedBox(width: 40),
             // 썸네일 영역: 고정 폭. 왼쪽부터 채워짐
@@ -379,7 +404,7 @@ class BlueprintScreen extends CWidget {
         }
 
         // '사진 자료' 하위 항목 및 동입구(level 1) 항목 처리
-        if (item.extra['isImage'] == true && 
+        if (item.extra['isImage'] == true &&
             item.extra['imageType'] != null &&
             (item.level == 2 || (item.level == 1 && !hasChildren))) {
           final imageType = item.extra['imageType'];
@@ -405,28 +430,75 @@ class BlueprintScreen extends CWidget {
   Widget renderItemSend(int index) {
     final item = c.items[index];
 
+    // 하위 항목 존재 여부 확인
+    bool hasChildren = false;
+    if (item.level == 1) {
+      if (index < c.items.length - 1) {
+        hasChildren = c.items[index + 1].level > 1;
+      }
+    }
+
+    // 동적으로 수정 여부 확인 (메인 화면과 동일한 로직)
+    bool isModified = item.extra["modified"] != null;
+
+    if (item.extra['isOther'] == true) {
+      if (item.level == 1) {
+        isModified = false;
+      } else if (item.level == 2 && item.extra['tab'] != null) {
+        isModified = c.isTabModified(item.extra['tab'] as int);
+      }
+    }
+
+    if (item.extra['isImage'] == true) {
+      if (item.level == 1 && hasChildren) {
+        isModified = false;
+      } else if (item.extra['imageType'] != null) {
+        isModified = c.isImageTypeModified(item.extra['imageType'] as int);
+      }
+    }
+
     Color color = Colors.white;
-
-    if (item.extra['modified'] != null) {
+    if (isModified) {
       color = const Color.fromRGBO(255, 200, 200, 1.0);
-
       if (item.checked == false) {
         color = const Color.fromRGBO(220, 220, 220, 1.0);
       }
     }
+
     return CContainer(
       border: Border.all(color: Colors.black),
       backgroundColor: color,
       width: double.infinity,
       margin: EdgeInsets.only(bottom: 10, left: (item.level - 1) * 50),
-      child: CBothSide(children: [
-        CText(item.name, margin: const EdgeInsets.all(20)),
-        item.extra['modified'] != null
-            ? Checkbox(
-                onChanged: (value) => c.setCheck(index, value),
-                value: item.checked)
-            : Container()
-      ]),
+      child: Row(
+        children: [
+          if (item.level == 1 && hasChildren) ...[
+            const SizedBox(width: 10),
+            Icon(
+              item.collapsed ? Icons.chevron_right : Icons.expand_more,
+              size: 30,
+            ),
+          ],
+          Expanded(
+            child: CText(
+              item.name,
+              margin: item.level == 1 && hasChildren
+                  ? const EdgeInsets.fromLTRB(5, 20, 20, 20)
+                  : const EdgeInsets.all(20),
+            ),
+          ),
+          isModified
+              ? Checkbox(
+                  onChanged: (value) => c.setCheck(index, value),
+                  value: item.checked)
+              : const SizedBox(width: 10),
+        ],
+      ),
+      onTap: () {
+        if (item.level == 1 && hasChildren) {
+          c.toggleCollapse(index);
+        }
+      },
     );
   }
 
@@ -481,10 +553,24 @@ class BlueprintScreen extends CWidget {
           content: CColumn(width: 800, height: h - 320, children: [
             CContainer(
                 height: h - 400,
-                child: SingleChildScrollView(
-                    child: Obx(() => CColumn(
-                        children: List.generate(c.items.length,
-                            (index) => renderItemSend(index)))))),
+                child: SingleChildScrollView(child: Obx(() {
+                  // collapsed 상태에 따라 항목 필터링 (메인 화면과 동일)
+                  final visibleIndexes = <int>[];
+                  for (var i = 0; i < c.items.length; i++) {
+                    final item = c.items[i];
+                    visibleIndexes.add(i);
+                    if (item.level == 1 && item.collapsed) {
+                      while (
+                          i + 1 < c.items.length && c.items[i + 1].level > 1) {
+                        i++;
+                      }
+                    }
+                  }
+                  return CColumn(
+                      children: visibleIndexes
+                          .map((idx) => renderItemSend(idx))
+                          .toList());
+                }))),
             const SizedBox(height: 40),
             const Text('온라인 상태에서만 전송이 가능합니다. 데이터를 전송하시겠습니까.',
                 style: TextStyle(color: Colors.red, fontSize: 20)),
@@ -853,16 +939,109 @@ class BlueprintScreen extends CWidget {
               Positioned(
                 top: 30.0,
                 right: 10.0,
-                child: IconButton(
-                  icon: const Icon(Icons.close, size: 30.0),
-                  onPressed: () => Navigator.of(popContext).pop(),
-                ),
+                child: Row(children: [
+                  IconButton(
+                    icon: const Icon(CupertinoIcons.trash, size: 30.0),
+                    onPressed: () {
+                      showDialog<void>(
+                        context: popContext,
+                        builder: (dialogContext) {
+                          return AlertDialog(
+                            title: const Text('이미지 삭제'),
+                            backgroundColor: Colors.white,
+                            content: const Text('이미지를 삭제하시겠습니까'),
+                            actions: <Widget>[
+                              ElevatedButton(
+                                child: const Text('취소'),
+                                onPressed: () {
+                                  Navigator.of(dialogContext).pop();
+                                },
+                              ),
+                              ElevatedButton(
+                                child: const Text('삭제'),
+                                onPressed: () async {
+                                  Navigator.of(dialogContext).pop();
+                                  Navigator.of(popContext).pop();
+
+                                  final removed =
+                                      await _deleteImageByPath(path);
+
+                                  Fluttertoast.showToast(
+                                      msg: removed
+                                          ? '사진이 삭제되었습니다'
+                                          : '사진을 찾을 수 없습니다',
+                                      gravity: ToastGravity.CENTER,
+                                      backgroundColor: Colors.grey[700],
+                                      textColor: Colors.white);
+                                },
+                              ),
+                            ],
+                          );
+                        },
+                      );
+                    },
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.close, size: 30.0),
+                    onPressed: () => Navigator.of(popContext).pop(),
+                  ),
+                ]),
               ),
             ]),
           ),
         );
       },
     );
+  }
+
+  Future<bool> _deleteImageByPath(String path) async {
+    try {
+      final LocalStorage storage = LocalStorage('periodic.json');
+      await storage.ready;
+      final str = await storage.getItem('periodicimages');
+      if (str == null || str == '') return false;
+
+      final List<Periodicimage> images = (json.decode(str) as List)
+          .map<Periodicimage>((j) => Periodicimage.fromJson(j))
+          .toList();
+
+      final base = path.split('/').last.split('\\').last;
+      final idx = images.indexWhere((e) {
+        if (e.offlinefilename == path || e.filename == path) return true;
+        final offBase = e.offlinefilename.split('/').last.split('\\').last;
+        final fnBase = e.filename.split('/').last.split('\\').last;
+        return base.isNotEmpty && (offBase == base || fnBase == base);
+      });
+
+      if (idx < 0) return false;
+
+      // 로컬 파일도 실제 삭제
+      final offlinePath = images[idx].offlinefilename;
+      if (offlinePath.isNotEmpty && !offlinePath.startsWith('http')) {
+        try {
+          final f = File(offlinePath);
+          if (f.existsSync()) f.deleteSync();
+        } catch (_) {}
+      }
+
+      images.removeAt(idx);
+      await storage.setItem('periodicimages', json.encode(images));
+
+      // ImageController 동기화
+      try {
+        final imageController = Get.find<ImageController>();
+        imageController.images = images;
+      } catch (_) {}
+
+      // 썸네일 캐시 갱신
+      await c.refreshLastImagePaths();
+      c.modified = true;
+      c.modifiedImage = true;
+
+      return true;
+    } catch (_) {
+      return false;
+    }
   }
 
   Future getImageForType(int imageType, ImageSource imageSource) async {
@@ -875,6 +1054,10 @@ class BlueprintScreen extends CWidget {
     var path = image.path;
     var item = Periodicimage();
     item.type = imageType;
+    if (imageType == 3) {
+      item.name = buwibyeolNameController.text;
+      buwibyeolNameController.clear();
+    }
     item.offlinefilename = path;
 
     final LocalStorage storage = LocalStorage('periodic.json');

@@ -1441,12 +1441,28 @@ class PainterController extends GetxController {
       points[current].remark = value;
     }
 
+    // 데이터 변경은 현재 지시선과 같은 undo 단계로 처리
+    // (새 스냅샷 추가 대신 마지막 스냅샷을 덮어써서 undo 한 번에 지시선+데이터 함께 되돌림)
+    if (_works.isNotEmpty) {
+      _works[_works.length - 1] = _snapshotPoints();
+      _works.refresh();
+    }
+    clearUndo();
+
     updatePoints();
     modified = true;
   }
 
   setCurrent(Point value) {
     points[current] = value;
+
+    // 데이터 변경은 현재 지시선과 같은 undo 단계로 처리
+    if (_works.isNotEmpty) {
+      _works[_works.length - 1] = _snapshotPoints();
+      _works.refresh();
+    }
+    clearUndo();
+    modified = true;
 
     updatePoints();
   }
@@ -1723,8 +1739,9 @@ class PainterController extends GetxController {
               completer.complete(ui.Size(
                   info.image.width.toDouble(), info.image.height.toDouble()));
             }, onError: (_, __) {
-              if (!completer.isCompleted)
+              if (!completer.isCompleted) {
                 completer.complete(const ui.Size(0, 0));
+              }
             }),
           );
       size = await completer.future;

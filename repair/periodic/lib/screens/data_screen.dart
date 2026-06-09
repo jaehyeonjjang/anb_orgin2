@@ -519,7 +519,7 @@ class DataScreen extends CWidget {
                 Text(item.name, style: const TextStyle(color: Colors.black)));
       }
 
-      final widget = SizedBox(width: 180, child: btn);
+      final widget = SizedBox(width: 190, child: btn);
 
       items.add(widget);
     }
@@ -597,7 +597,7 @@ class DataScreen extends CWidget {
           return AlertDialog(
             backgroundColor: Colors.white,
             content: SizedBox(
-              width: 950,
+              width: 1000,
               child: Wrap(
                   spacing: 10,
                   runSpacing: 0,

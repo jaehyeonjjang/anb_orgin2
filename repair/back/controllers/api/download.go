@@ -329,7 +329,11 @@ func (c *DownloadController) Report(id int64) {
 	f.SetCellStr(sheet, "A9", apt.Name)
 	f.SetCellStr(sheet, "A93", fmt.Sprintf("%v 관리사무소", apt.Name))
 	f.SetCellStr(sheet, "E143", apt.Name)
-	f.SetCellStr(sheet, "E144", fmt.Sprintf("%v세대 (동수 : %v개동)", apt.Familycount, apt.Flatcount))
+
+	// apt.Flatcount에서 전체 동수(all) 추출 (예: "10(5)" -> "10")
+	flatcount := strings.Split(apt.Flatcount, "(")
+	all := strings.TrimSpace(flatcount[0])
+	f.SetCellStr(sheet, "E144", fmt.Sprintf("%v세대 (동수 : %v개동)", apt.Familycount, all))
 	f.SetCellStr(sheet, "E145", apt.Address)
 	f.SetCellStr(sheet, "E146", repair.Complex1)
 	f.SetCellStr(sheet, "E147", repair.Complex2)

@@ -231,11 +231,11 @@ class ImageScreen extends CWidget {
                 const SizedBox(width: 10),
                 Expanded(
                     child: Text(
-                      item.name,
-                      overflow: TextOverflow.ellipsis,
-                      maxLines: 1,
-                      softWrap: false,
-                    )),
+                  item.name,
+                  overflow: TextOverflow.ellipsis,
+                  maxLines: 1,
+                  softWrap: false,
+                )),
               ]),
             ]),
           ),

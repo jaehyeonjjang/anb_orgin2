@@ -59,6 +59,10 @@ class ImageController extends GetxController {
     _images.removeAt(pos);
     _images.refresh();
 
-    saveImage();
+    saveImage().then((_) {
+      final BlueprintController blueprintController =
+          Get.find<BlueprintController>();
+      blueprintController.refreshLastImagePaths();
+    });
   }
 }

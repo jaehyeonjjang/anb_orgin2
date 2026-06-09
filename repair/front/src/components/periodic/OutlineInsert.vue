@@ -51,7 +51,7 @@
       </y-td>
     </y-tr>
     <y-tr>
-      <y-th colspan="5">사용승인일</y-th>
+      <y-th colspan="5">준공일</y-th>
       <y-td>{{util.viewDate(data.aptItem.useapproval)}}</y-td>
     </y-tr>
   </y-table>
@@ -163,7 +163,7 @@
         </y-td>
       </y-tr>
       <y-tr>
-        <y-th>사용승인일</y-th>
+        <y-th>준공일</y-th>
         <y-td colspan="5">
           <el-date-picker style="margin: 0px 0px;height: 24px;width:150px;" v-model="data.item.useapproval" />
         </y-td>

@@ -96,49 +96,49 @@ class OtherScreen extends CWidget {
   }
 
   body(context) {
-    final textStyle = Style(
-      margin: const EdgeInsets.all(10),
-      padding: const EdgeInsets.all(10),
-      textStyle: const TextStyle(fontSize: 20),
-    );
+    // final textStyle = Style(
+    //   margin: const EdgeInsets.all(10),
+    //   padding: const EdgeInsets.all(10),
+    //   textStyle: const TextStyle(fontSize: 20),
+    // );
 
-    final textStyleSelected = Style(
-      margin: const EdgeInsets.all(10),
-      padding: const EdgeInsets.all(10),
-      textStyle: const TextStyle(fontSize: 20, fontWeight: FontWeight.w700),
-      decoration: const BoxDecoration(
-        border: Border(
-          bottom: BorderSide(width: 1.5, color: Colors.blue),
-        ),
-      ),
-    );
+    // final textStyleSelected = Style(
+    //   margin: const EdgeInsets.all(10),
+    //   padding: const EdgeInsets.all(10),
+    //   textStyle: const TextStyle(fontSize: 20, fontWeight: FontWeight.w700),
+    //   decoration: const BoxDecoration(
+    //     border: Border(
+    //       bottom: BorderSide(width: 1.5, color: Colors.blue),
+    //     ),
+    //   ),
+    // );
 
     return CColumn(children: [
-      CRow(
-        children: [
-          CText('추락방지시설',
-              style: c.tab == 10 ? textStyleSelected : textStyle,
-              onTap: () => c.tab = 10),
-          CText('도로포장',
-              style: c.tab == 11 ? textStyleSelected : textStyle,
-              onTap: () => c.tab = 11),
-          CText('도로부 신축 이음부',
-              style: c.tab == 12 ? textStyleSelected : textStyle,
-              onTap: () => c.tab = 12),
-          CText('환기구 등의 덮개',
-              style: c.tab == 13 ? textStyleSelected : textStyle,
-              onTap: () => c.tab = 13),
-          CText('외벽 마감제',
-              style: c.tab == 14 ? textStyleSelected : textStyle,
-              onTap: () => c.tab = 14),
-          CText('강재구조 노후',
-              style: c.tab == 15 ? textStyleSelected : textStyle,
-              onTap: () => c.tab = 15),
-          CText('부대 점검사항',
-              style: c.tab == 3 ? textStyleSelected : textStyle,
-              onTap: () => c.tab = 3)
-        ],
-      ),
+      // CRow(
+      //   children: [
+      //     CText('추락방지시설',
+      //         style: c.tab == 10 ? textStyleSelected : textStyle,
+      //         onTap: () => c.tab = 10),
+      //     CText('도로포장',
+      //         style: c.tab == 11 ? textStyleSelected : textStyle,
+      //         onTap: () => c.tab = 11),
+      //     CText('도로부 신축 이음부',
+      //         style: c.tab == 12 ? textStyleSelected : textStyle,
+      //         onTap: () => c.tab = 12),
+      //     CText('환기구 등의 덮개',
+      //         style: c.tab == 13 ? textStyleSelected : textStyle,
+      //         onTap: () => c.tab = 13),
+      //     CText('외벽 마감제',
+      //         style: c.tab == 14 ? textStyleSelected : textStyle,
+      //         onTap: () => c.tab = 14),
+      //     CText('강재구조 노후',
+      //         style: c.tab == 15 ? textStyleSelected : textStyle,
+      //         onTap: () => c.tab = 15),
+      //     CText('부대 점검사항',
+      //         style: c.tab == 3 ? textStyleSelected : textStyle,
+      //         onTap: () => c.tab = 3)
+      //   ],
+      // ),
       CScroll(expanded: true, children: [checklist(context), list(context)])
     ]);
   }

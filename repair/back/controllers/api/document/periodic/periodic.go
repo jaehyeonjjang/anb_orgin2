@@ -320,7 +320,7 @@ func Periodic0(id int64, conn *models.Connection) string {
 	})
 
 	view.AddGlobal("date", func(str string) string {
-		return strings.ReplaceAll(str, "-", ".")
+		return strings.ReplaceAll(str, "-", ".") + "."
 	})
 
 	view.AddGlobal("year", func(str string) string {

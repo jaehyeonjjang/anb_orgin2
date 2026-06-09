@@ -250,13 +250,13 @@
           <PARALIST LineWrap="Break" LinkListID="0" LinkListIDNext="0" TextDirection="0" VertAlign="Center">
             <P ParaShape="34" Style="14">
               <TEXT CharShape="13">
-        <CHAR>사용승인일</CHAR></TEXT></P></PARALIST></CELL>
+        <CHAR>준공일</CHAR></TEXT></P></PARALIST></CELL>
         <CELL BorderFill="104" ColAddr="1" ColSpan="1" Dirty="false" Editable="false" HasMargin="false" Header="false" Height="3049" Protect="false" RowAddr="6" RowSpan="1" Width="14072">
           <CELLMARGIN Bottom="141" Left="141" Right="141" Top="141"/>
           <PARALIST LineWrap="Break" LinkListID="0" LinkListIDNext="0" TextDirection="0" VertAlign="Center">
             <P ParaShape="34" Style="13">
               <TEXT CharShape="31">
-        <CHAR>{{apt.Useapproval|date}}</CHAR></TEXT></P></PARALIST></CELL>
+        <CHAR>{{apt.Useapproval}}</CHAR></TEXT></P></PARALIST></CELL>
         <CELL BorderFill="115" ColAddr="2" ColSpan="1" Dirty="false" Editable="false" HasMargin="false" Header="false" Height="3049" Protect="false" RowAddr="6" RowSpan="1" Width="9037">
           <CELLMARGIN Bottom="141" Left="141" Right="141" Top="141"/>
           <PARALIST LineWrap="Break" LinkListID="0" LinkListIDNext="0" TextDirection="0" VertAlign="Center">

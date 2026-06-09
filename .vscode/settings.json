@@ -3,5 +3,6 @@
     "python.disableInstallationCheck": true,
     "python.terminal.activateEnvironment": false,
     "python.experiments.enabled": false,
-    "python.languageServer": "None"
+    "python.languageServer": "None",
+    "github.copilot.chat.agent.autoFix": false
 }

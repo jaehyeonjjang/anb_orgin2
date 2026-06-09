@@ -14,7 +14,7 @@
   </div>
 
   <div style="margin-top:-80px;" @click="clickDownload">
-    프로그램 다운 로드
+    프로그램 다운로드
   </div>
 
 
@@ -27,10 +27,10 @@
         <y-th style="text-align:center;">Version</y-th>
         <y-th style="text-align:center;">다운로드</y-th>
       </y-tr>
-      <y-tr>
+      <y-tr v-for="(ver, idx) in data.periodicPrograms" :key="'periodic-'+idx">
         <y-td style="text-align:center;">정기점검 프로그램</y-td>
-        <y-td style="text-align:center;">V{{data.periodicProgram}}</y-td>
-        <y-td style="text-align:center;"><el-button size="small" @click="clickDownloadPeriodic">다운로드</el-button></y-td>
+        <y-td style="text-align:center;">V{{ver}}</y-td>
+        <y-td style="text-align:center;"><el-button size="small" @click="clickDownloadPeriodic(ver)">다운로드</el-button></y-td>
       </y-tr>
       <y-tr>
         <y-td style="text-align:center;">순찰 프로그램</y-td>
@@ -61,7 +61,10 @@ const item = reactive({
 })
 
 const data = reactive({
-  visibleDownload: false  
+  visibleDownload: false,
+  periodicProgram: '',
+  periodicPrograms: [] as string[],
+  patrolProgram: ''
 })
 
 
@@ -93,11 +96,18 @@ async function clickDownload() {
 
   let items = res.items
 
+  const periodicVersions: string[] = []
+
   for (let i = 0; i < items.length; i++) {
     let item = items[i]
 
     if (item.type == 1) {
-      data.periodicProgram = item.version
+      if (!data.periodicProgram) {
+        data.periodicProgram = item.version
+      }
+      if (periodicVersions.indexOf(item.version) === -1) {
+        periodicVersions.push(item.version)
+      }
     }
 
     if (item.type == 3) {
@@ -105,13 +115,15 @@ async function clickDownload() {
     }
   }
 
+  data.periodicPrograms = periodicVersions.slice(0, 2)
+
   data.visibleDownload = true
 }
 
-function clickDownloadPeriodic() {
-  let version = data.periodicProgram
-  const url = `/webdata/apk/periodic-V${version}.apk`
-  const filename = `ANB-정기점검프로그램-V${version}.apk`
+function clickDownloadPeriodic(version?: string) {
+  let ver = version || data.periodicProgram
+  const url = `/webdata/apk/periodic-V${ver}.apk`
+  const filename = `ANB-정기점검프로그램-V${ver}.apk`
 
   util.download(store, url, filename)  
 }

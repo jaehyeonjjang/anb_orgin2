@@ -442,8 +442,7 @@ class PainterDrawer extends CustomPainter {
     // 위쪽 변
     _drawDashedLine(canvas, rect.topLeft, rect.topRight, dash, gap, paint);
     // 오른쪽 변
-    _drawDashedLine(
-        canvas, rect.topRight, rect.bottomRight, dash, gap, paint);
+    _drawDashedLine(canvas, rect.topRight, rect.bottomRight, dash, gap, paint);
     // 아래쪽 변
     _drawDashedLine(
         canvas, rect.bottomRight, rect.bottomLeft, dash, gap, paint);
@@ -474,11 +473,9 @@ class PainterDrawer extends CustomPainter {
 
     // 남는 길이에 마지막 짧은 대시 처리
     if (drawn < distance) {
-      final remaining =
-          (distance - drawn) < dash ? (distance - drawn) : dash;
+      final remaining = (distance - drawn) < dash ? (distance - drawn) : dash;
       final s = Offset(start.dx + ux * drawn, start.dy + uy * drawn);
-      final e = Offset(
-          start.dx + ux * (drawn + remaining),
+      final e = Offset(start.dx + ux * (drawn + remaining),
           start.dy + uy * (drawn + remaining));
       canvas.drawLine(s, e, paint);
     }

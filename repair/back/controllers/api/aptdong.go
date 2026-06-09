@@ -143,7 +143,7 @@ func updateBlueprint(item *models.Aptdong) {
 	for _, v := range blueprints {
 		flag := false
 
-		if v.Name == "배치도" {
+		if v.Name == "배치도" && v.Aptdong == 0 && v.Parent == 0 {
 			findLayout = true
 			flag = true
 		}
@@ -196,7 +196,7 @@ func updateBlueprint(item *models.Aptdong) {
 				}
 
 				start := 0
-				if dong.Id != privateDong.Id {
+				if dong.Private == 1 && privateDong.Id > 0 && dong.Id != privateDong.Id {
 					start = privateDong.Groundcount
 				}
 
@@ -336,7 +336,7 @@ func updateBlueprint(item *models.Aptdong) {
 
 		start := 1
 
-		if dong.Private == 1 {
+		if dong.Private == 1 && privateDong.Id > 0 {
 			start = privateDong.Groundcount + 1
 		}
 
@@ -353,40 +353,34 @@ func updateBlueprint(item *models.Aptdong) {
 			}
 		}
 
-		if dong.Private == 1 {
-			roofcount := 0
+		roofcount := 0
 
-			if dong.Topcount == 0 {
-				roofcount = 1
-			}
+		if dong.Topcount == 0 && dong.Groundcount > 0 {
+			roofcount = 1
+		}
 
-			if dong.Groundcount == 0 {
-				roofcount = 0
-			}
+		for i := dong.Groundcount + 1; i <= roofcount+dong.Groundcount; i++ {
+			floor := Floor{Order: i, Floortype: 4}
+			floors = append(floors, floor)
 
-			for i := dong.Groundcount + 1; i <= roofcount+dong.Groundcount; i++ {
-				floor := Floor{Order: i, Floortype: 4}
-				floors = append(floors, floor)
-
-				for _, v2 := range aptdongetc {
-					if dong.Id == v2.Aptdong && v2.Parent/10 == i {
-						log.Println("INSERT 4")
-						floor := Floor{Order: i, Floortype: 6, OriginalFloortype: v2.Floortype, Aptdongetc: v2}
-						floors = append(floors, floor)
-					}
+			for _, v2 := range aptdongetc {
+				if dong.Id == v2.Aptdong && v2.Parent/10 == i {
+					log.Println("INSERT 4")
+					floor := Floor{Order: i, Floortype: 6, OriginalFloortype: v2.Floortype, Aptdongetc: v2}
+					floors = append(floors, floor)
 				}
 			}
+		}
 
-			for i := dong.Groundcount + 1; i <= dong.Topcount+dong.Groundcount; i++ {
-				floor := Floor{Order: i, Floortype: 5}
-				floors = append(floors, floor)
+		for i := dong.Groundcount + 1; i <= dong.Topcount+dong.Groundcount; i++ {
+			floor := Floor{Order: i, Floortype: 5}
+			floors = append(floors, floor)
 
-				for _, v2 := range aptdongetc {
-					if dong.Id == v2.Aptdong && v2.Parent/10 == i {
-						log.Println("INSERT 5")
-						floor := Floor{Order: i, Floortype: 6, OriginalFloortype: v2.Floortype, Aptdongetc: v2}
-						floors = append(floors, floor)
-					}
+			for _, v2 := range aptdongetc {
+				if dong.Id == v2.Aptdong && v2.Parent/10 == i {
+					log.Println("INSERT 5")
+					floor := Floor{Order: i, Floortype: 6, OriginalFloortype: v2.Floortype, Aptdongetc: v2}
+					floors = append(floors, floor)
 				}
 			}
 		}

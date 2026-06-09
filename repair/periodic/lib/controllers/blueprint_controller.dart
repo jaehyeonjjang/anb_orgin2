@@ -1,6 +1,5 @@
 import 'dart:convert';
 import 'dart:io';
-import 'dart:typed_data';
 
 import 'package:common_control/common_control.dart';
 import 'package:dio/dio.dart';
@@ -88,6 +87,8 @@ class BlueprintController extends GetxController {
               ? img.offlinefilename
               : img.filename;
           if (path.isEmpty) continue;
+          // 로컬 파일이면 존재 여부 확인 (삭제된 파일 잔상 방지)
+          if (!path.startsWith('http') && !File(path).existsSync()) continue;
           _lastImagePaths[img.type] = path; // 마지막 항목으로 덮어쓰기
           final l = _imagePathsByType[img.type] ?? <String>[];
           l.add(path);
@@ -196,11 +197,33 @@ class BlueprintController extends GetxController {
 
   setCheckAll() {
     for (var i = 0; i < items.length; i++) {
-      if (items[i].extra['modified'] == null) {
-        items[i].checked = false;
-      } else {
-        items[i].checked = true;
+      final item = items[i];
+
+      // 하위 항목 존재 여부
+      bool hasChildren = false;
+      if (item.level == 1 && i < items.length - 1) {
+        hasChildren = items[i + 1].level > 1;
       }
+
+      bool isModified = item.extra['modified'] != null;
+
+      if (item.extra['isOther'] == true) {
+        if (item.level == 1) {
+          isModified = false;
+        } else if (item.level == 2 && item.extra['tab'] != null) {
+          isModified = isTabModified(item.extra['tab'] as int);
+        }
+      }
+
+      if (item.extra['isImage'] == true) {
+        if (item.level == 1 && hasChildren) {
+          isModified = false;
+        } else if (item.extra['imageType'] != null) {
+          isModified = isImageTypeModified(item.extra['imageType'] as int);
+        }
+      }
+
+      items[i].checked = isModified;
     }
   }
 
@@ -234,7 +257,7 @@ class BlueprintController extends GetxController {
       var onlyFilename = p.basename(filename);
       // 모든 파일을 앱 Documents 디렉토리에 저장
       var appDocDir = await getApplicationDocumentsDirectory();
-      String savePath = appDocDir.path + '/' + onlyFilename;
+      String savePath = '${appDocDir.path}/$onlyFilename';
       await Dio().download(filename, savePath);
 
       // 갤러리에도 저장 (gal 사용)
@@ -611,14 +634,13 @@ class BlueprintController extends GetxController {
 
     // '동입구' 항목 추가
     items.add(Blueprint(
-      id: -5,
-      name: '동입구',
-      level: 1,
-      upload: 0,
-      filename: '',
-      collapsed: false,
-      extra: {'isImage': true, 'imageType': 11}
-    ));
+        id: -5,
+        name: '동입구',
+        level: 1,
+        upload: 0,
+        filename: '',
+        collapsed: false,
+        extra: {'isImage': true, 'imageType': 11}));
 
     datacategorys = datacategoryItems;
     periodicothers = periodicotherItems;

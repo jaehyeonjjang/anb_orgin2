@@ -5,6 +5,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:periodic/components/painter/painter_controller.dart';
 import 'package:periodic/controllers/blueprint_controller.dart';
+import 'package:periodic/models/datacategory.dart';
 
 class DataBox extends StatelessWidget {
   DataBox({super.key});
@@ -367,6 +368,7 @@ class DataBox extends StatelessWidget {
 
   drawButtons(pos) {
     List<Widget> items = [];
+    List<Datacategory> filtered = [];
 
     final point = c.getCurrent();
     var text = '';
@@ -407,6 +409,17 @@ class DataBox extends StatelessWidget {
       if (item.category != category) {
         continue;
       }
+
+      filtered.add(item);
+    }
+
+    // 부위(위치)는 가나다순으로 정렬
+    if (pos == 1) {
+      filtered.sort((a, b) => a.name.compareTo(b.name));
+    }
+
+    for (var i = 0; i < filtered.length; i++) {
+      final item = filtered[i];
 
       Widget btn;
 
