@@ -508,15 +508,8 @@ class PainterDrawer extends CustomPainter {
     var sy = y2 - y1;
     var sx = x2 - x1;
 
-    var angle = atan(sy / sx) * (180.0 / 3.14);
-
-    angle += 180;
-
-    if (sx < 0.0) {
-      angle += 180.0;
-    } else {
-      if (sy < 0.0) angle += 360.0;
-    }
+    // atan2를 사용하여 0으로 나누기 문제 방지
+    var angle = atan2(sy, sx) * (180.0 / 3.14) + 180;
 
     var r = (c.numberZoom / 2.0) * zoom * 0.5 / 2.0;
 
@@ -1338,10 +1331,11 @@ class PainterDrawer extends CustomPainter {
     var sy = y2 - y1;
     var sx = x2 - x1;
 
-    var m = sy / sx;
+    // 0으로 나누기 방지
+    var m = (sx != 0) ? sy / sx : 0.0;
     var d = 50;
-    var bx = d / sqrt(1 + m * m);
-    var by = (d * m) / sqrt(1 + m * m);
+    var bx = (sx != 0) ? d / sqrt(1 + m * m) : 0.0;
+    var by = (sx != 0) ? (d * m) / sqrt(1 + m * m) : d;
 
     x2 = bx;
     y2 = by;
@@ -1356,15 +1350,8 @@ class PainterDrawer extends CustomPainter {
       color2 = paintBlue;
     }
 
-    var angle = atan(sy / sx) * (180.0 / 3.14);
-
-    angle += 180;
-
-    if (sx < 0.0) {
-      angle += 180.0;
-    } else {
-      if (sy < 0.0) angle += 360.0;
-    }
+    // atan2를 사용하여 0으로 나누기 문제 방지
+    var angle = atan2(sy, sx) * (180.0 / 3.14) + 180;
 
     if (points.icon == inclinationHorizontal) {
       if (points.items.length < 2) {

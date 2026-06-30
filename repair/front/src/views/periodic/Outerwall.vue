@@ -1,9 +1,18 @@
 <template>
-  <Title title="외벽 마감제" />
-    
-  <OuterwallInsert />
-  <div style="height:20px;"></div>
-  <OuterwallBottomInsert />
+  <Title title="외벽 마감재 및 부착물 등" />
+
+  <el-tabs v-model="data.menu">
+
+    <el-tab-pane label="외벽 마감재" name="outerwall">
+      <OuterwallInsert />
+      <OuterwallBottomInsert />
+    </el-tab-pane>
+
+    <el-tab-pane label="부착물 등" name="attachment">
+      <AttachmentInsert />
+    </el-tab-pane>
+
+  </el-tabs>
 
 </template>
 
@@ -24,7 +33,7 @@ const route = useRoute()
 const data = reactive({
   id: 0,
   apt: 0,
-  menu: 'fall'  
+  menu: 'outerwall'  
 })
 
 async function initData() {

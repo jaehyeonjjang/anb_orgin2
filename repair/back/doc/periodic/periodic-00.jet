@@ -4806,6 +4806,7 @@
 
 {{ include "./periodic-00-public.jet" }}
 {{ include "./periodic-00-outerwall.jet" }}
+{{ include "./periodic-00-attachment.jet" }}
 {* {{ include "./periodic-00-vent.jet" }} *}
 {{ include "./periodic-00-incidental.jet" }}
 {{ include "./periodic-00-cause.jet" }}

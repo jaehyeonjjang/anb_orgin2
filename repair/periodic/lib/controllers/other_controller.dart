@@ -23,6 +23,50 @@ class OtherController extends GetxController {
 
   List<TextEditingController> statusController = [];
   List<TextEditingController> positionController = [];
+  final TextEditingController tab16ContentController = TextEditingController();
+
+  // tab16 행별 이미지 저장소 (행 인덱스 0-7)
+  final _tab16Images = <int, List<String>>{}.obs;
+  Map<int, List<String>> get tab16Images => _tab16Images;
+
+  List<String> getTab16Images(int rowIndex) {
+    return _tab16Images[rowIndex] ?? [];
+  }
+
+  void addTab16Image(int rowIndex, String path) {
+    if (!_tab16Images.containsKey(rowIndex)) {
+      _tab16Images[rowIndex] = [];
+    }
+    _tab16Images[rowIndex]!.add(path);
+    _tab16Images.refresh();
+
+    modified = true;
+    final BlueprintController blueprintController =
+        Get.find<BlueprintController>();
+    blueprintController.setTab16Modified(true);
+
+    final authController = Get.find<AuthController>();
+    if (authController.autosave == true) {
+      save();
+    }
+  }
+
+  void removeTab16Image(int rowIndex, int imageIndex) {
+    if (_tab16Images.containsKey(rowIndex)) {
+      _tab16Images[rowIndex]!.removeAt(imageIndex);
+      _tab16Images.refresh();
+
+      modified = true;
+      final BlueprintController blueprintController =
+          Get.find<BlueprintController>();
+      blueprintController.setTab16Modified(true);
+
+      final authController = Get.find<AuthController>();
+      if (authController.autosave == true) {
+        save();
+      }
+    }
+  }
 
   updatePeriodicothers() {
     final authController = Get.find<AuthController>();
@@ -34,7 +78,7 @@ class OtherController extends GetxController {
   }
 
   @override
-  onInit() {
+  void onInit() async {
     super.onInit();
 
     final BlueprintController blueprintController =
@@ -60,6 +104,43 @@ class OtherController extends GetxController {
       statusController.add(TextEditingController(text: item.status));
       positionController.add(TextEditingController(text: item.position));
     }
+
+    // 부착물 점검내용 로드
+    final LocalStorage storage16 = LocalStorage('blueprints.json');
+    await storage16.ready;
+    final content16 = await storage16.getItem('other_16_content');
+    bool hasTab16Data = false;
+    if (content16 != null && content16.toString().isNotEmpty) {
+      tab16ContentController.text = content16;
+      hasTab16Data = true;
+    }
+
+    // 부착물 이미지 로드
+    final images16 = await storage16.getItem('other_16_images');
+    if (images16 != null && images16 != '') {
+      final Map<String, dynamic> decoded = json.decode(images16);
+      decoded.forEach((key, value) {
+        _tab16Images[int.parse(key)] = List<String>.from(value);
+      });
+      hasTab16Data = true;
+    }
+
+    // tab16 데이터가 있으면 modified 설정
+    if (hasTab16Data) {
+      blueprintController.setTab16Modified(true);
+    }
+  }
+
+  saveTab16Content() async {
+    modified = true;
+    final BlueprintController blueprintController =
+        Get.find<BlueprintController>();
+    blueprintController.setTab16Modified(true);
+
+    final authController = Get.find<AuthController>();
+    if (authController.autosave == true) {
+      save();
+    }
   }
 
   save() async {
@@ -68,6 +149,14 @@ class OtherController extends GetxController {
     final LocalStorage storage = LocalStorage('blueprints.json');
     await storage.ready;
     await storage.setItem('periodicothers', periodicotherStr);
+    await storage.setItem('other_16_content', tab16ContentController.text);
+
+    // tab16 이미지도 저장
+    final Map<String, dynamic> imagesToSave = {};
+    _tab16Images.forEach((key, value) {
+      imagesToSave[key.toString()] = value;
+    });
+    await storage.setItem('other_16_images', json.encode(imagesToSave));
 
     final BlueprintController blueprintController =
         Get.find<BlueprintController>();

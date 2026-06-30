@@ -114,32 +114,11 @@ class OtherScreen extends CWidget {
     // );
 
     return CColumn(children: [
-      // CRow(
-      //   children: [
-      //     CText('추락방지시설',
-      //         style: c.tab == 10 ? textStyleSelected : textStyle,
-      //         onTap: () => c.tab = 10),
-      //     CText('도로포장',
-      //         style: c.tab == 11 ? textStyleSelected : textStyle,
-      //         onTap: () => c.tab = 11),
-      //     CText('도로부 신축 이음부',
-      //         style: c.tab == 12 ? textStyleSelected : textStyle,
-      //         onTap: () => c.tab = 12),
-      //     CText('환기구 등의 덮개',
-      //         style: c.tab == 13 ? textStyleSelected : textStyle,
-      //         onTap: () => c.tab = 13),
-      //     CText('외벽 마감제',
-      //         style: c.tab == 14 ? textStyleSelected : textStyle,
-      //         onTap: () => c.tab = 14),
-      //     CText('강재구조 노후',
-      //         style: c.tab == 15 ? textStyleSelected : textStyle,
-      //         onTap: () => c.tab = 15),
-      //     CText('부대 점검사항',
-      //         style: c.tab == 3 ? textStyleSelected : textStyle,
-      //         onTap: () => c.tab = 3)
-      //   ],
-      // ),
-      CScroll(expanded: true, children: [checklist(context), list(context)])
+      // commented out tab navigation omitted
+      if (c.tab == 16)
+        Expanded(child: tab16Body(context))
+      else
+        CScroll(expanded: true, children: [checklist(context), list(context)])
     ]);
   }
 
@@ -619,5 +598,370 @@ class OtherScreen extends CWidget {
     }
     c.periodicothers[index].status = newValue.join(',');
     c.periodicothers[index].change = 1;
+  }
+
+  Future getTab16Image(int rowIndex, ImageSource imageSource) async {
+    final image = await picker.pickImage(source: imageSource);
+    if (image == null) return;
+
+    c.addTab16Image(rowIndex, image.path);
+  }
+
+  void showTab16ImagePreview(
+      int rowIndex, int imageIndex, String path, BuildContext context) {
+    showGeneralDialog(
+      barrierDismissible: false,
+      context: context,
+      pageBuilder: (popContext, __, ___) {
+        return Scaffold(
+          body: InkWell(
+            onTap: () => Navigator.of(popContext).pop(),
+            child: Stack(
+              children: [
+                SizedBox(
+                  width: double.infinity,
+                  height: double.infinity,
+                  child: Image.file(File(path)),
+                ),
+                Positioned(
+                  top: 30.0,
+                  right: 10.0,
+                  child: Row(
+                    children: [
+                      IconButton(
+                        icon: const Icon(CupertinoIcons.trash, size: 30.0),
+                        onPressed: () {
+                          showDialog<void>(
+                            context: popContext,
+                            builder: (dialogContext) {
+                              return AlertDialog(
+                                title: const Text('이미지 삭제'),
+                                backgroundColor: Colors.white,
+                                content: const Text('이미지를 삭제하시겠습니까'),
+                                actions: <Widget>[
+                                  ElevatedButton(
+                                    child: const Text('취소'),
+                                    onPressed: () =>
+                                        Navigator.of(dialogContext).pop(),
+                                  ),
+                                  ElevatedButton(
+                                    child: const Text('삭제'),
+                                    onPressed: () {
+                                      c.removeTab16Image(rowIndex, imageIndex);
+                                      Navigator.of(dialogContext).pop();
+                                      Navigator.of(popContext).pop();
+                                    },
+                                  ),
+                                ],
+                              );
+                            },
+                          );
+                        },
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.close, size: 30.0),
+                        onPressed: () => Navigator.of(popContext).pop(),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget tab16Body(BuildContext context) {
+    const double rowH = 44.0;
+    const double col1W = 90.0;
+    const double col2W = 90.0;
+    const double col3W = 160.0;
+    const double col4W = 280.0; // 이미지 열 폭
+    const borderSide = BorderSide(color: Colors.black, width: 0.5);
+    const deco = BoxDecoration(border: Border.fromBorderSide(borderSide));
+
+    Widget fixedCell(String text, double w, double h) {
+      return Container(
+        width: w,
+        height: h,
+        alignment: Alignment.center,
+        padding: const EdgeInsets.symmetric(horizontal: 8),
+        decoration: deco,
+        child: Text(text,
+            textAlign: TextAlign.center, style: const TextStyle(fontSize: 16)),
+      );
+    }
+
+    Widget flexCell(String text, double h) {
+      return Container(
+        height: h,
+        width: double.infinity,
+        alignment: Alignment.centerLeft,
+        padding: const EdgeInsets.symmetric(horizontal: 8),
+        decoration: deco,
+        child: Text(text, style: const TextStyle(fontSize: 16)),
+      );
+    }
+
+    Widget imageCell(int rowIndex, double h) {
+      return Obx(() {
+        final images = c.getTab16Images(rowIndex);
+        return Container(
+          width: col4W,
+          height: h,
+          padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
+          decoration: deco,
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: [
+                  IconButton(
+                    icon: const Icon(Icons.add_a_photo, size: 24),
+                    padding: EdgeInsets.zero,
+                    constraints: const BoxConstraints(),
+                    onPressed: () =>
+                        getTab16Image(rowIndex, ImageSource.camera),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.add_photo_alternate, size: 24),
+                    padding: EdgeInsets.zero,
+                    constraints: const BoxConstraints(),
+                    onPressed: () =>
+                        getTab16Image(rowIndex, ImageSource.gallery),
+                  ),
+                ],
+              ),
+              if (images.isNotEmpty)
+                Expanded(
+                  child: Wrap(
+                    spacing: 2,
+                    runSpacing: 2,
+                    children: images.asMap().entries.map((entry) {
+                      final idx = entry.key;
+                      final path = entry.value;
+                      return InkWell(
+                        onTap: () =>
+                            showTab16ImagePreview(rowIndex, idx, path, context),
+                        child: Container(
+                          width: 24,
+                          height: 24,
+                          decoration: BoxDecoration(
+                            border: Border.all(color: Colors.grey),
+                          ),
+                          child: Image.file(File(path), fit: BoxFit.cover),
+                        ),
+                      );
+                    }).toList(),
+                  ),
+                ),
+            ],
+          ),
+        );
+      });
+    }
+
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(10),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // 헤더 행
+          Row(children: [
+            Container(
+              width: 2 * col1W,
+              height: rowH,
+              alignment: Alignment.center,
+              padding: const EdgeInsets.symmetric(horizontal: 8),
+              decoration: deco,
+              child: const Text('구분',
+                  textAlign: TextAlign.center, style: TextStyle(fontSize: 14)),
+            ),
+            Container(
+              width: col3W,
+              height: rowH,
+              alignment: Alignment.center,
+              padding: const EdgeInsets.symmetric(horizontal: 8),
+              decoration: deco,
+              child: const Text('조사항목',
+                  textAlign: TextAlign.center, style: TextStyle(fontSize: 14)),
+            ),
+            Expanded(
+              child: Container(
+                height: rowH,
+                alignment: Alignment.center,
+                padding: const EdgeInsets.symmetric(horizontal: 8),
+                decoration: deco,
+                child: const Text('내용',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(fontSize: 14)),
+              ),
+            ),
+            Container(
+              width: col4W,
+              height: rowH,
+              alignment: Alignment.center,
+              padding: const EdgeInsets.symmetric(horizontal: 8),
+              decoration: deco,
+              child: const Text('이미지',
+                  textAlign: TextAlign.center, style: TextStyle(fontSize: 14)),
+            ),
+          ]),
+          // 부착물 등 행
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              fixedCell('부착물 등', col1W, 7 * rowH),
+              // 소분류 열
+              Column(children: [
+                fixedCell('정착부', col2W, 3.5 * rowH),
+                fixedCell('연결부', col2W, 2.5 * rowH),
+                fixedCell('보강부', col2W, rowH),
+              ]),
+              // 조사항목 열
+              Column(children: [
+                Container(
+                  width: col3W,
+                  height: 1.5 * rowH,
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: deco,
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: const [
+                      Text('앵커 정착부',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(fontSize: 16)),
+                      SizedBox(height: 4),
+                      Text('브라켓 정착부',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(fontSize: 16)),
+                    ],
+                  ),
+                ),
+                fixedCell('용접 정착부', col3W, rowH),
+                fixedCell('매립 정착부', col3W, rowH),
+                Container(
+                  width: col3W,
+                  height: 1.5 * rowH,
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: deco,
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: const [
+                      Text('볼트 연결부',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(fontSize: 16)),
+                    ],
+                  ),
+                ),
+                fixedCell('용접 연결부', col3W, rowH),
+                fixedCell('와이어 로프', col3W, rowH),
+              ]),
+              // 내용 열 (Expanded)
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Container(
+                      height: 1.5 * rowH,
+                      width: double.infinity,
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 8, vertical: 4),
+                      decoration: deco,
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: const [
+                          Text('정착부 콘크리트의 균열, 박락 여부 확인',
+                              style: TextStyle(fontSize: 16)),
+                          SizedBox(height: 4),
+                          Text('앵커 시공상태, 풀림 및 빠짐, 부식 여부 확인',
+                              style: TextStyle(fontSize: 16)),
+                        ],
+                      ),
+                    ),
+                    flexCell('용접 면적 적정성, 균열, 부식 등 손상 발생 여부 등 확인', rowH),
+                    flexCell('정착 철물 매립 길이, 철물 여장(노출) 길이 등', rowH),
+                    Container(
+                      height: 1.5 * rowH,
+                      width: double.infinity,
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 8, vertical: 4),
+                      decoration: deco,
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: const [
+                          Text('볼트 풀림 및 빠짐, 부재 변형, 부식 등 확인',
+                              style: TextStyle(fontSize: 16)),
+                          SizedBox(height: 4),
+                          Text('볼트의 시공상태(볼트 규격, 설치 간격 등) 확인',
+                              style: TextStyle(fontSize: 16)),
+                        ],
+                      ),
+                    ),
+                    flexCell('용접 면적 적정성, 균열 발생 여부 등 확인', rowH),
+                    flexCell('손상, 부식, 변형, 고정클립 수량 및 상태 등 확인', rowH),
+                  ],
+                ),
+              ),
+              // 이미지 열
+              Column(children: [
+                imageCell(0, 1.5 * rowH),
+                imageCell(2, rowH),
+                imageCell(3, rowH),
+                imageCell(4, 1.5 * rowH),
+                imageCell(5, rowH),
+                imageCell(6, rowH),
+              ]),
+            ],
+          ),
+          // 변위 변형 행
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              fixedCell('변위 변형', col1W + col2W, rowH),
+              fixedCell('기울기 및 배부름', col3W, rowH),
+              Expanded(
+                child: flexCell('면외방향 기울기 및 배부름 발생 유무', rowH),
+              ),
+              imageCell(7, rowH),
+            ],
+          ),
+          const SizedBox(height: 20),
+          // 점검내용 입력
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                width: 80,
+                padding: const EdgeInsets.only(top: 14, right: 8, left: 8),
+                child: const Text('점검내용', style: TextStyle(fontSize: 16)),
+              ),
+              Expanded(
+                child: TextField(
+                  controller: c.tab16ContentController,
+                  maxLines: 5,
+                  decoration: InputDecoration(
+                    hintText: '점검내용을 입력하세요',
+                    hintStyle: const TextStyle(color: Color(0xFF757575), fontSize: 14),
+                    border: const OutlineInputBorder(),
+                    filled: true,
+                    fillColor: Colors.white,
+                    contentPadding: const EdgeInsets.all(12),
+                  ),
+                  onChanged: (_) => c.saveTab16Content(),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
   }
 }

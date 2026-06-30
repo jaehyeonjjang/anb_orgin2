@@ -362,6 +362,10 @@ class DataBox extends StatelessWidget {
 
     final point = c.getCurrent();
     point.images.add(path);
+    
+    // 이미지 추가도 데이터 변경과 같은 undo 단계로 처리
+    c.updateDataSnapshot();
+    
     c.updatePoints();
     c.modified = true;
   }

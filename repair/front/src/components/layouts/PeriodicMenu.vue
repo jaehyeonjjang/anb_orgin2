@@ -47,7 +47,7 @@
 
     <el-menu-item index="15">
       <template #title>
-        <el-icon><OfficeBuilding /></el-icon>외벽 마감제
+        <el-icon><OfficeBuilding /></el-icon>외벽 마감재 및 부착물 등
       </template>
     </el-menu-item>
 

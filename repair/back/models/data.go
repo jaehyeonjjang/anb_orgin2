@@ -37,11 +37,13 @@ type DataItem struct {
 }
 
 type Data struct {
-	Id             int64           `json:"id"`
-	User           int64           `json:"user"`
-	Datas          []DataItem      `json:"datas"`
-	Images         []Periodicimage `json:"images"`
-	Periodicothers []Periodicother `json:"periodicothers"`
+	Id             int64                  `json:"id"`
+	User           int64                  `json:"user"`
+	Datas          []DataItem             `json:"datas"`
+	Images         []Periodicimage        `json:"images"`
+	Periodicothers []Periodicother        `json:"periodicothers"`
+	Tab16Images    map[string][]string    `json:"tab16Images"`
+	Tab16Content   string                 `json:"tab16Content"`
 }
 
 type Aptdongblueprint struct {

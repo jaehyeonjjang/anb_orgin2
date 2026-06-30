@@ -451,6 +451,11 @@ class DataScreen extends CWidget {
     var path = image.path;
 
     c.points[index].images.add(path);
+
+    // 이미지 추가도 데이터 변경과 같은 undo 단계로 처리
+    // (스냅샷을 갱신하지 않으면 undo 후 redo 시 이미지가 사라짐)
+    c.updateDataSnapshot();
+
     c.updatePoints();
     c.modified = true;
   }

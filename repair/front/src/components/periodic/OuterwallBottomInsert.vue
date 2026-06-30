@@ -1,5 +1,5 @@
 <template>
-  <div style="display:flex;justify-content:space-between;margin-bottom:10px;">
+  <div style="display:flex;justify-content:space-between;margin-top:10px;margin-bottom:10px;">
     <div></div>
     <el-button size="small" type="success" @click="clickUpdate">수정</el-button>
   </div>

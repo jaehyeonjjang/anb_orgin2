@@ -1,6 +1,9 @@
 <P ColumnBreak="false" PageBreak="true" ParaShape="108" Style="2">
   <TEXT CharShape="33">
-<CHAR>2.10 외벽 마감재</CHAR></TEXT></P>
+<CHAR>2.10 외벽 마감재 및 부착물 등</CHAR></TEXT></P>
+<P ParaShape="109" Style="2">
+  <TEXT CharShape="16">
+<CHAR>가. 외벽 마감재</CHAR></TEXT></P>
 <P ParaShape="25" Style="2">
   <TEXT CharShape="16">
     <TABLE BorderFill="16" CellSpacing="0" ColCount="3" PageBreak="None" RepeatHeader="true" RowCount="7">
@@ -206,4 +209,4 @@
 	<CHAR/>
   </TEXT>
 </P>
-              
+

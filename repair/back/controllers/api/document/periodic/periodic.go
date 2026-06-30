@@ -3,6 +3,7 @@ package periodic
 import (
 	"bytes"
 	"encoding/base64"
+	"encoding/json"
 	"fmt"
 	"log"
 	"os"
@@ -50,6 +51,19 @@ type PartImageInfo struct {
 type ImageDouble struct {
 	First  bool
 	Second bool
+}
+
+type AttachImageGroup struct {
+	Image1    ImageInfo
+	Image2    ImageInfo
+	HasSecond bool
+	Index1    int
+	Index2    int
+}
+
+type AttachImagePage struct {
+	Rows     []AttachImageGroup
+	RowCount int
 }
 
 type ImageSizeInfo struct {
@@ -202,6 +216,9 @@ func Periodic0(id int64, conn *models.Connection) string {
 	})
 
 	periodicotheretc := periodicotheretcManager.GetByPeriodic(id)
+	if periodicotheretc == nil {
+		periodicotheretc = &models.Periodicotheretc{}
+	}
 
 	otherMap := make(map[int][]models.Periodicother)
 	for _, v := range others {
@@ -1221,6 +1238,74 @@ func Periodic0(id int64, conn *models.Connection) string {
 	v.Set("incidental", incidental)
 	v.Set("outerwall", outerwall)
 	v.Set("opinion", opinion)
+
+	// 부착물 현황 이미지 (웹 부착물 등 탭에서 등록한 이미지)
+	attachimages := make([]ImageInfo, 0)
+	if periodicotheretc.Content2 != "" {
+		attachMap := make(map[string][]string)
+		if err := json.Unmarshal([]byte(periodicotheretc.Content2), &attachMap); err == nil {
+			for _, key := range []string{"0", "2", "3", "4", "5", "6", "7"} {
+				for _, filename := range attachMap[key] {
+					if filename == "" {
+						continue
+					}
+					// 실제 파일이 존재하는 이미지만 포함 (포맷 불일치/손상 방지)
+					if _, err := os.Stat(filepath.Join(config.UploadPath, filename)); err != nil {
+						continue
+					}
+					info := GetImageInfo(filename)
+					if info.Ext != "jpg" && info.Ext != "png" {
+						info.Ext = "jpg"
+					}
+					attachimages = append(attachimages, info)
+				}
+			}
+		}
+	}
+
+	groupAttachimages := make([]AttachImageGroup, 0)
+	for i := 0; i < len(attachimages); i += 2 {
+		group := AttachImageGroup{Image1: attachimages[i], Index1: i}
+		if i+1 < len(attachimages) {
+			group.Image2 = attachimages[i+1]
+			group.HasSecond = true
+			group.Index2 = i + 1
+		}
+		groupAttachimages = append(groupAttachimages, group)
+	}
+
+	// 페이지 단위 그룹핑: 첫 페이지는 사진 2장(1행), 이후 페이지는 6장(3행)
+	attachpages := make([]AttachImagePage, 0)
+	idx := 0
+	total := len(attachimages)
+	for idx < total {
+		capacity := 6
+		if len(attachpages) == 0 {
+			capacity = 2
+		}
+		end := idx + capacity
+		if end > total {
+			end = total
+		}
+		page := AttachImagePage{}
+		for j := idx; j < end; j += 2 {
+			row := AttachImageGroup{Image1: attachimages[j], Index1: j}
+			if j+1 < end {
+				row.Image2 = attachimages[j+1]
+				row.HasSecond = true
+				row.Index2 = j + 1
+			}
+			page.Rows = append(page.Rows, row)
+		}
+		page.RowCount = len(page.Rows)
+		attachpages = append(attachpages, page)
+		idx = end
+	}
+
+	v.Set("attachimages", attachimages)
+	v.Set("attachimageCount", len(attachimages))
+	v.Set("groupattachimages", groupAttachimages)
+	v.Set("attachpages", attachpages)
 
 	v.Set("periodicotheretc", periodicotheretc)
 	v.Set("others1", otherMap[1])

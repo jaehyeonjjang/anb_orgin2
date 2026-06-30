@@ -1001,8 +1001,10 @@ class PainterController extends GetxController {
     materialbox = false;
 
     var last = _undos[_undos.length - 1];
-    _works.add(last);
+    // points를 먼저 복원한 후 스냅샷을 만들어 _works에 추가
+    // (참조 공유를 방지하여 undo/redo 시 데이터 일관성 유지)
     points = (last as List).map<Point>((p) => (p as Point).clone()).toList();
+    _works.add(_snapshotPoints());
     modified = true;
     _undos.removeLast();
 
@@ -1397,6 +1399,15 @@ class PainterController extends GetxController {
     updateCanvas();
   }
 
+  // 이미지 추가/삭제 등 데이터 변경 시 현재 스냅샷 업데이트
+  updateDataSnapshot() {
+    if (_works.isNotEmpty) {
+      _works[_works.length - 1] = _snapshotPoints();
+      _works.refresh();
+    }
+    clearUndo();
+  }
+
   viewDatabox(int pos) {
     if (iconset != 1) {
       return;
@@ -1614,6 +1625,9 @@ class PainterController extends GetxController {
   removeDataimageIndex(index, pos) {
     Point point = points[index];
     point.images.removeAt(pos);
+
+    // 이미지 삭제도 데이터 변경과 같은 undo 단계로 처리
+    updateDataSnapshot();
 
     updatePoints();
     modified = true;

@@ -7,6 +7,7 @@ declare module 'vue' {
     AptInsert: typeof import('./components/management/AptInsert.vue')['default']
     AptMenu: typeof import('./components/layouts/AptMenu.vue')['default']
     AreaInsert: typeof import('./components/repair/AreaInsert.vue')['default']
+    AttachmentInsert: typeof import('./components/periodic/AttachmentInsert.vue')['default']
     BaseHeader: typeof import('./components/layouts/BaseHeader.vue')['default']
     BasicInsert: typeof import('./components/periodic/BasicInsert.vue')['default']
     CategoryInsert: typeof import('./components/repair/CategoryInsert.vue')['default']

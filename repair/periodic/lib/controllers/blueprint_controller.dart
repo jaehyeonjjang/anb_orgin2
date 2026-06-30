@@ -143,6 +143,11 @@ class BlueprintController extends GetxController {
 
   // 특정 탭에 수정사항이 있는지 확인
   bool isTabModified(int tab) {
+    // tab 16 (부착물)은 별도 저장소 사용
+    if (tab == 16) {
+      return _hasTab16Data;
+    }
+    
     for (var other in periodicothers) {
       if (other.category == tab && other.change == 1) {
         return true;
@@ -150,10 +155,17 @@ class BlueprintController extends GetxController {
     }
     return false;
   }
+  
+  // tab 16 데이터 존재 여부
+  bool _hasTab16Data = false;
+  
+  void setTab16Modified(bool value) {
+    _hasTab16Data = value;
+  }
 
   // 공중이 이용하는 부위 전체에 수정사항이 있는지 확인
   bool get hasOtherModified {
-    final tabs = [3, 10, 11, 12, 13, 14, 15];
+    final tabs = [3, 10, 11, 12, 13, 14, 15, 16];
     for (var tab in tabs) {
       if (isTabModified(tab)) {
         return true;
@@ -292,8 +304,17 @@ class BlueprintController extends GetxController {
 
   init() async {
     modified = false;
+    modifiedImage = false;
+    modifiedOther = false;
+    _modifiedImageTypes.clear();
+    _modifiedImageTypes.refresh();
+    _hasTab16Data = false;
     loading = false;
     percent = 0.0;
+    _imagePathsByType.clear();
+    _imagePathsByType.refresh();
+    _lastImagePaths.clear();
+    _lastImagePaths.refresh();
 
     final AuthController authController = Get.find<AuthController>();
 
@@ -348,6 +369,14 @@ class BlueprintController extends GetxController {
             .toList();
       } else {
         periodicothers = <Periodicother>[];
+      }
+
+      // tab16 (부착물) 데이터 확인
+      final content16 = await storageBlueprint.getItem('other_16_content');
+      final images16 = await storageBlueprint.getItem('other_16_images');
+      if ((content16 != null && content16.toString().isNotEmpty) ||
+          (images16 != null && images16.toString().isNotEmpty)) {
+        _hasTab16Data = true;
       }
 
       modified = true;
@@ -587,7 +616,8 @@ class BlueprintController extends GetxController {
       {'id': -11, 'name': '도로포장', 'tab': 11},
       {'id': -12, 'name': '도로부 신축 이음부', 'tab': 12},
       {'id': -13, 'name': '환기구 등의 덮개', 'tab': 13},
-      {'id': -14, 'name': '외벽 마감제', 'tab': 14},
+      {'id': -14, 'name': '외벽 마감재', 'tab': 14},
+      {'id': -16, 'name': '부착물', 'tab': 16},
       {'id': -15, 'name': '강재구조 노후', 'tab': 15},
       {'id': -3, 'name': '부대 점검사항', 'tab': 3},
     ];
@@ -863,6 +893,8 @@ class BlueprintController extends GetxController {
     await storageLogin.setItem('periodic', periodic);
 
     percent = 1.0;
+
+    await refreshLastImagePaths();
 
     loading = true;
   }

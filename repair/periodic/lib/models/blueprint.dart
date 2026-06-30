@@ -59,7 +59,7 @@ class Blueprint {
         extra: json['extra'] == null
             ? <String, dynamic>{}
             : json['extra'] as Map<String, dynamic>,
-        collapsed: false);
+        collapsed: (json['level'] as int) == 1);
   }
 
   Map<String, dynamic> toJson() => {
