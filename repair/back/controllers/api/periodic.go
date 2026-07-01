@@ -391,7 +391,7 @@ func (c *PeriodicController) Upload(item *models.Data) {
 	// tab16 (부착물) 데이터 처리
 	if len(item.Tab16Images) > 0 || item.Tab16Content != "" {
 		periodicotheretcManager := models.NewPeriodicotheretcManager(conn)
-		
+
 		// 기존 데이터 조회
 		periodicotheretc := periodicotheretcManager.GetByPeriodic(item.Id)
 		if periodicotheretc == nil {
@@ -401,16 +401,16 @@ func (c *PeriodicController) Upload(item *models.Data) {
 				Date:     now,
 			}
 		}
-		
+
 		// content1에 점검내용 저장
 		periodicotheretc.Content1 = item.Tab16Content
-		
+
 		// content2에 이미지 데이터를 JSON으로 저장
 		if len(item.Tab16Images) > 0 {
 			imagesJSON, _ := json.Marshal(item.Tab16Images)
 			periodicotheretc.Content2 = string(imagesJSON)
 		}
-		
+
 		if periodicotheretc.Id == 0 {
 			periodicotheretcManager.Insert(periodicotheretc)
 		} else {

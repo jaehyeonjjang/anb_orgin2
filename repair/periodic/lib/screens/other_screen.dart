@@ -949,7 +949,8 @@ class OtherScreen extends CWidget {
                   maxLines: 5,
                   decoration: InputDecoration(
                     hintText: '점검내용을 입력하세요',
-                    hintStyle: const TextStyle(color: Color(0xFF757575), fontSize: 14),
+                    hintStyle:
+                        const TextStyle(color: Color(0xFF757575), fontSize: 14),
                     border: const OutlineInputBorder(),
                     filled: true,
                     fillColor: Colors.white,

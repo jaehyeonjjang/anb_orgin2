@@ -13,7 +13,16 @@
       />
     </el-select>
 
-    <el-tree-select style="width:200px;" v-model="data.search.category" :data="data.categorys" check-strictly :default-expand-all="false" :render-after-expand="false" placeholder="공사종별" />    
+    <el-tree-select 
+      style="width:200px;" 
+      v-model="data.search.category" 
+      :data="data.categorys.filter(c => c.value !== 0)" 
+      :props="{ value: 'value', label: 'label', children: 'children' }"
+      check-strictly 
+      :default-expand-all="false" 
+      :render-after-expand="false" 
+      placeholder="공사종별" 
+    />
 
     <el-select v-model.number="data.search.standard" style="width:150px;" placeholder="규격">
       <el-option
@@ -139,13 +148,12 @@
         <el-tree-select 
           style="width:290px;" 
           v-model="data.item.category" 
-          :data="data.categorys" 
+          :data="data.categorys.filter(c => c.value !== 0)" 
+          :props="{ value: 'value', label: 'label', children: 'children' }"
           :default-expand-all="false" 
           :render-after-expand="false" 
           @node-click="changeCategory" 
           placeholder="공사종별"
-          popper-class="breakdown-tree-select-popper"
-          :teleported="true"
         />        
       </div>
 
@@ -1311,26 +1319,31 @@ async function initData() {
   data.repair = await util.getRepair(data.apt)
 
   let {allcategorys, categorys} = await util.getCategoryTree(data.apt, '공사종별')
-  data.allcategorys = allcategorys 
-  data.categorys = categorys
+  
+  data.allcategorys = allcategorys || []
+  data.categorys = categorys || []
 
   let categoryMap = {}
-  allcategorys.forEach((item) => {
-    categoryMap[item.id] = item
-  })
+  if (allcategorys) {
+    allcategorys.forEach((item) => {
+      categoryMap[item.id] = item
+    })
+  }
   data.categoryMap = categoryMap
   
   let topcategorys = []
-  categorys.forEach((item) => {
-    if (item.id == 0) {
-      return
-    }
+  if (categorys) {
+    categorys.forEach((item) => {
+      if (item.id == 0) {
+        return
+      }
 
-    topcategorys.push(item)
-  })
+      topcategorys.push(item)
+    })
+  }
 
   data.topcategorys = topcategorys
-  data.batchtopcategorys = topcategorys.splice(0, 1)
+  data.batchtopcategorys = topcategorys.length > 0 ? topcategorys.slice(0, 1) : []
   
   let res = await Dong.findByApt(data.apt)
   if (res.items == null) {
@@ -1341,7 +1354,7 @@ async function initData() {
   data.batchdongs = res.items
 
   res = await Standard.findByApt(data.apt)
-  data.allstandards = res.items  
+  data.allstandards = res.items || []
 }
 
 async function getItems() {
