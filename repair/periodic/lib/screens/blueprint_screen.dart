@@ -62,9 +62,9 @@ class BlueprintScreen extends CWidget {
               child: const Text('저장없이 종료'),
               onPressed: () {
                 Navigator.pop(context2, false);
-                showExitCodeDialog(context); // 임시 비활성화
-                //endProcess();
-                //Get.back();
+                //showExitCodeDialog(context); // 임시 비활성화
+                endProcess();
+                Get.back();
               },
             )
           ],
