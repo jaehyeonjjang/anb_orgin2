@@ -169,9 +169,8 @@
         <CELL BorderFill="9" ColAddr="2" ColSpan="2" Dirty="false" Editable="false" HasMargin="false" Header="false" Height="3636" Protect="false" RowAddr="8" RowSpan="1" Width="37070">
           <CELLMARGIN Bottom="141" Left="141" Right="141" Top="141"/>
           <PARALIST LineWrap="Break" LinkListID="0" LinkListIDNext="0" TextDirection="0" VertAlign="Center">
-            <P ParaShape="55" Style="0">
-              <TEXT CharShape="3">
-      <CHAR>{{ periodicotheretc.Content1 }}</CHAR></TEXT></P></PARALIST></CELL></ROW>
+            {{range other16.Items}}<P ParaShape="55" Style="0"><TEXT CharShape="3"><CHAR> ※ {{.}}</CHAR></TEXT></P>{{end}}
+          </PARALIST></CELL></ROW>
     </TABLE>
     <CHAR/>
   </TEXT>
@@ -180,7 +179,117 @@
 <P ParaShape="103" Style="2">
   <TEXT CharShape="33"/>
 </P>
+<P ParaShape="25" Style="2">
+  <TEXT CharShape="16">
+    <TABLE BorderFill="16" CellSpacing="0" ColCount="2" PageBreak="None" RepeatHeader="true" RowCount="7">
+      <SHAPEOBJECT InstId="1109612260" Lock="false" NumberingType="Table" ZOrder="74">
+        <SIZE Height="25933" HeightRelTo="Absolute" Protect="false" Width="47070" WidthRelTo="Absolute"/>
+        <POSITION AffectLSpacing="false" AllowOverlap="false" FlowWithText="true" HoldAnchorAndSO="false" HorzAlign="Left" HorzOffset="0" HorzRelTo="Para" TreatAsChar="true" VertAlign="Top" VertOffset="0" VertRelTo="Para"/>
+        <OUTSIDEMARGIN Bottom="141" Left="141" Right="141" Top="141"/>
+      </SHAPEOBJECT>
+      <INSIDEMARGIN Bottom="0" Left="0" Right="0" Top="0"/>
+      <ROW>
+        <CELL BorderFill="11" ColAddr="0" ColSpan="1" Dirty="false" Editable="false" HasMargin="false" Header="false" Height="4117" Protect="false" RowAddr="0" RowSpan="1" Width="6118">
+          <CELLMARGIN Bottom="141" Left="141" Right="141" Top="141"/>
+          <PARALIST LineWrap="Break" LinkListID="0" LinkListIDNext="0" TextDirection="0" VertAlign="Center">
+            <P ParaShape="19" Style="14">
+              <TEXT CharShape="13">
+        <CHAR>평가기준</CHAR></TEXT></P></PARALIST></CELL>
+        <CELL BorderFill="13" ColAddr="1" ColSpan="1" Dirty="false" Editable="false" HasMargin="false" Header="false" Height="4117" Protect="false" RowAddr="0" RowSpan="1" Width="40952">
+          <CELLMARGIN Bottom="141" Left="141" Right="141" Top="141"/>
+          <PARALIST LineWrap="Break" LinkListID="0" LinkListIDNext="0" TextDirection="0" VertAlign="Center">
+            <P ParaShape="34" Style="14">
+              <TEXT CharShape="13">
+      <CHAR>평  가  내  용</CHAR></TEXT></P></PARALIST></CELL></ROW>
+      <ROW>
+        <CELL BorderFill="{{if other16.Grade == "a"}}139{{else}}6{{end}}" ColAddr="0" ColSpan="1" Dirty="false" Editable="false" HasMargin="false" Header="false" Height="3636" Protect="false" RowAddr="1" RowSpan="1" Width="6118">
+          <CELLMARGIN Bottom="141" Left="141" Right="141" Top="141"/>
+          <PARALIST LineWrap="Break" LinkListID="0" LinkListIDNext="0" TextDirection="0" VertAlign="Center">
+            <P ParaShape="110" Style="0">
+              <TEXT CharShape="3">
+        <CHAR>a</CHAR></TEXT></P></PARALIST></CELL>
+        <CELL BorderFill="{{if other16.Grade == "a"}}140{{else}}4{{end}}" ColAddr="1" ColSpan="1" Dirty="false" Editable="false" HasMargin="false" Header="false" Height="3636" Protect="false" RowAddr="1" RowSpan="1" Width="40952">
+          <CELLMARGIN Bottom="141" Left="141" Right="141" Top="141"/>
+          <PARALIST LineWrap="Break" LinkListID="0" LinkListIDNext="0" TextDirection="0" VertAlign="Center">
+            <P ParaShape="55" Style="0">
+              <TEXT CharShape="3">
+      <CHAR>규격에 맞게 설치되어 있고 환기구 등의 덮개가 최상의 상태</CHAR></TEXT></P></PARALIST></CELL></ROW>
+      <ROW>
+        <CELL BorderFill="{{if other16.Grade == "b"}}139{{else}}6{{end}}" ColAddr="0" ColSpan="1" Dirty="false" Editable="false" HasMargin="false" Header="false" Height="3636" Protect="false" RowAddr="2" RowSpan="1" Width="6118">
+          <CELLMARGIN Bottom="141" Left="141" Right="141" Top="141"/>
+          <PARALIST LineWrap="Break" LinkListID="0" LinkListIDNext="0" TextDirection="0" VertAlign="Center">
+            <P ParaShape="110" Style="0">
+              <TEXT CharShape="3">
+        <CHAR>b</CHAR></TEXT></P></PARALIST></CELL>
+        <CELL BorderFill="{{if other16.Grade == "b"}}140{{else}}4{{end}}" ColAddr="1" ColSpan="1" Dirty="false" Editable="false" HasMargin="false" Header="false" Height="3636" Protect="false" RowAddr="2" RowSpan="1" Width="40952">
+          <CELLMARGIN Bottom="141" Left="141" Right="141" Top="141"/>
+          <PARALIST LineWrap="Break" LinkListID="0" LinkListIDNext="0" TextDirection="0" VertAlign="Center">
+            <P ParaShape="55" Style="0">
+              <TEXT CharShape="3">
+      <CHAR>덮개 등(지지구조 철물, 연결재, 걸침턱 등)에 결함 및 파손 등이 발생하였으나, 기능 발휘에는 지장이 없고 기능성에 문제가 없는 상태</CHAR></TEXT></P>
+            <P ParaShape="55" Style="0">
+              <TEXT CharShape="3">
+      <CHAR>기능성에 문제가 없어 결함 및 파손에 대해 지속적 관찰이 필요한 상태</CHAR></TEXT></P></PARALIST></CELL></ROW>
+      <ROW>
+        <CELL BorderFill="{{if other16.Grade == "c"}}139{{else}}6{{end}}" ColAddr="0" ColSpan="1" Dirty="false" Editable="false" HasMargin="false" Header="false" Height="3636" Protect="false" RowAddr="3" RowSpan="1" Width="6118">
+          <CELLMARGIN Bottom="141" Left="141" Right="141" Top="141"/>
+          <PARALIST LineWrap="Break" LinkListID="0" LinkListIDNext="0" TextDirection="0" VertAlign="Center">
+            <P ParaShape="110" Style="0">
+              <TEXT CharShape="3">
+        <CHAR>c</CHAR></TEXT></P></PARALIST></CELL>
+        <CELL BorderFill="{{if other16.Grade == "c"}}140{{else}}4{{end}}" ColAddr="1" ColSpan="1" Dirty="false" Editable="false" HasMargin="false" Header="false" Height="3636" Protect="false" RowAddr="3" RowSpan="1" Width="40952">
+          <CELLMARGIN Bottom="141" Left="141" Right="141" Top="141"/>
+          <PARALIST LineWrap="Break" LinkListID="0" LinkListIDNext="0" TextDirection="0" VertAlign="Center">
+            <P ParaShape="55" Style="0">
+              <TEXT CharShape="3">
+      <CHAR>덮개 등(지지구조 철물, 연결재, 걸침턱 등)에 결함 및 파손 등으로 기능에 일부 문제가 발생하여 보수가 필요한 상태</CHAR></TEXT></P></PARALIST></CELL></ROW>
+      <ROW>
+        <CELL BorderFill="{{if other16.Grade == "d"}}139{{else}}6{{end}}" ColAddr="0" ColSpan="1" Dirty="false" Editable="false" HasMargin="false" Header="false" Height="3636" Protect="false" RowAddr="4" RowSpan="1" Width="6118">
+          <CELLMARGIN Bottom="141" Left="141" Right="141" Top="141"/>
+          <PARALIST LineWrap="Break" LinkListID="0" LinkListIDNext="0" TextDirection="0" VertAlign="Center">
+            <P ParaShape="110" Style="0">
+              <TEXT CharShape="3">
+        <CHAR>d</CHAR></TEXT></P></PARALIST></CELL>
+        <CELL BorderFill="{{if other16.Grade == "d"}}140{{else}}4{{end}}" ColAddr="1" ColSpan="1" Dirty="false" Editable="false" HasMargin="false" Header="false" Height="3636" Protect="false" RowAddr="4" RowSpan="1" Width="40952">
+          <CELLMARGIN Bottom="141" Left="141" Right="141" Top="141"/>
+          <PARALIST LineWrap="Break" LinkListID="0" LinkListIDNext="0" TextDirection="0" VertAlign="Center">
+            <P ParaShape="55" Style="0">
+              <TEXT CharShape="3">
+      <CHAR>덮개 등(지지구조 철물, 연결재, 걸침턱 등)에 결함 및 파손 등으로 기능이 상실되어 국부적인 교체 및 보강이 필요한 상태</CHAR></TEXT></P></PARALIST></CELL></ROW>
+      <ROW>
+        <CELL BorderFill="{{if other16.Grade == "e"}}139{{else}}6{{end}}" ColAddr="0" ColSpan="1" Dirty="false" Editable="false" HasMargin="false" Header="false" Height="3636" Protect="false" RowAddr="5" RowSpan="1" Width="6118">
+          <CELLMARGIN Bottom="141" Left="141" Right="141" Top="141"/>
+          <PARALIST LineWrap="Break" LinkListID="0" LinkListIDNext="0" TextDirection="0" VertAlign="Center">
+            <P ParaShape="110" Style="0">
+              <TEXT CharShape="3">
+        <CHAR>e</CHAR></TEXT></P></PARALIST></CELL>
+        <CELL BorderFill="{{if other16.Grade == "e"}}140{{else}}4{{end}}" ColAddr="1" ColSpan="1" Dirty="false" Editable="false" HasMargin="false" Header="false" Height="3636" Protect="false" RowAddr="5" RowSpan="1" Width="40952">
+          <CELLMARGIN Bottom="141" Left="141" Right="141" Top="141"/>
+          <PARALIST LineWrap="Break" LinkListID="0" LinkListIDNext="0" TextDirection="0" VertAlign="Center">
+            <P ParaShape="55" Style="0">
+              <TEXT CharShape="3">
+      <CHAR>결함 및 파손 정도가 심각하거나 덮개 등이 탈락된 상태</CHAR></TEXT></P></PARALIST></CELL></ROW>
+      <ROW>
+        <CELL BorderFill="114" ColAddr="0" ColSpan="1" Dirty="false" Editable="false" HasMargin="false" Header="false" Height="3636" Protect="false" RowAddr="6" RowSpan="1" Width="6118">
+          <CELLMARGIN Bottom="141" Left="141" Right="141" Top="141"/>
+          <PARALIST LineWrap="Break" LinkListID="0" LinkListIDNext="0" TextDirection="0" VertAlign="Center">
+            <P ParaShape="58" Style="0">
+              <TEXT CharShape="13">
+        <CHAR>평가 등급</CHAR></TEXT></P></PARALIST></CELL>
+        <CELL BorderFill="25" ColAddr="1" ColSpan="1" Dirty="false" Editable="false" HasMargin="false" Header="false" Height="3636" Protect="false" RowAddr="6" RowSpan="1" Width="40952">
+          <CELLMARGIN Bottom="141" Left="141" Right="141" Top="141"/>
+          <PARALIST LineWrap="Break" LinkListID="0" LinkListIDNext="0" TextDirection="0" VertAlign="Center">
+            <P ParaShape="55" Style="0">
+              <TEXT CharShape="3">
+        <CHAR>{{if other16.Grade != ""}}금회 조사 결과 현재 상태를 “{{other16.Grade}}등급”으로 판정함.{{else}} {{end}}</CHAR></TEXT></P></PARALIST></CELL></ROW>
+    </TABLE>
+    <CHAR/>
+  </TEXT>
+</P>
 
+<P ParaShape="103" Style="2">
+  <TEXT CharShape="16"/>
+</P>
 {{if attachimageCount == 0}}
 <P ParaShape="25" Style="2">
   <TEXT CharShape="16">

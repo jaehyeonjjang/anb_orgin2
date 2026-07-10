@@ -214,6 +214,9 @@ func Periodic0(id int64, conn *models.Connection) string {
 		models.Where{Column: "periodic", Value: id, Compare: "="},
 		models.Ordering("po_order,po_id"),
 	})
+	
+	// 디버깅: periodicother 데이터 로드 확인
+	log.Printf("[DEBUG] Periodic %d: Loaded %d periodicother records", id, len(others))
 
 	periodicotheretc := periodicotheretcManager.GetByPeriodic(id)
 	if periodicotheretc == nil {
@@ -228,6 +231,10 @@ func Periodic0(id int64, conn *models.Connection) string {
 
 		otherMap[v.Category] = append(otherMap[v.Category], v)
 	}
+	
+	// 디버깅: 카테고리별 데이터 개수 확인
+	log.Printf("[DEBUG] Periodic %d: Category 1=%d, Category 3=%d, Category 10=%d, Category 11=%d", 
+		id, len(otherMap[1]), len(otherMap[3]), len(otherMap[10]), len(otherMap[11]))
 
 	facilitycategorys := facilitycategoryManager.Find([]interface{}{
 		models.Ordering("fc_order,fc_id"),
@@ -817,6 +824,7 @@ func Periodic0(id int64, conn *models.Connection) string {
 	v.Set("other12", otherResult[12])
 	v.Set("other13", otherResult[13])
 	v.Set("other14", otherResult[14])
+	v.Set("other16", otherResult[16])
 
 	otherFlag := true
 	for i := 10; i <= 14; i++ {
@@ -1308,9 +1316,27 @@ func Periodic0(id int64, conn *models.Connection) string {
 	v.Set("attachpages", attachpages)
 
 	v.Set("periodicotheretc", periodicotheretc)
-	v.Set("others1", otherMap[1])
-	v.Set("others2", otherMap[2])
-	v.Set("others3", otherMap[3])
+	
+	// others1, others2, others3 안전하게 설정 (nil 방지)
+	if others1, ok := otherMap[1]; ok && len(others1) > 0 {
+		v.Set("others1", others1)
+		v.Set("others1RowCount", len(others1)+2)  // 헤더 + 데이터 + 푸터
+		v.Set("others1FooterRow", len(others1)+1) // 푸터 행 번호
+	} else {
+		v.Set("others1", []models.Periodicother{})
+		v.Set("others1RowCount", 2)
+		v.Set("others1FooterRow", 1)
+	}
+	if others2, ok := otherMap[2]; ok && len(others2) > 0 {
+		v.Set("others2", others2)
+	} else {
+		v.Set("others2", []models.Periodicother{})
+	}
+	if others3, ok := otherMap[3]; ok && len(others3) > 0 {
+		v.Set("others3", others3)
+	} else {
+		v.Set("others3", []models.Periodicother{})
+	}
 
 	if privateDong.Id > 0 || len(onlyaptdongs) <= 1 {
 		v.Set("sizetype", 1)

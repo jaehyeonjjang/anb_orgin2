@@ -36,14 +36,15 @@ class BlueprintScreen extends CWidget {
     authController.title = '';
   }
 
-  clickBack(context) {
-    if (c.modified == false) {
-      endProcess();
+  clickBack(context) async {
+    // 데이터를 받는 중이거나 수정사항이 없으면 바로 종료
+    if (c.loading == false || c.modified == false) {
+      await endProcess();
       Get.back();
       return true;
     }
 
-    final ret = showDialog<void>(
+    final ret = await showDialog<bool>(
       context: context,
       builder: (context2) {
         return AlertDialog(
@@ -60,11 +61,8 @@ class BlueprintScreen extends CWidget {
             ),
             ElevatedButton(
               child: const Text('저장없이 종료'),
-              onPressed: () {
-                Navigator.pop(context2, false);
-                //showExitCodeDialog(context); // 임시 비활성화
-                endProcess();
-                Get.back();
+              onPressed: () async {
+                Navigator.pop(context2, true);
               },
             )
           ],
@@ -72,7 +70,12 @@ class BlueprintScreen extends CWidget {
       },
     );
 
-    return ret;
+    if (ret == true) {
+      await endProcess();
+      Get.back();
+    }
+
+    return ret ?? false;
   }
 
   showExitCodeDialog(context) {
@@ -136,15 +139,15 @@ class BlueprintScreen extends CWidget {
   @override
   Widget build(BuildContext context) {
     return WillPopScope(
-        onWillPop: () {
-          return clickBack(context);
+        onWillPop: () async {
+          return await clickBack(context);
         },
         child: CScaffold(
           appBar: DefaultAppBar(
             leading: IconButton(
                 icon: const Icon(Icons.arrow_back_ios),
-                onPressed: () {
-                  clickBack(context);
+                onPressed: () async {
+                  await clickBack(context);
                 }),
             actions: [
               IconButton(

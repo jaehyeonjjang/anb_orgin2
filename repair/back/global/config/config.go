@@ -298,7 +298,7 @@ func init() {
 		} else if Database.Type == Sqlserver {
 			Database.ConnectionString = fmt.Sprintf("server=%v;port=%v;user id=%v,password=%v;database=%v", Database.Host, Database.Port, Database.User, Database.Password, Database.Name)
 		} else {
-			Database.ConnectionString = fmt.Sprintf("%v:%v@tcp(%v:%v)/%v", Database.User, Database.Password, Database.Host, Database.Port, Database.Name)
+			Database.ConnectionString = fmt.Sprintf("%v:%v@tcp(%v:%v)/%v?charset=utf8mb4", Database.User, Database.Password, Database.Host, Database.Port, Database.Name)
 		}
 	}
 

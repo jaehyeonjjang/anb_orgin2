@@ -815,3 +815,158 @@ func (c *PeriodicController) Search() {
 	total := manager.Count(args)
 	c.Set("total", total)
 }
+
+// InitPeriodicother - 기존 periodic의 periodicother 데이터를 초기화
+func (c *PeriodicController) InitPeriodicother(id int64) {
+	conn := c.NewConnection()
+
+	periodicManager := models.NewPeriodicManager(conn)
+	periodicotherManager := models.NewPeriodicotherManager(conn)
+
+	periodic := periodicManager.Get(id)
+	if periodic == nil || periodic.Id == 0 {
+		c.Result["code"] = "error"
+		c.Result["message"] = "Periodic not found"
+		return
+	}
+
+	// 카테고리별로 기존 데이터 확인 (누락된 카테고리만 보충)
+	existingCategories := make(map[int]bool)
+	allItems := periodicotherManager.Find([]any{
+		models.Where{Column: "periodic", Value: id, Compare: "="},
+	})
+	for _, item := range allItems {
+		existingCategories[item.Category] = true
+	}
+
+	// Post_Insert와 동일한 초기화 로직
+
+	// 외벽 마감재 부재상태 점검 (category 1)
+	if !existingCategories[1] {
+		titles1 := []string{
+			"균열발생 상태",
+			"붙임모르타르 상태",
+			"연결철물 시공 상태",
+			"균열방지 조치 상태",
+			"기울기 및 배부름",
+		}
+
+		for i, v := range titles1 {
+			var item models.Periodicother
+			item.Name = v
+			item.Type = 1
+			item.Category = 1
+			item.Order = i + 1
+			item.Periodic = id
+
+			periodicotherManager.Insert(&item)
+		}
+	}
+
+	titles3 := []string{
+		"바닥포장부위 침하 및 균열현상",
+		"건물전체의 부등침하 현상",
+		"외부 옹벽(축대)의 균열 현상",
+		"건물주변 토량 침하현상",
+		"하수관로 및 맨홀의 배수, 청소 상태",
+		"외벽의 전도 위험부위",
+		"외벽 모르터 또는 콘크리트의 탈락부위",
+		"외벽 창문 유리의 파손",
+		"ROOF DRAIN의 상태",
+		"옥상에 하중(물건)의 과재 여부",
+		"내부 창, 문의 작동상태",
+		"건물 내부의 진동 여부",
+		"천정재(텍스류)의 탈락 및 갈라짐 상태",
+		"벽지 및 천정지가 찢어진 곳 유무",
+		"실내의 하중(물건)의 과적 여부",
+		"건물에서 뚝뚝하는 소리",
+		"코킹이 갑자기 떨어진 곳의 유무",
+		"담장의 전도 징후",
+		"돌출물(간판, 안테나 등)의 탈락현상",
+		"지하수 배수펌프 작동 상태",
+		"안전난간의 견고성",
+	}
+
+	types := []int{1, 2, 2, 2, 1, 2, 2, 2, 1, 2, 1, 2, 2, 2, 2, 2, 2, 2, 2, 1, 1}
+
+	// 부대 점검사항 (category 3)
+	if !existingCategories[3] {
+		for i, v := range titles3 {
+			var item models.Periodicother
+			item.Name = v
+			item.Type = types[i]
+			item.Category = 3
+			item.Order = i + 1 + 200
+			item.Periodic = id
+
+			periodicotherManager.Insert(&item)
+		}
+	}
+
+	// 추락방지시설 (category 10)
+	if !existingCategories[10] {
+		periodicotherManager.Insert(&models.Periodicother{Name: "a,b,c,d,e", Type: 1, Position: "추락방지시설", Category: 10, Order: 100, Periodic: id})
+		periodicotherManager.Insert(&models.Periodicother{Name: "전도,변형,고정부 및 연결부 파손,이탈,부식,노후화", Type: 2, Position: "안전난간대", Category: 10, Order: 101, Periodic: id})
+		periodicotherManager.Insert(&models.Periodicother{Name: "변형,고정부 및 연결부 파손,이탈,부식,노후화", Type: 2, Position: "점검사다리 등받이 보호망", Category: 10, Order: 102, Periodic: id})
+		periodicotherManager.Insert(&models.Periodicother{Name: "변형,파손,탈락", Type: 2, Position: "추락방호망", Category: 10, Order: 103, Periodic: id})
+	}
+
+	// 도로포장 (category 11)
+	if !existingCategories[11] {
+		periodicotherManager.Insert(&models.Periodicother{Name: "a,b,c,d,e", Type: 1, Position: "도로포장", Category: 11, Order: 110, Periodic: id})
+		periodicotherManager.Insert(&models.Periodicother{Name: "균열,함몰,단차(요청),블리딩,마모", Type: 2, Position: "아스팔트", Category: 11, Order: 111, Periodic: id})
+		periodicotherManager.Insert(&models.Periodicother{Name: "균열,마모,박락,파손", Type: 2, Position: "바닥 콘크리트", Category: 11, Order: 112, Periodic: id})
+		periodicotherManager.Insert(&models.Periodicother{Name: "균열,파손,침하", Type: 2, Position: "보도블럭", Category: 11, Order: 113, Periodic: id})
+		periodicotherManager.Insert(&models.Periodicother{Name: "균열,파손,침하", Type: 2, Position: "보도판석", Category: 11, Order: 114, Periodic: id})
+		periodicotherManager.Insert(&models.Periodicother{Name: "균열,파손,침하,이탈", Type: 2, Position: "경계석", Category: 11, Order: 115, Periodic: id})
+		periodicotherManager.Insert(&models.Periodicother{Name: "파손,침하", Type: 2, Position: "트렌치", Category: 11, Order: 116, Periodic: id})
+	}
+
+	// 도로부 신축 이음부 (category 12)
+	if !existingCategories[12] {
+		periodicotherManager.Insert(&models.Periodicother{Name: "a,b,c,d,e", Type: 1, Position: "도로부 신축 이음부", Category: 12, Order: 120, Periodic: id})
+		periodicotherManager.Insert(&models.Periodicother{Name: "미시공,고무재 및 강재,후타재", Type: 3, Position: "시공", Category: 12, Order: 121, Periodic: id})
+		periodicotherManager.Insert(&models.Periodicother{Name: "마모,강판노출,부식,누수,단차,파손,이격,이물질 퇴적", Type: 2, Position: "신축 이음부 고무재 및 강재", Category: 12, Order: 122, Periodic: id})
+		periodicotherManager.Insert(&models.Periodicother{Name: "콘크리트 균열,파손", Type: 2, Position: "신축 이음부 후타재", Category: 12, Order: 123, Periodic: id})
+	}
+
+	// 환기구 등의 덮개 (category 13)
+	if !existingCategories[13] {
+		periodicotherManager.Insert(&models.Periodicother{Name: "a,b,c,d,e", Type: 1, Position: "환기구 등의 덮개", Category: 13, Order: 130, Periodic: id})
+		periodicotherManager.Insert(&models.Periodicother{Name: "벽부형,입상형,바닥형,벤츄레이터", Type: 4, Position: "환기구", Category: 13, Order: 131, Periodic: id})
+		periodicotherManager.Insert(&models.Periodicother{Name: "변형,파손,부식", Type: 2, Position: "그릴창", Category: 13, Order: 132, Periodic: id})
+		periodicotherManager.Insert(&models.Periodicother{Name: "탈락,변형,부식", Type: 2, Position: "연결부", Category: 13, Order: 133, Periodic: id})
+		periodicotherManager.Insert(&models.Periodicother{Name: "파손,균열", Type: 2, Position: "지지구조", Category: 13, Order: 134, Periodic: id})
+		periodicotherManager.Insert(&models.Periodicother{Name: "파손,균열", Type: 2, Position: "걸침턱", Category: 13, Order: 135, Periodic: id})
+	}
+
+	// 외벽 마감재 (category 14)
+	if !existingCategories[14] {
+		periodicotherManager.Insert(&models.Periodicother{Name: "a,b,c,d,e", Type: 1, Position: "외벽 마감재", Category: 14, Order: 140, Periodic: id})
+		periodicotherManager.Insert(&models.Periodicother{Name: "수성페인트,A/L 판넬,커튼월,석재,적벽돌,드라이비트", Type: 4, Position: "건물외부 벽체", Category: 14, Order: 141, Periodic: id})
+		periodicotherManager.Insert(&models.Periodicother{Name: "균열,파손,탈락,이격", Type: 2, Position: "석재(화강석, 대리석) 마감", Category: 14, Order: 143, Periodic: id})
+		periodicotherManager.Insert(&models.Periodicother{Name: "변형,파손,탈락,이격,부식", Type: 2, Position: "알루미늄 판넬 및 강재 마감", Category: 14, Order: 144, Periodic: id})
+		periodicotherManager.Insert(&models.Periodicother{Name: "변형,균열,파손,탈락", Type: 2, Position: "드라이비트", Category: 14, Order: 145, Periodic: id})
+		periodicotherManager.Insert(&models.Periodicother{Name: "균열,백화현상,파손,탈락", Type: 2, Position: "벽돌", Category: 14, Order: 146, Periodic: id})
+	}
+
+	// 강재구조 노후 (category 15)
+	if !existingCategories[15] {
+		periodicotherManager.Insert(&models.Periodicother{Name: "해당사항 없음,해당사항 있음", Status: "해당사항 없음", Type: 1, Position: "강재구조 노후", Category: 15, Order: 150, Periodic: id})
+		periodicotherManager.Insert(&models.Periodicother{Name: "부식,파손,이격", Type: 2, Position: "비구조형강", Category: 15, Order: 151, Periodic: id})
+		periodicotherManager.Insert(&models.Periodicother{Name: "부식,파손,볼트풀림", Type: 2, Position: "철골구조물접합부위", Category: 15, Order: 152, Periodic: id})
+		periodicotherManager.Insert(&models.Periodicother{Name: "들뜸,탈락", Type: 2, Position: "내화피복", Category: 15, Order: 153, Periodic: id})
+	}
+
+	added := []int{}
+	for cat := 1; cat <= 15; cat++ {
+		if !existingCategories[cat] && (cat == 1 || cat == 3 || cat >= 10) {
+			added = append(added, cat)
+		}
+	}
+
+	c.Result["code"] = "success"
+	c.Result["message"] = "Periodicother data initialized successfully"
+	c.Result["added_categories"] = added
+	c.Result["existing_categories"] = existingCategories
+}

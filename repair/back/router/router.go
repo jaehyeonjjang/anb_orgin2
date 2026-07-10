@@ -512,6 +512,21 @@ func SetRouter(r *gin.Engine) {
 			c.JSON(controller.Code, controller.Result)
 		})
 
+		apiGroup.POST("/periodic/initother", func(c *gin.Context) {
+			var results map[string]any
+			jsonData, _ := c.GetRawData()
+			json.Unmarshal(jsonData, &results)
+			var id_ int64
+			if v, flag := results["id"]; flag {
+				id_ = int64(v.(float64))
+			}
+			var controller api.PeriodicController
+			controller.Init(c)
+			controller.InitPeriodicother(id_)
+			controller.Close()
+			c.JSON(controller.Code, controller.Result)
+		})
+
 		apiGroup.POST("/periodicimage/process", func(c *gin.Context) {
 			item_ := &models.Periodicimage{}
 			c.ShouldBindJSON(item_)

@@ -182,6 +182,18 @@ class OtherController extends GetxController {
         hasTab16Data = true;
       }
 
+      // LocalStorage에 state가 없으면 periodicothers(category=16)에서 로드
+      // (다른 기기/서버 재로드 대비)
+      if (_tab16States.isEmpty) {
+        for (var item in periodicothers) {
+          if (item.category != 16) continue;
+          final rowIndex = item.order - 160;
+          if (rowIndex < 0 || rowIndex > 7) continue;
+          if (item.status.isEmpty) continue;
+          _tab16States[rowIndex] = item.status.split(',');
+        }
+      }
+
       // tab16 데이터가 있으면 modified 설정
       if (hasTab16Data) {
         blueprintController.setTab16Modified(true);
@@ -211,6 +223,10 @@ class OtherController extends GetxController {
   }
 
   save() async {
+    // _tab16States 값을 category=16 periodicothers 로 동기화
+    // (Row 0 → Order 160, Row N → Order 160+N)
+    _syncTab16StatesToPeriodicothers();
+
     final periodicotherStr = json.encode(periodicothers);
 
     final LocalStorage storage = LocalStorage('blueprints.json');
@@ -259,5 +275,25 @@ class OtherController extends GetxController {
     blueprintController.modified = true;
     blueprintController.modifiedOther = true;
     modified = false;
+  }
+
+  // _tab16States (row 0-7) → periodicothers (Category=16, Order 160+N).status 로 동기화
+  // Row 0: 부착물 등 (radio a-e), Row 1-7: 각 부재 체크박스
+  void _syncTab16StatesToPeriodicothers() {
+    for (var i = 0; i < periodicothers.length; i++) {
+      final item = periodicothers[i];
+      if (item.category != 16) continue;
+
+      final rowIndex = item.order - 160;
+      if (rowIndex < 0 || rowIndex > 7) continue;
+
+      final states = _tab16States[rowIndex] ?? [];
+      final newStatus = states.join(',');
+
+      if (item.status != newStatus) {
+        periodicothers[i].status = newStatus;
+        periodicothers[i].change = 1;
+      }
+    }
   }
 }

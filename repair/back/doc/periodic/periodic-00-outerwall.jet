@@ -133,7 +133,7 @@
 
 <P ParaShape="20" Style="2">
   <TEXT CharShape="23">
-	<TABLE BorderFill="2" CellSpacing="0" ColCount="4" PageBreak="None" RepeatHeader="true" RowCount="7">
+	<TABLE BorderFill="2" CellSpacing="0" ColCount="4" PageBreak="None" RepeatHeader="true" RowCount="{{others1RowCount}}">
 	  <SHAPEOBJECT InstId="1378975161" Lock="false" NumberingType="Table" ZOrder="46">
 		<SIZE Height="24171" HeightRelTo="Absolute" Protect="false" Width="47113" WidthRelTo="Absolute"/>
 		<POSITION AffectLSpacing="false" AllowOverlap="false" FlowWithText="true" HoldAnchorAndSO="false" HorzAlign="Left" HorzOffset="0" HorzRelTo="Column" TreatAsChar="true" VertAlign="Top" VertOffset="0" VertRelTo="Para"/>
@@ -198,7 +198,7 @@
 	  <CHAR>{{v.Position|dash}}</CHAR></TEXT></P></PARALIST></CELL></ROW>{{end}}
     
 	  <ROW>
-		<CELL BorderFill="49" ColAddr="0" ColSpan="4" Dirty="false" Editable="false" HasMargin="false" Header="false" Height="3339" Protect="false" RowAddr="6" RowSpan="1" Width="47113">
+		<CELL BorderFill="49" ColAddr="0" ColSpan="4" Dirty="false" Editable="false" HasMargin="false" Header="false" Height="3339" Protect="false" RowAddr="{{others1FooterRow}}" RowSpan="1" Width="47113">
 		  <CELLMARGIN Bottom="141" Left="141" Right="141" Top="141"/>
 		  <PARALIST LineWrap="Break" LinkListID="0" LinkListIDNext="0" TextDirection="0" VertAlign="Center">
 			<P ParaShape="105" Style="0">

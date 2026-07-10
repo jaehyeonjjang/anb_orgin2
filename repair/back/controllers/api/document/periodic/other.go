@@ -286,5 +286,50 @@ func Other(datas []models.Periodicother) map[int]OtherResult {
 		ret[pos] = OtherResult{Grade: GetGrade("외벽 마감재", items), Items: strs, Head: head, Position: position, Good: good}
 	}
 
+	{
+		pos := 16
+		items := GetOtherByCategory(pos, datas)
+		typeitems := GetOtherByType(2, items)
+
+		strs := make([]string, 0)
+
+		// 각 부재별로 "상태양호"가 아닌 결함 항목이 있는지 확인
+		for _, v := range typeitems {
+			if v.Status == "" {
+				continue
+			}
+
+			statusList := strings.Split(v.Status, ",")
+			defects := make([]string, 0)
+			for _, s := range statusList {
+				s = strings.TrimSpace(s)
+				if s == "" || s == "상태양호" {
+					continue
+				}
+				defects = append(defects, s)
+			}
+
+			if len(defects) == 0 {
+				continue
+			}
+
+			// Position에서 앞쪽 중분류 제거 (예: "정착부 - 앵커 및 브라켓" → "앵커 및 브라켓")
+			position := v.Position
+			if idx := strings.Index(position, " - "); idx != -1 {
+				position = strings.TrimSpace(position[idx+3:])
+			}
+
+			strs = append(strs, fmt.Sprintf("%v - %v", position, strings.Join(defects, ", ")))
+		}
+
+		good := 0
+		if len(strs) == 0 {
+			strs = append(strs, "해당 건축물 내 부착물 등의 상태는 전반적으로 양호한 상태로 조사되었다.")
+			good = 1
+		}
+
+		ret[pos] = OtherResult{Grade: GetGrade("부착물 등", items), Items: strs, Good: good}
+	}
+
 	return ret
 }

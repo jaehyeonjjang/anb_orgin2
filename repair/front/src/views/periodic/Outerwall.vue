@@ -24,6 +24,9 @@ import { util, size }  from "~/global"
 import { useStore } from 'vuex'
 import { useRoute } from 'vue-router'
 import request from '~/global/request'
+import OuterwallInsert from '~/components/periodic/OuterwallInsert.vue'
+import OuterwallBottomInsert from '~/components/periodic/OuterwallBottomInsert.vue'
+import AttachmentInsert from '~/components/periodic/AttachmentInsert.vue'
 
 const { width, height } = size()
 

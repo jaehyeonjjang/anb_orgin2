@@ -115,10 +115,7 @@ class OtherScreen extends CWidget {
 
     return CColumn(children: [
       // commented out tab navigation omitted
-      if (c.tab == 16)
-        Expanded(child: tab16Body(context))
-      else
-        CScroll(expanded: true, children: [checklist(context), list(context)])
+      CScroll(expanded: true, children: [checklist(context), list(context)])
     ]);
   }
 
@@ -349,7 +346,11 @@ class OtherScreen extends CWidget {
   }
 
   Widget list(context) {
-    if (c.tab == 10 || c.tab == 11 || c.tab == 12 || c.tab == 15) {
+    if (c.tab == 10 ||
+        c.tab == 11 ||
+        c.tab == 12 ||
+        c.tab == 15 ||
+        c.tab == 16) {
       return Container();
     }
 
@@ -456,12 +457,7 @@ class OtherScreen extends CWidget {
     //   txt2 = '있음';
     // }
 
-    var names = item.name.split(',');
-
-    // 체크박스 타입(type == 2)이고 '상태양호'가 없으면 맨 앞에 추가
-    if (item.type == 2 && !names.contains('상태양호')) {
-      names = ['상태양호', ...names];
-    }
+    final names = item.name.split(',');
 
     List<Widget> widgets = [];
 
@@ -512,24 +508,24 @@ class OtherScreen extends CWidget {
       item.name == "a,b,c,d,e"
           ? Container()
           : Container(
-              alignment: Alignment.center,
+              alignment: Alignment.centerLeft,
               padding: const EdgeInsets.all(10),
-              child: CRow(children: [
-                CContainer(
-                  child: const Icon(Icons.add_a_photo),
-                  onTap: () => getImage(index, ImageSource.camera),
-                ),
-                const SizedBox(width: 10),
-                CContainer(
-                  child: const Icon(Icons.add_photo_alternate),
-                  onTap: () => getImage(index, ImageSource.gallery),
-                ),
-                CRow(
-                  margin: const EdgeInsets.only(left: 20),
-                  gap: 5,
-                  children: images,
-                )
-              ]),
+              child: Wrap(
+                spacing: 8,
+                runSpacing: 4,
+                crossAxisAlignment: WrapCrossAlignment.start,
+                children: [
+                  CContainer(
+                    child: const Icon(Icons.add_a_photo, size: 24),
+                    onTap: () => getImage(index, ImageSource.camera),
+                  ),
+                  CContainer(
+                    child: const Icon(Icons.add_photo_alternate, size: 24),
+                    onTap: () => getImage(index, ImageSource.gallery),
+                  ),
+                  ...images,
+                ],
+              ),
             ),
     ]);
   }
@@ -602,7 +598,8 @@ class OtherScreen extends CWidget {
             Table(
               columnWidths: const {
                 0: FixedColumnWidth(220),
-                1: FixedColumnWidth(750),
+                1: FixedColumnWidth(850),
+                2: FixedColumnWidth(180),
               },
               border: TableBorder.all(color: Colors.black),
               children: items,
@@ -653,344 +650,5 @@ class OtherScreen extends CWidget {
     }
     c.periodicothers[index].status = newValue.join(',');
     c.periodicothers[index].change = 1;
-  }
-
-  Future getTab16Image(int rowIndex, ImageSource imageSource) async {
-    final image = await picker.pickImage(source: imageSource);
-    if (image == null) return;
-
-    c.addTab16Image(rowIndex, image.path);
-  }
-
-  void showTab16ImagePreview(
-      int rowIndex, int imageIndex, String path, BuildContext context) {
-    showGeneralDialog(
-      barrierDismissible: false,
-      context: context,
-      pageBuilder: (popContext, __, ___) {
-        return Scaffold(
-          body: InkWell(
-            onTap: () => Navigator.of(popContext).pop(),
-            child: Stack(
-              children: [
-                SizedBox(
-                  width: double.infinity,
-                  height: double.infinity,
-                  child: Image.file(File(path)),
-                ),
-                Positioned(
-                  top: 30.0,
-                  right: 10.0,
-                  child: Row(
-                    children: [
-                      IconButton(
-                        icon: const Icon(CupertinoIcons.trash, size: 30.0),
-                        onPressed: () {
-                          showDialog<void>(
-                            context: popContext,
-                            builder: (dialogContext) {
-                              return AlertDialog(
-                                title: const Text('이미지 삭제'),
-                                backgroundColor: Colors.white,
-                                content: const Text('이미지를 삭제하시겠습니까'),
-                                actions: <Widget>[
-                                  ElevatedButton(
-                                    child: const Text('취소'),
-                                    onPressed: () =>
-                                        Navigator.of(dialogContext).pop(),
-                                  ),
-                                  ElevatedButton(
-                                    child: const Text('삭제'),
-                                    onPressed: () {
-                                      c.removeTab16Image(rowIndex, imageIndex);
-                                      Navigator.of(dialogContext).pop();
-                                      Navigator.of(popContext).pop();
-                                    },
-                                  ),
-                                ],
-                              );
-                            },
-                          );
-                        },
-                      ),
-                      IconButton(
-                        icon: const Icon(Icons.close, size: 30.0),
-                        onPressed: () => Navigator.of(popContext).pop(),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-        );
-      },
-    );
-  }
-
-  Widget tab16Body(BuildContext context) {
-    // 로딩 중이면 로딩 인디케이터 표시
-    return Obx(() {
-      if (c.isLoading) {
-        return const Center(
-          child: CircularProgressIndicator(),
-        );
-      }
-
-      return _buildTab16Content(context);
-    });
-  }
-
-  Widget _buildTab16Content(BuildContext context) {
-    const borderSide = BorderSide(color: Colors.black, width: 0.5);
-    const deco = BoxDecoration(border: Border.fromBorderSide(borderSide));
-    const double col1W = 90.0; // 대분류 (정착부/연결부 등)
-    const double col2W = 130.0; // 소분류 (앵커 및 브라켓 등)
-    const double photoW = 130.0; // 사진 열
-
-    // 라벨 셀 (테두리 + 가운데 정렬)
-    Widget labelCell(String text,
-        {double? width,
-        Alignment alignment = Alignment.center,
-        TextAlign align = TextAlign.center,
-        FontWeight? weight}) {
-      return Container(
-        width: width,
-        alignment: alignment,
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
-        decoration: deco,
-        child: Text(text,
-            textAlign: align,
-            style: TextStyle(fontSize: 15, fontWeight: weight)),
-      );
-    }
-
-    // 상태 셀 (체크박스 / 라디오)
-    Widget stateCell(int rowIndex, List<String> options,
-        {bool isRadio = false}) {
-      return Expanded(
-        child: Obx(() => Container(
-              alignment: Alignment.centerLeft,
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-              decoration: deco,
-              child: Wrap(
-                spacing: 12,
-                runSpacing: 4,
-                crossAxisAlignment: WrapCrossAlignment.center,
-                children: options.map((opt) {
-                  final selected = c.isTab16Checked(rowIndex, opt);
-                  return InkWell(
-                    onTap: () => isRadio
-                        ? c.setTab16Radio(rowIndex, opt)
-                        : c.toggleTab16Checkbox(rowIndex, opt),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(
-                          isRadio
-                              ? (selected
-                                  ? Icons.radio_button_checked
-                                  : Icons.radio_button_unchecked)
-                              : (selected
-                                  ? Icons.check_box
-                                  : Icons.check_box_outline_blank),
-                          size: 20,
-                          color: selected ? Colors.blue : Colors.black54,
-                        ),
-                        const SizedBox(width: 3),
-                        Text(opt, style: const TextStyle(fontSize: 15)),
-                      ],
-                    ),
-                  );
-                }).toList(),
-              ),
-            )),
-      );
-    }
-
-    // 사진 셀
-    Widget photoCell(int rowIndex) {
-      return Container(
-        width: photoW,
-        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
-        decoration: deco,
-        child: Obx(() {
-          final images = c.getTab16Images(rowIndex);
-          return Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  IconButton(
-                    icon: const Icon(Icons.add_a_photo, size: 22),
-                    padding: EdgeInsets.zero,
-                    constraints: const BoxConstraints(),
-                    onPressed: () =>
-                        getTab16Image(rowIndex, ImageSource.camera),
-                  ),
-                  const SizedBox(width: 8),
-                  IconButton(
-                    icon: const Icon(Icons.add_photo_alternate, size: 22),
-                    padding: EdgeInsets.zero,
-                    constraints: const BoxConstraints(),
-                    onPressed: () =>
-                        getTab16Image(rowIndex, ImageSource.gallery),
-                  ),
-                ],
-              ),
-              if (images.isNotEmpty)
-                Padding(
-                  padding: const EdgeInsets.only(top: 4),
-                  child: Wrap(
-                    spacing: 2,
-                    runSpacing: 2,
-                    alignment: WrapAlignment.center,
-                    children: images.asMap().entries.map((entry) {
-                      final idx = entry.key;
-                      final path = entry.value;
-                      return InkWell(
-                        onTap: () =>
-                            showTab16ImagePreview(rowIndex, idx, path, context),
-                        child: Container(
-                          width: 24,
-                          height: 24,
-                          decoration: BoxDecoration(
-                            border: Border.all(color: Colors.grey),
-                          ),
-                          child: Image.file(File(path), fit: BoxFit.cover),
-                        ),
-                      );
-                    }).toList(),
-                  ),
-                ),
-            ],
-          );
-        }),
-      );
-    }
-
-    // 데이터 행 (소분류 | 상태 | 사진)
-    Widget dataRow(int rowIndex, String subLabel, List<String> options,
-        {bool isRadio = false}) {
-      return IntrinsicHeight(
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            labelCell(subLabel, width: col2W),
-            stateCell(rowIndex, options, isRadio: isRadio),
-            photoCell(rowIndex),
-          ],
-        ),
-      );
-    }
-
-    // 그룹 행 (대분류 셀이 여러 소분류 행을 세로로 병합)
-    Widget group(String majorLabel, List<Widget> subRows) {
-      return IntrinsicHeight(
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            labelCell(majorLabel, width: col1W),
-            Expanded(child: Column(children: subRows)),
-          ],
-        ),
-      );
-    }
-
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(10),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // 탭 이름
-          const Padding(
-            padding: EdgeInsets.only(bottom: 10),
-            child: Text('부착물',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-          ),
-          // 헤더 행
-          IntrinsicHeight(
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                labelCell('점검 내용',
-                    width: col1W + col2W, weight: FontWeight.bold),
-                Expanded(child: labelCell('상태', weight: FontWeight.bold)),
-                labelCell('사진', width: photoW, weight: FontWeight.bold),
-              ],
-            ),
-          ),
-          // 부착물 등 (라디오)
-          IntrinsicHeight(
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                labelCell('부착물 등', width: col1W + col2W),
-                stateCell(0, const ['a', 'b', 'c', 'd', 'e'], isRadio: true),
-                photoCell(0),
-              ],
-            ),
-          ),
-          // 정착부
-          group('정착부', [
-            dataRow(1, '앵커 및 브라켓', const [
-              '상태양호',
-              '콘크리트 균열',
-              '콘크리트 박락',
-              '앵커 시공',
-              '앵커 풀림',
-              '앵커 탈락',
-              '앵커 부식'
-            ]),
-            dataRow(2, '용접', const ['상태양호', '면적 적정성', '균열', '부식', '손상']),
-            dataRow(3, '매립', const ['상태양호', '철물매립 길이', '철물 여장(노출) 길이']),
-          ]),
-          // 연결부
-          group('연결부', [
-            dataRow(4, '볼트', const ['상태양호', '풀림', '탈락', '부재 변형', '부식']),
-            dataRow(5, '용접', const ['상태양호', '면적 적정성', '균열', '부식', '손상']),
-          ]),
-          // 보강부
-          group('보강부', [
-            dataRow(
-                6, '와이어 로프', const ['상태양호', '손상', '꼬임 및 뒤틀림', '변형', '고정클립 손상']),
-          ]),
-          // 변위 변형
-          group('변위 변형', [
-            dataRow(7, '기울기 및 배부름', const ['상태양호', '면외 방향 기울기', '배부름 발생']),
-          ]),
-          const SizedBox(height: 20),
-          // 점검내용 입력
-          /*Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Container(
-                width: 80,
-                padding: const EdgeInsets.only(top: 14, right: 8, left: 8),
-                child: const Text('점검내용', style: TextStyle(fontSize: 16)),
-              ),
-              Expanded(
-                child: TextField(
-                  controller: c.tab16ContentController,
-                  maxLines: 5,
-                  decoration: InputDecoration(
-                    hintText: '점검내용을 입력하세요',
-                    hintStyle:
-                        const TextStyle(color: Color(0xFF757575), fontSize: 14),
-                    border: const OutlineInputBorder(),
-                    filled: true,
-                    fillColor: Colors.white,
-                    contentPadding: const EdgeInsets.all(12),
-                  ),
-                  onChanged: (_) => c.saveTab16Content(),
-                ),
-              ),
-            ],
-          ),
-        */
-        ],
-      ),
-    );
   }
 }
