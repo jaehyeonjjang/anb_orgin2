@@ -79,21 +79,38 @@ func Other(datas []models.Periodicother) map[int]OtherResult {
 		pos := 10
 		items := GetOtherByCategory(pos, datas)
 		typeitems := GetOtherByType(2, items)
-		check := CheckStatus(typeitems)
 
 		strs := make([]string, 0)
+		allChecked := true
+		allGood := true
 
-		good := 0
-		if check == false {
-			strs = append(strs, "해당 대지면적 내 추락방지시설은 전반적으로 양호한 상태로 조사되었다.")
-			good = 1
-		} else {
-			for _, v := range typeitems {
-				if v.Status == "" {
+		// 각 항목별로 체크 여부와 결함 확인
+		for _, v := range typeitems {
+			if v.Status == "" {
+				allChecked = false
+				continue
+			}
+
+			statusList := strings.Split(v.Status, ",")
+			defects := make([]string, 0)
+			for _, s := range statusList {
+				s = strings.TrimSpace(s)
+				if s == "" || s == "상태양호" {
 					continue
 				}
-				strs = append(strs, fmt.Sprintf("%v - %v", v.Position, strings.ReplaceAll(v.Status, ",", ", ")))
+				defects = append(defects, s)
 			}
+
+			if len(defects) > 0 {
+				allGood = false
+				strs = append(strs, fmt.Sprintf("%v - %v", v.Position, strings.Join(defects, ", ")))
+			}
+		}
+
+		good := 0
+		if allChecked && allGood {
+			strs = append(strs, "해당 대지면적 내 추락방지시설은 전반적으로 양호한 상태로 조사되었다.")
+			good = 1
 		}
 
 		ret[pos] = OtherResult{Grade: GetGrade("추락방지시설", items), Items: strs, Good: good}
@@ -103,21 +120,38 @@ func Other(datas []models.Periodicother) map[int]OtherResult {
 		pos := 11
 		items := GetOtherByCategory(pos, datas)
 		typeitems := GetOtherByType(2, items)
-		check := CheckStatus(typeitems)
 
 		strs := make([]string, 0)
+		allChecked := true
+		allGood := true
 
-		good := 0
-		if check == false {
-			strs = append(strs, "해당 대지면적 내 도로포장은 전반적으로 양호한 상태로 조사되었다.")
-			good = 1
-		} else {
-			for _, v := range typeitems {
-				if v.Status == "" {
+		// 각 항목별로 체크 여부와 결함 확인
+		for _, v := range typeitems {
+			if v.Status == "" {
+				allChecked = false
+				continue
+			}
+
+			statusList := strings.Split(v.Status, ",")
+			defects := make([]string, 0)
+			for _, s := range statusList {
+				s = strings.TrimSpace(s)
+				if s == "" || s == "상태양호" {
 					continue
 				}
-				strs = append(strs, fmt.Sprintf("%v - %v", v.Position, strings.ReplaceAll(v.Status, ",", ", ")))
+				defects = append(defects, s)
 			}
+
+			if len(defects) > 0 {
+				allGood = false
+				strs = append(strs, fmt.Sprintf("%v - %v", v.Position, strings.Join(defects, ", ")))
+			}
+		}
+
+		good := 0
+		if allChecked && allGood {
+			strs = append(strs, "해당 대지면적 내 도로포장은 전반적으로 양호한 상태로 조사되었다.")
+			good = 1
 		}
 
 		ret[pos] = OtherResult{Grade: GetGrade("도로포장", items), Items: strs, Good: good}
@@ -127,7 +161,6 @@ func Other(datas []models.Periodicother) map[int]OtherResult {
 		pos := 12
 		items := GetOtherByCategory(pos, datas)
 		typeitems := GetOtherByType(2, items)
-		check := CheckStatus(typeitems)
 
 		strs := make([]string, 0)
 
@@ -141,22 +174,39 @@ func Other(datas []models.Periodicother) map[int]OtherResult {
 			strs = append(strs, "해당 대지면적 내 시공되어있지 않아 조사에서 제외하였다.")
 			good = 2
 		} else {
-			if check == false {
+			allChecked := true
+			allGood := true
+
+			// 각 항목별로 체크 여부와 결함 확인
+			for _, v := range typeitems {
+				if v.Status == "" {
+					allChecked = false
+					continue
+				}
+
+				statusList := strings.Split(v.Status, ",")
+				defects := make([]string, 0)
+				for _, s := range statusList {
+					s = strings.TrimSpace(s)
+					if s == "" || s == "상태양호" {
+						continue
+					}
+					defects = append(defects, s)
+				}
+
+				if len(defects) > 0 {
+					allGood = false
+					strs = append(strs, fmt.Sprintf("%v - %v", v.Position, strings.Join(defects, ", ")))
+				}
+			}
+
+			if allChecked && allGood {
 				if work.Status == "" {
 					strs = append(strs, "신축 이음부는 전반적으로 양호한 상태로 조사되었다.")
 				} else {
 					strs = append(strs, fmt.Sprintf("신축 이음부는 %v로 시공되어 있으며 전반적으로 양호한 상태로 조사되었다.", work.Status))
 				}
 				good = 1
-			} else {
-				for _, v := range typeitems {
-					if v.Status == "" {
-						continue
-					}
-
-					strs = append(strs, fmt.Sprintf("%v - %v", v.Position, strings.ReplaceAll(v.Status, ",", ", ")))
-
-				}
 			}
 		}
 
@@ -167,7 +217,6 @@ func Other(datas []models.Periodicother) map[int]OtherResult {
 		pos := 13
 		items := GetOtherByCategory(pos, datas)
 		typeitems := GetOtherByType(2, items)
-		check := CheckStatus(typeitems)
 
 		strs := make([]string, 0)
 
@@ -176,23 +225,40 @@ func Other(datas []models.Periodicother) map[int]OtherResult {
 			work = &models.Periodicother{}
 		}
 
+		allChecked := true
+		allGood := true
+
+		// 각 항목별로 체크 여부와 결함 확인
+		for _, v := range typeitems {
+			if v.Status == "" {
+				allChecked = false
+				continue
+			}
+
+			statusList := strings.Split(v.Status, ",")
+			defects := make([]string, 0)
+			for _, s := range statusList {
+				s = strings.TrimSpace(s)
+				if s == "" || s == "상태양호" {
+					continue
+				}
+				defects = append(defects, s)
+			}
+
+			if len(defects) > 0 {
+				allGood = false
+				strs = append(strs, fmt.Sprintf("%v - %v", v.Position, strings.Join(defects, ", ")))
+			}
+		}
+
 		good := 0
-		if check == false {
+		if allChecked && allGood {
 			str := ""
 			if work.Status != "" {
 				str = fmt.Sprintf("(%v) ", strings.ReplaceAll(work.Status, ",", ", "))
 			}
 			strs = append(strs, fmt.Sprintf("해당 건축물 내 %v환기구의 상태는 전반적으로 양호한 상태로 조사되었다.", str))
 			good = 1
-		} else {
-			for _, v := range typeitems {
-				if v.Status == "" {
-					continue
-				}
-
-				strs = append(strs, fmt.Sprintf("%v - %v", v.Position, strings.ReplaceAll(v.Status, ",", ", ")))
-
-			}
 		}
 
 		ret[pos] = OtherResult{Grade: GetGrade("환기구 등의 덮개", items), Items: strs, Good: good}
@@ -202,7 +268,6 @@ func Other(datas []models.Periodicother) map[int]OtherResult {
 		pos := 14
 		items := GetOtherByCategory(pos, datas)
 		typeitems := GetOtherByType(2, items)
-		check := CheckStatus(typeitems)
 
 		strs := make([]string, 0)
 
@@ -234,7 +299,55 @@ func Other(datas []models.Periodicother) map[int]OtherResult {
 		head := ""
 		position := ""
 		good := 0
-		if check == false {
+
+		allChecked := true
+		allGood := true
+
+		// 각 항목별로 체크 여부와 결함 확인
+		for _, v := range typeitems {
+			if v.Order == 141 {
+				continue
+			}
+
+			if v.Status == "" {
+				allChecked = false
+				continue
+			}
+
+			// 선택된 재질에 해당하는 항목만 확인
+			shouldInclude := false
+			if len(selectedMaterials) == 0 {
+				// 재질 선택 안 됨 - 모두 포함
+				shouldInclude = true
+			} else {
+				// 선택된 재질과 매칭되는지 확인
+				for material, order := range materialOrderMap {
+					if selectedMaterials[material] && v.Order == order {
+						shouldInclude = true
+						break
+					}
+				}
+			}
+
+			if shouldInclude {
+				statusList := strings.Split(v.Status, ",")
+				defects := make([]string, 0)
+				for _, s := range statusList {
+					s = strings.TrimSpace(s)
+					if s == "" || s == "상태양호" {
+						continue
+					}
+					defects = append(defects, s)
+				}
+
+				if len(defects) > 0 {
+					allGood = false
+					strs = append(strs, fmt.Sprintf("%v - %v", v.Position, strings.Join(defects, ", ")))
+				}
+			}
+		}
+
+		if allChecked && allGood {
 			str := ""
 			if work.Status != "" {
 				position = fmt.Sprintf("(%v 등)", strings.ReplaceAll(work.Status, ",", ", "))
@@ -242,45 +355,6 @@ func Other(datas []models.Periodicother) map[int]OtherResult {
 			}
 			head = fmt.Sprintf("건물외부 벽체 %v마감부위 상태는 양호한 것으로 확인됨.", str)
 			good = 1
-		} else {
-			for _, v := range typeitems {
-				if v.Order == 141 {
-					continue
-				}
-
-				if v.Status == "" {
-					continue
-				}
-
-				// 선택된 재질에 해당하는 항목만 출력
-				shouldInclude := false
-				if len(selectedMaterials) == 0 {
-					// 재질 선택 안 됨 - 모두 포함
-					shouldInclude = true
-				} else {
-					// 선택된 재질과 매칭되는지 확인
-					for material, order := range materialOrderMap {
-						if selectedMaterials[material] && v.Order == order {
-							shouldInclude = true
-							break
-						}
-					}
-				}
-
-				if shouldInclude {
-					strs = append(strs, fmt.Sprintf("%v - %v", v.Position, strings.ReplaceAll(v.Status, ",", ", ")))
-				}
-			}
-
-			if len(strs) == 0 {
-				str := ""
-				if work.Status != "" {
-					position = fmt.Sprintf("(%v 등)", strings.ReplaceAll(work.Status, ",", ", "))
-					str = fmt.Sprintf("%v ", position)
-				}
-				head = fmt.Sprintf("건물외부 벽체 %v마감부위 상태는 양호한 것으로 확인됨.", str)
-				good = 1
-			}
 		}
 
 		ret[pos] = OtherResult{Grade: GetGrade("외벽 마감재", items), Items: strs, Head: head, Position: position, Good: good}
@@ -292,10 +366,13 @@ func Other(datas []models.Periodicother) map[int]OtherResult {
 		typeitems := GetOtherByType(2, items)
 
 		strs := make([]string, 0)
+		allChecked := true
+		allGood := true
 
-		// 각 부재별로 "상태양호"가 아닌 결함 항목이 있는지 확인
+		// 각 부재별로 체크 여부와 결함 확인
 		for _, v := range typeitems {
 			if v.Status == "" {
+				allChecked = false
 				continue
 			}
 
@@ -309,21 +386,20 @@ func Other(datas []models.Periodicother) map[int]OtherResult {
 				defects = append(defects, s)
 			}
 
-			if len(defects) == 0 {
-				continue
-			}
+			if len(defects) > 0 {
+				allGood = false
+				// Position에서 앞쪽 중분류 제거 (예: "정착부 - 앵커 및 브라켓" → "앵커 및 브라켓")
+				position := v.Position
+				if idx := strings.Index(position, " - "); idx != -1 {
+					position = strings.TrimSpace(position[idx+3:])
+				}
 
-			// Position에서 앞쪽 중분류 제거 (예: "정착부 - 앵커 및 브라켓" → "앵커 및 브라켓")
-			position := v.Position
-			if idx := strings.Index(position, " - "); idx != -1 {
-				position = strings.TrimSpace(position[idx+3:])
+				strs = append(strs, fmt.Sprintf("%v - %v", position, strings.Join(defects, ", ")))
 			}
-
-			strs = append(strs, fmt.Sprintf("%v - %v", position, strings.Join(defects, ", ")))
 		}
 
 		good := 0
-		if len(strs) == 0 {
+		if allChecked && allGood {
 			strs = append(strs, "해당 건축물 내 부착물 등의 상태는 전반적으로 양호한 상태로 조사되었다.")
 			good = 1
 		}

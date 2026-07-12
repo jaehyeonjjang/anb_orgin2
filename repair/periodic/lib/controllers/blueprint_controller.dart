@@ -143,24 +143,12 @@ class BlueprintController extends GetxController {
 
   // 특정 탭에 수정사항이 있는지 확인
   bool isTabModified(int tab) {
-    // tab 16 (부착물)은 별도 저장소 사용
-    if (tab == 16) {
-      return _hasTab16Data;
-    }
-    
     for (var other in periodicothers) {
       if (other.category == tab && other.change == 1) {
         return true;
       }
     }
     return false;
-  }
-  
-  // tab 16 데이터 존재 여부
-  bool _hasTab16Data = false;
-  
-  void setTab16Modified(bool value) {
-    _hasTab16Data = value;
   }
 
   // 공중이 이용하는 부위 전체에 수정사항이 있는지 확인
@@ -308,7 +296,6 @@ class BlueprintController extends GetxController {
     modifiedOther = false;
     _modifiedImageTypes.clear();
     _modifiedImageTypes.refresh();
-    _hasTab16Data = false;
     loading = false;
     percent = 0.0;
     _imagePathsByType.clear();
@@ -369,14 +356,6 @@ class BlueprintController extends GetxController {
             .toList();
       } else {
         periodicothers = <Periodicother>[];
-      }
-
-      // tab16 (부착물) 데이터 확인
-      final content16 = await storageBlueprint.getItem('other_16_content');
-      final images16 = await storageBlueprint.getItem('other_16_images');
-      if ((content16 != null && content16.toString().isNotEmpty) ||
-          (images16 != null && images16.toString().isNotEmpty)) {
-        _hasTab16Data = true;
       }
 
       modified = true;
@@ -536,22 +515,17 @@ class BlueprintController extends GetxController {
       periodicotherItems[i].change = 0;
 
       if (periodic.filename == '') {
+        periodicotherItems[i].offlinefilename = '';
         continue;
       }
 
       final filenames = periodic.filename.split(',');
-      final offlinefilenames = periodic.offlinefilename.split(',');
 
       List<String> newFilenames = <String>[];
 
-      for (var j = 0; j < offlinefilenames.length; j++) {
-        if (config.isExistFile(offlinefilenames[j]) == true) {
-          newFilenames.add(offlinefilenames[j]);
+      for (var j = 0; j < filenames.length; j++) {
+        if (filenames[j] == '') {
           continue;
-        }
-
-        if (j >= filenames.length) {
-          break;
         }
 
         final onlinefilename = filenames[j];
@@ -561,9 +535,6 @@ class BlueprintController extends GetxController {
           current++;
           percent = current / total;
           newFilenames.add(path);
-        } else {
-          filenames[j] = '';
-          newFilenames.add('');
         }
       }
 

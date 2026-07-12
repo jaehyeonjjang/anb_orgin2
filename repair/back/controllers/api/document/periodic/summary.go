@@ -1127,7 +1127,25 @@ func GetSummary(id int64, periodic models.Periodic, dongs []models.Aptdong, item
 		}
 
 		summaryResult.Result = resultItems
+		
+		// 데이터가 없을 경우 기본 메시지 추가
+		if len(resultItems) == 0 {
+			summaryResult.Result = append(summaryResult.Result, "① 전체적으로 구조체의 상태가 양호한 것으로 판단됨")
+		}
 
+		summaryResults = append(summaryResults, summaryResult)
+	}
+
+	// summaryDongs가 비어있어서 summaryResults가 비어있을 경우 기본 결과 추가
+	if len(summaryResults) == 0 {
+		summaryResult := SummaryResult{
+			Name:  "",
+			Id:    0,
+			Types: make([]SummaryResultType, 0),
+			Items: make([]SummaryResultList, 0),
+			Result: []string{"① 전체적으로 구조체의 상태가 양호한 것으로 판단됨"},
+			ResultBottom: "",
+		}
 		summaryResults = append(summaryResults, summaryResult)
 	}
 

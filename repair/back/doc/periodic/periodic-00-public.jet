@@ -144,65 +144,65 @@
                       <TEXT CharShape="13">
               <CHAR>평  가  내  용</CHAR></TEXT></P></PARALIST></CELL></ROW>
               <ROW>
-                <CELL BorderFill="{{if other10.Grade == "a"}}139{{else}}6{{end}}" ColAddr="0" ColSpan="1" Dirty="false" Editable="false" HasMargin="false" Header="false" Height="3636" Protect="false" RowAddr="1" RowSpan="1" Width="6118">
+                <CELL BorderFill="6" ColAddr="0" ColSpan="1" Dirty="false" Editable="false" HasMargin="false" Header="false" Height="3636" Protect="false" RowAddr="1" RowSpan="1" Width="6118">
                   <CELLMARGIN Bottom="141" Left="141" Right="141" Top="141"/>
                   <PARALIST LineWrap="Break" LinkListID="0" LinkListIDNext="0" TextDirection="0" VertAlign="Center">
                     <P ParaShape="110" Style="0">
                       <TEXT CharShape="3">
                 <CHAR>a</CHAR></TEXT></P></PARALIST></CELL>
-                <CELL BorderFill="{{if other10.Grade == "a"}}140{{else}}4{{end}}" ColAddr="1" ColSpan="1" Dirty="false" Editable="false" HasMargin="false" Header="false" Height="3636" Protect="false" RowAddr="1" RowSpan="1" Width="40952">
+                <CELL BorderFill="4" ColAddr="1" ColSpan="1" Dirty="false" Editable="false" HasMargin="false" Header="false" Height="3636" Protect="false" RowAddr="1" RowSpan="1" Width="40952">
                   <CELLMARGIN Bottom="141" Left="141" Right="141" Top="141"/>
                   <PARALIST LineWrap="Break" LinkListID="0" LinkListIDNext="0" TextDirection="0" VertAlign="Center">
                     <P ParaShape="55" Style="0">
                       <TEXT CharShape="3">
               <CHAR>규격에 맞게 설치되어 있고 손상 및 결함 등이 없는 최상의 상태</CHAR></TEXT></P></PARALIST></CELL></ROW>
               <ROW>
-                <CELL BorderFill="{{if other10.Grade == "b"}}139{{else}}6{{end}}" ColAddr="0" ColSpan="1" Dirty="false" Editable="false" HasMargin="false" Header="false" Height="3636" Protect="false" RowAddr="2" RowSpan="1" Width="6118">
+                <CELL BorderFill="6" ColAddr="0" ColSpan="1" Dirty="false" Editable="false" HasMargin="false" Header="false" Height="3636" Protect="false" RowAddr="2" RowSpan="1" Width="6118">
                   <CELLMARGIN Bottom="141" Left="141" Right="141" Top="141"/>
                   <PARALIST LineWrap="Break" LinkListID="0" LinkListIDNext="0" TextDirection="0" VertAlign="Center">
                     <P ParaShape="110" Style="0">
                       <TEXT CharShape="3">
                 <CHAR>b</CHAR></TEXT></P></PARALIST></CELL>
-                <CELL BorderFill="{{if other10.Grade == "b"}}140{{else}}4{{end}}" ColAddr="1" ColSpan="1" Dirty="false" Editable="false" HasMargin="false" Header="false" Height="3636" Protect="false" RowAddr="2" RowSpan="1" Width="40952">
+                <CELL BorderFill="4" ColAddr="1" ColSpan="1" Dirty="false" Editable="false" HasMargin="false" Header="false" Height="3636" Protect="false" RowAddr="2" RowSpan="1" Width="40952">
                   <CELLMARGIN Bottom="141" Left="141" Right="141" Top="141"/>
                   <PARALIST LineWrap="Break" LinkListID="0" LinkListIDNext="0" TextDirection="0" VertAlign="Center">
                     <P ParaShape="55" Style="0">
                       <TEXT CharShape="3">
               <CHAR>추락방지시설에 경미한 결함 및 파손이 발생하였으나, 기능에는 문제가 없으며 결함의 진행 여부를 지속적으로 관찰하고 보수 여부를 결정해야 하는 상태 </CHAR></TEXT></P></PARALIST></CELL></ROW>
               <ROW>
-                <CELL BorderFill="{{if other10.Grade == "c"}}139{{else}}6{{end}}" ColAddr="0" ColSpan="1" Dirty="false" Editable="false" HasMargin="false" Header="false" Height="3636" Protect="false" RowAddr="3" RowSpan="1" Width="6118">
+                <CELL BorderFill="6" ColAddr="0" ColSpan="1" Dirty="false" Editable="false" HasMargin="false" Header="false" Height="3636" Protect="false" RowAddr="3" RowSpan="1" Width="6118">
                   <CELLMARGIN Bottom="141" Left="141" Right="141" Top="141"/>
                   <PARALIST LineWrap="Break" LinkListID="0" LinkListIDNext="0" TextDirection="0" VertAlign="Center">
                     <P ParaShape="110" Style="0">
                       <TEXT CharShape="3">
                 <CHAR>c</CHAR></TEXT></P></PARALIST></CELL>
-                <CELL BorderFill="{{if other10.Grade == "c"}}140{{else}}4{{end}}" ColAddr="1" ColSpan="1" Dirty="false" Editable="false" HasMargin="false" Header="false" Height="3636" Protect="false" RowAddr="3" RowSpan="1" Width="40952">
+                <CELL BorderFill="4" ColAddr="1" ColSpan="1" Dirty="false" Editable="false" HasMargin="false" Header="false" Height="3636" Protect="false" RowAddr="3" RowSpan="1" Width="40952">
                   <CELLMARGIN Bottom="141" Left="141" Right="141" Top="141"/>
                   <PARALIST LineWrap="Break" LinkListID="0" LinkListIDNext="0" TextDirection="0" VertAlign="Center">
                     <P ParaShape="55" Style="0">
                       <TEXT CharShape="3">
               <CHAR>추락방지시설에 결함 및 파손으로 인하여 기능에 일부 문제가 발생하여 간단한 보수가 필요한 상태</CHAR></TEXT></P></PARALIST></CELL></ROW>
               <ROW>
-                <CELL BorderFill="{{if other10.Grade == "d"}}139{{else}}6{{end}}" ColAddr="0" ColSpan="1" Dirty="false" Editable="false" HasMargin="false" Header="false" Height="3636" Protect="false" RowAddr="4" RowSpan="1" Width="6118">
+                <CELL BorderFill="6" ColAddr="0" ColSpan="1" Dirty="false" Editable="false" HasMargin="false" Header="false" Height="3636" Protect="false" RowAddr="4" RowSpan="1" Width="6118">
                   <CELLMARGIN Bottom="141" Left="141" Right="141" Top="141"/>
                   <PARALIST LineWrap="Break" LinkListID="0" LinkListIDNext="0" TextDirection="0" VertAlign="Center">
                     <P ParaShape="110" Style="0">
                       <TEXT CharShape="3">
                 <CHAR>d</CHAR></TEXT></P></PARALIST></CELL>
-                <CELL BorderFill="{{if other10.Grade == "d"}}140{{else}}4{{end}}" ColAddr="1" ColSpan="1" Dirty="false" Editable="false" HasMargin="false" Header="false" Height="3636" Protect="false" RowAddr="4" RowSpan="1" Width="40952">
+                <CELL BorderFill="4" ColAddr="1" ColSpan="1" Dirty="false" Editable="false" HasMargin="false" Header="false" Height="3636" Protect="false" RowAddr="4" RowSpan="1" Width="40952">
                   <CELLMARGIN Bottom="141" Left="141" Right="141" Top="141"/>
                   <PARALIST LineWrap="Break" LinkListID="0" LinkListIDNext="0" TextDirection="0" VertAlign="Center">
                     <P ParaShape="55" Style="0">
                       <TEXT CharShape="3">
               <CHAR>고정부 및 연결부 파손 등으로 인해 추락방지시설의 전도 및 이탈이 발생할 수 있어 즉각적인 보수·보강이 필요한 상태</CHAR></TEXT></P></PARALIST></CELL></ROW>
               <ROW>
-                <CELL BorderFill="{{if other10.Grade == "e"}}139{{else}}6{{end}}" ColAddr="0" ColSpan="1" Dirty="false" Editable="false" HasMargin="false" Header="false" Height="3636" Protect="false" RowAddr="5" RowSpan="1" Width="6118">
+                <CELL BorderFill="6" ColAddr="0" ColSpan="1" Dirty="false" Editable="false" HasMargin="false" Header="false" Height="3636" Protect="false" RowAddr="5" RowSpan="1" Width="6118">
                   <CELLMARGIN Bottom="141" Left="141" Right="141" Top="141"/>
                   <PARALIST LineWrap="Break" LinkListID="0" LinkListIDNext="0" TextDirection="0" VertAlign="Center">
                     <P ParaShape="110" Style="0">
                       <TEXT CharShape="3">
                 <CHAR>e</CHAR></TEXT></P></PARALIST></CELL>
-                <CELL BorderFill="{{if other10.Grade == "e"}}140{{else}}4{{end}}" ColAddr="1" ColSpan="1" Dirty="false" Editable="false" HasMargin="false" Header="false" Height="3636" Protect="false" RowAddr="5" RowSpan="1" Width="40952">
+                <CELL BorderFill="4" ColAddr="1" ColSpan="1" Dirty="false" Editable="false" HasMargin="false" Header="false" Height="3636" Protect="false" RowAddr="5" RowSpan="1" Width="40952">
                   <CELLMARGIN Bottom="141" Left="141" Right="141" Top="141"/>
                   <PARALIST LineWrap="Break" LinkListID="0" LinkListIDNext="0" TextDirection="0" VertAlign="Center">
                     <P ParaShape="55" Style="0">
@@ -369,52 +369,52 @@
                       <TEXT CharShape="13">
               <CHAR>평  가  내  용</CHAR></TEXT></P></PARALIST></CELL></ROW>
               <ROW>
-                <CELL BorderFill="{{if other11.Grade == "a"}}139{{else}}6{{end}}" ColAddr="0" ColSpan="1" Dirty="false" Editable="false" HasMargin="false" Header="false" Height="3636" Protect="false" RowAddr="1" RowSpan="1" Width="6118">
+                <CELL BorderFill="6" ColAddr="0" ColSpan="1" Dirty="false" Editable="false" HasMargin="false" Header="false" Height="3636" Protect="false" RowAddr="1" RowSpan="1" Width="6118">
                   <CELLMARGIN Bottom="141" Left="141" Right="141" Top="141"/>
                   <PARALIST LineWrap="Break" LinkListID="0" LinkListIDNext="0" TextDirection="0" VertAlign="Center">
                     <P ParaShape="110" Style="0">
                       <TEXT CharShape="3">
                 <CHAR>a</CHAR></TEXT></P></PARALIST></CELL>
-                <CELL BorderFill="{{if other11.Grade == "a"}}140{{else}}4{{end}}" ColAddr="1" ColSpan="1" Dirty="false" Editable="false" HasMargin="false" Header="false" Height="3636" Protect="false" RowAddr="1" RowSpan="1" Width="40952">
+                <CELL BorderFill="4" ColAddr="1" ColSpan="1" Dirty="false" Editable="false" HasMargin="false" Header="false" Height="3636" Protect="false" RowAddr="1" RowSpan="1" Width="40952">
                   <CELLMARGIN Bottom="141" Left="141" Right="141" Top="141"/>
                   <PARALIST LineWrap="Break" LinkListID="0" LinkListIDNext="0" TextDirection="0" VertAlign="Center">
                     <P ParaShape="55" Style="0">
                       <TEXT CharShape="3">
               <CHAR>포장상태가 최상으로 차량의 주행에 문제가 없는 상태</CHAR></TEXT></P></PARALIST></CELL></ROW>
               <ROW>
-                <CELL BorderFill="{{if other11.Grade == "b"}}139{{else}}6{{end}}" ColAddr="0" ColSpan="1" Dirty="false" Editable="false" HasMargin="false" Header="false" Height="3636" Protect="false" RowAddr="2" RowSpan="1" Width="6118">
+                <CELL BorderFill="6" ColAddr="0" ColSpan="1" Dirty="false" Editable="false" HasMargin="false" Header="false" Height="3636" Protect="false" RowAddr="2" RowSpan="1" Width="6118">
                   <CELLMARGIN Bottom="141" Left="141" Right="141" Top="141"/>
                   <PARALIST LineWrap="Break" LinkListID="0" LinkListIDNext="0" TextDirection="0" VertAlign="Center">
                     <P ParaShape="110" Style="0">
                       <TEXT CharShape="3">
                 <CHAR>b</CHAR></TEXT></P></PARALIST></CELL>
-                <CELL BorderFill="{{if other11.Grade == "b"}}140{{else}}4{{end}}" ColAddr="1" ColSpan="1" Dirty="false" Editable="false" HasMargin="false" Header="false" Height="3636" Protect="false" RowAddr="2" RowSpan="1" Width="40952">
+                <CELL BorderFill="4" ColAddr="1" ColSpan="1" Dirty="false" Editable="false" HasMargin="false" Header="false" Height="3636" Protect="false" RowAddr="2" RowSpan="1" Width="40952">
                   <CELLMARGIN Bottom="141" Left="141" Right="141" Top="141"/>
                   <PARALIST LineWrap="Break" LinkListID="0" LinkListIDNext="0" TextDirection="0" VertAlign="Center">
                     <P ParaShape="55" Style="0">
                       <TEXT CharShape="3">
               <CHAR>포장의 결함 및 파손이 미미하게 발생된 상태로 차량주행에 문제는 없으며 결함의 진행여부를 지속적으로 관찰하고 보수 여부를 결정하여야 하는 상태</CHAR></TEXT></P></PARALIST></CELL></ROW>
               <ROW>
-                <CELL BorderFill="{{if other11.Grade == "c"}}139{{else}}6{{end}}" ColAddr="0" ColSpan="1" Dirty="false" Editable="false" HasMargin="false" Header="false" Height="3636" Protect="false" RowAddr="3" RowSpan="1" Width="6118">
+                <CELL BorderFill="6" ColAddr="0" ColSpan="1" Dirty="false" Editable="false" HasMargin="false" Header="false" Height="3636" Protect="false" RowAddr="3" RowSpan="1" Width="6118">
                   <CELLMARGIN Bottom="141" Left="141" Right="141" Top="141"/>
                   <PARALIST LineWrap="Break" LinkListID="0" LinkListIDNext="0" TextDirection="0" VertAlign="Center">
                     <P ParaShape="110" Style="0">
                       <TEXT CharShape="3">
                 <CHAR>c</CHAR></TEXT></P></PARALIST></CELL>
-                <CELL BorderFill="{{if other11.Grade == "c"}}140{{else}}4{{end}}" ColAddr="1" ColSpan="1" Dirty="false" Editable="false" HasMargin="false" Header="false" Height="3636" Protect="false" RowAddr="3" RowSpan="1" Width="40952">
+                <CELL BorderFill="4" ColAddr="1" ColSpan="1" Dirty="false" Editable="false" HasMargin="false" Header="false" Height="3636" Protect="false" RowAddr="3" RowSpan="1" Width="40952">
                   <CELLMARGIN Bottom="141" Left="141" Right="141" Top="141"/>
                   <PARALIST LineWrap="Break" LinkListID="0" LinkListIDNext="0" TextDirection="0" VertAlign="Center">
                     <P ParaShape="55" Style="0">
                       <TEXT CharShape="3">
               <CHAR>포장 결함 및 파손이 차량에 직접적인 파손을 유발할 정도는 아니나 차량운전자에게 불쾌감을 유발할 수 있어 간단한 보수가 필요한 상태</CHAR></TEXT></P></PARALIST></CELL></ROW>
               <ROW>
-                <CELL BorderFill="{{if other11.Grade == "d"}}139{{else}}6{{end}}" ColAddr="0" ColSpan="1" Dirty="false" Editable="false" HasMargin="false" Header="false" Height="3636" Protect="false" RowAddr="4" RowSpan="1" Width="6118">
+                <CELL BorderFill="6" ColAddr="0" ColSpan="1" Dirty="false" Editable="false" HasMargin="false" Header="false" Height="3636" Protect="false" RowAddr="4" RowSpan="1" Width="6118">
                   <CELLMARGIN Bottom="141" Left="141" Right="141" Top="141"/>
                   <PARALIST LineWrap="Break" LinkListID="0" LinkListIDNext="0" TextDirection="0" VertAlign="Center">
                     <P ParaShape="110" Style="0">
                       <TEXT CharShape="3">
                 <CHAR>d</CHAR></TEXT></P></PARALIST></CELL>
-                <CELL BorderFill="{{if other11.Grade == "d"}}140{{else}}4{{end}}" ColAddr="1" ColSpan="1" Dirty="false" Editable="false" HasMargin="false" Header="false" Height="3636" Protect="false" RowAddr="4" RowSpan="1" Width="40952">
+                <CELL BorderFill="4" ColAddr="1" ColSpan="1" Dirty="false" Editable="false" HasMargin="false" Header="false" Height="3636" Protect="false" RowAddr="4" RowSpan="1" Width="40952">
                   <CELLMARGIN Bottom="141" Left="141" Right="141" Top="141"/>
                   <PARALIST LineWrap="Break" LinkListID="0" LinkListIDNext="0" TextDirection="0" VertAlign="Center">
                     <P ParaShape="55" Style="0">
@@ -424,13 +424,13 @@
                       <TEXT CharShape="3">
               <CHAR>배수불량으로 인한 주행차로 상시 물고임으로 통행차량의 안전성 저하가 우려되는 상태</CHAR></TEXT></P></PARALIST></CELL></ROW>
               <ROW>
-                <CELL BorderFill="{{if other11.Grade == "e"}}139{{else}}6{{end}}" ColAddr="0" ColSpan="1" Dirty="false" Editable="false" HasMargin="false" Header="false" Height="3636" Protect="false" RowAddr="5" RowSpan="1" Width="6118">
+                <CELL BorderFill="6" ColAddr="0" ColSpan="1" Dirty="false" Editable="false" HasMargin="false" Header="false" Height="3636" Protect="false" RowAddr="5" RowSpan="1" Width="6118">
                   <CELLMARGIN Bottom="141" Left="141" Right="141" Top="141"/>
                   <PARALIST LineWrap="Break" LinkListID="0" LinkListIDNext="0" TextDirection="0" VertAlign="Center">
                     <P ParaShape="110" Style="0">
                       <TEXT CharShape="3">
                 <CHAR>e</CHAR></TEXT></P></PARALIST></CELL>
-                <CELL BorderFill="{{if other11.Grade == "e"}}140{{else}}4{{end}}" ColAddr="1" ColSpan="1" Dirty="false" Editable="false" HasMargin="false" Header="false" Height="3636" Protect="false" RowAddr="5" RowSpan="1" Width="40952">
+                <CELL BorderFill="4" ColAddr="1" ColSpan="1" Dirty="false" Editable="false" HasMargin="false" Header="false" Height="3636" Protect="false" RowAddr="5" RowSpan="1" Width="40952">
                   <CELLMARGIN Bottom="141" Left="141" Right="141" Top="141"/>
                   <PARALIST LineWrap="Break" LinkListID="0" LinkListIDNext="0" TextDirection="0" VertAlign="Center">
                     <P ParaShape="55" Style="0">
@@ -581,52 +581,52 @@
                       <TEXT CharShape="13">
               <CHAR>평  가  내  용</CHAR></TEXT></P></PARALIST></CELL></ROW>
               <ROW>
-                <CELL BorderFill="{{if other12.Grade == "a"}}139{{else}}6{{end}}" ColAddr="0" ColSpan="1" Dirty="false" Editable="false" HasMargin="false" Header="false" Height="3636" Protect="false" RowAddr="1" RowSpan="1" Width="6118">
+                <CELL BorderFill="6" ColAddr="0" ColSpan="1" Dirty="false" Editable="false" HasMargin="false" Header="false" Height="3636" Protect="false" RowAddr="1" RowSpan="1" Width="6118">
                   <CELLMARGIN Bottom="141" Left="141" Right="141" Top="141"/>
                   <PARALIST LineWrap="Break" LinkListID="0" LinkListIDNext="0" TextDirection="0" VertAlign="Center">
                     <P ParaShape="110" Style="0">
                       <TEXT CharShape="3">
                 <CHAR>a</CHAR></TEXT></P></PARALIST></CELL>
-                <CELL BorderFill="{{if other12.Grade == "a"}}140{{else}}4{{end}}" ColAddr="1" ColSpan="1" Dirty="false" Editable="false" HasMargin="false" Header="false" Height="3636" Protect="false" RowAddr="1" RowSpan="1" Width="40952">
+                <CELL BorderFill="4" ColAddr="1" ColSpan="1" Dirty="false" Editable="false" HasMargin="false" Header="false" Height="3636" Protect="false" RowAddr="1" RowSpan="1" Width="40952">
                   <CELLMARGIN Bottom="141" Left="141" Right="141" Top="141"/>
                   <PARALIST LineWrap="Break" LinkListID="0" LinkListIDNext="0" TextDirection="0" VertAlign="Center">
                     <P ParaShape="55" Style="0">
                       <TEXT CharShape="3">
               <CHAR>신축이음부에 손상이 없는 상태</CHAR></TEXT></P></PARALIST></CELL></ROW>
               <ROW>
-                <CELL BorderFill="{{if other12.Grade == "b"}}139{{else}}6{{end}}" ColAddr="0" ColSpan="1" Dirty="false" Editable="false" HasMargin="false" Header="false" Height="4485" Protect="false" RowAddr="2" RowSpan="1" Width="6118">
+                <CELL BorderFill="6" ColAddr="0" ColSpan="1" Dirty="false" Editable="false" HasMargin="false" Header="false" Height="4485" Protect="false" RowAddr="2" RowSpan="1" Width="6118">
                   <CELLMARGIN Bottom="141" Left="141" Right="141" Top="141"/>
                   <PARALIST LineWrap="Break" LinkListID="0" LinkListIDNext="0" TextDirection="0" VertAlign="Center">
                     <P ParaShape="110" Style="0">
                       <TEXT CharShape="3">
                 <CHAR>b</CHAR></TEXT></P></PARALIST></CELL>
-                <CELL BorderFill="{{if other12.Grade == "b"}}140{{else}}4{{end}}" ColAddr="1" ColSpan="1" Dirty="false" Editable="false" HasMargin="false" Header="false" Height="4485" Protect="false" RowAddr="2" RowSpan="1" Width="40952">
+                <CELL BorderFill="4" ColAddr="1" ColSpan="1" Dirty="false" Editable="false" HasMargin="false" Header="false" Height="4485" Protect="false" RowAddr="2" RowSpan="1" Width="40952">
                   <CELLMARGIN Bottom="141" Left="141" Right="141" Top="141"/>
                   <PARALIST LineWrap="Break" LinkListID="0" LinkListIDNext="0" TextDirection="0" VertAlign="Center">
                     <P ParaShape="55" Style="0">
                       <TEXT CharShape="3">
               <CHAR>신축이음 본체의 토사 및 이물질 퇴적, 고무판 노후, 후타재의 미세균열이 발생된 상태로 기능발휘에는 지정이 없으며 결함의 진행 여부를 지속적으로 관찰하고 보수 여부를 결정하여야 하는 상태</CHAR></TEXT></P></PARALIST></CELL></ROW>
               <ROW>
-                <CELL BorderFill="{{if other12.Grade == "c"}}139{{else}}6{{end}}" ColAddr="0" ColSpan="1" Dirty="false" Editable="false" HasMargin="false" Header="false" Height="4485" Protect="false" RowAddr="3" RowSpan="1" Width="6118">
+                <CELL BorderFill="6" ColAddr="0" ColSpan="1" Dirty="false" Editable="false" HasMargin="false" Header="false" Height="4485" Protect="false" RowAddr="3" RowSpan="1" Width="6118">
                   <CELLMARGIN Bottom="141" Left="141" Right="141" Top="141"/>
                   <PARALIST LineWrap="Break" LinkListID="0" LinkListIDNext="0" TextDirection="0" VertAlign="Center">
                     <P ParaShape="110" Style="0">
                       <TEXT CharShape="3">
                 <CHAR>c</CHAR></TEXT></P></PARALIST></CELL>
-                <CELL BorderFill="{{if other12.Grade == "c"}}140{{else}}4{{end}}" ColAddr="1" ColSpan="1" Dirty="false" Editable="false" HasMargin="false" Header="false" Height="4485" Protect="false" RowAddr="3" RowSpan="1" Width="40952">
+                <CELL BorderFill="4" ColAddr="1" ColSpan="1" Dirty="false" Editable="false" HasMargin="false" Header="false" Height="4485" Protect="false" RowAddr="3" RowSpan="1" Width="40952">
                   <CELLMARGIN Bottom="141" Left="141" Right="141" Top="141"/>
                   <PARALIST LineWrap="Break" LinkListID="0" LinkListIDNext="0" TextDirection="0" VertAlign="Center">
                     <P ParaShape="55" Style="0">
                       <TEXT CharShape="3">
               <CHAR>신축이음 본체의 유간사이 이물질로 기능불량, 고무판 마모, 국부적인 부식등의 열화가 발생한 상태 또는 후타재의 균열이 50cm이하의 간격으로 발생하거나, 국부적인 박리, 박락, 파손이 발생하여 간단한 보수가 필요한 상태</CHAR></TEXT></P></PARALIST></CELL></ROW>
               <ROW>
-                <CELL BorderFill="{{if other12.Grade == "d"}}139{{else}}6{{end}}" ColAddr="0" ColSpan="1" Dirty="false" Editable="false" HasMargin="false" Header="false" Height="5749" Protect="false" RowAddr="4" RowSpan="1" Width="6118">
+                <CELL BorderFill="6" ColAddr="0" ColSpan="1" Dirty="false" Editable="false" HasMargin="false" Header="false" Height="5749" Protect="false" RowAddr="4" RowSpan="1" Width="6118">
                   <CELLMARGIN Bottom="141" Left="141" Right="141" Top="141"/>
                   <PARALIST LineWrap="Break" LinkListID="0" LinkListIDNext="0" TextDirection="0" VertAlign="Center">
                     <P ParaShape="110" Style="0">
                       <TEXT CharShape="3">
                 <CHAR>d</CHAR></TEXT></P></PARALIST></CELL>
-                <CELL BorderFill="{{if other12.Grade == "d"}}140{{else}}4{{end}}" ColAddr="1" ColSpan="1" Dirty="false" Editable="false" HasMargin="false" Header="false" Height="5749" Protect="false" RowAddr="4" RowSpan="1" Width="40952">
+                <CELL BorderFill="4" ColAddr="1" ColSpan="1" Dirty="false" Editable="false" HasMargin="false" Header="false" Height="5749" Protect="false" RowAddr="4" RowSpan="1" Width="40952">
                   <CELLMARGIN Bottom="141" Left="141" Right="141" Top="141"/>
                   <PARALIST LineWrap="Break" LinkListID="0" LinkListIDNext="0" TextDirection="0" VertAlign="Center">
                     <P ParaShape="55" Style="0">
@@ -636,13 +636,13 @@
                       <TEXT CharShape="3">
               <CHAR>신축이음의 파손 상태가 심각하여 차량통행 시 충격이 발생하는 등 긴급한 보수·보강이 필요한 상태</CHAR></TEXT></P></PARALIST></CELL></ROW>
               <ROW>
-                <CELL BorderFill="{{if other12.Grade == "e"}}139{{else}}6{{end}}" ColAddr="0" ColSpan="1" Dirty="false" Editable="false" HasMargin="false" Header="false" Height="3636" Protect="false" RowAddr="5" RowSpan="1" Width="6118">
+                <CELL BorderFill="6" ColAddr="0" ColSpan="1" Dirty="false" Editable="false" HasMargin="false" Header="false" Height="3636" Protect="false" RowAddr="5" RowSpan="1" Width="6118">
                   <CELLMARGIN Bottom="141" Left="141" Right="141" Top="141"/>
                   <PARALIST LineWrap="Break" LinkListID="0" LinkListIDNext="0" TextDirection="0" VertAlign="Center">
                     <P ParaShape="110" Style="0">
                       <TEXT CharShape="3">
                 <CHAR>e</CHAR></TEXT></P></PARALIST></CELL>
-                <CELL BorderFill="{{if other12.Grade == "e"}}140{{else}}4{{end}}" ColAddr="1" ColSpan="1" Dirty="false" Editable="false" HasMargin="false" Header="false" Height="3636" Protect="false" RowAddr="5" RowSpan="1" Width="40952">
+                <CELL BorderFill="4" ColAddr="1" ColSpan="1" Dirty="false" Editable="false" HasMargin="false" Header="false" Height="3636" Protect="false" RowAddr="5" RowSpan="1" Width="40952">
                   <CELLMARGIN Bottom="141" Left="141" Right="141" Top="141"/>
                   <PARALIST LineWrap="Break" LinkListID="0" LinkListIDNext="0" TextDirection="0" VertAlign="Center">
                     <P ParaShape="55" Style="0">
@@ -831,26 +831,26 @@
                       <TEXT CharShape="13">
               <CHAR>평  가  내  용</CHAR></TEXT></P></PARALIST></CELL></ROW>
               <ROW>
-                <CELL BorderFill="{{if other13.Grade == "a"}}139{{else}}6{{end}}" ColAddr="0" ColSpan="1" Dirty="false" Editable="false" HasMargin="false" Header="false" Height="3636" Protect="false" RowAddr="1" RowSpan="1" Width="6118">
+                <CELL BorderFill="6" ColAddr="0" ColSpan="1" Dirty="false" Editable="false" HasMargin="false" Header="false" Height="3636" Protect="false" RowAddr="1" RowSpan="1" Width="6118">
                   <CELLMARGIN Bottom="141" Left="141" Right="141" Top="141"/>
                   <PARALIST LineWrap="Break" LinkListID="0" LinkListIDNext="0" TextDirection="0" VertAlign="Center">
                     <P ParaShape="110" Style="0">
                       <TEXT CharShape="3">
                 <CHAR>a</CHAR></TEXT></P></PARALIST></CELL>
-                <CELL BorderFill="{{if other13.Grade == "a"}}140{{else}}4{{end}}" ColAddr="1" ColSpan="1" Dirty="false" Editable="false" HasMargin="false" Header="false" Height="3636" Protect="false" RowAddr="1" RowSpan="1" Width="40952">
+                <CELL BorderFill="4" ColAddr="1" ColSpan="1" Dirty="false" Editable="false" HasMargin="false" Header="false" Height="3636" Protect="false" RowAddr="1" RowSpan="1" Width="40952">
                   <CELLMARGIN Bottom="141" Left="141" Right="141" Top="141"/>
                   <PARALIST LineWrap="Break" LinkListID="0" LinkListIDNext="0" TextDirection="0" VertAlign="Center">
                     <P ParaShape="55" Style="0">
                       <TEXT CharShape="3">
               <CHAR>규격에 맞게 설치되어 있고 환기구 등의 덮개가 최상의 상태</CHAR></TEXT></P></PARALIST></CELL></ROW>
               <ROW>
-                <CELL BorderFill="{{if other13.Grade == "b"}}139{{else}}6{{end}}" ColAddr="0" ColSpan="1" Dirty="false" Editable="false" HasMargin="false" Header="false" Height="4485" Protect="false" RowAddr="2" RowSpan="1" Width="6118">
+                <CELL BorderFill="6" ColAddr="0" ColSpan="1" Dirty="false" Editable="false" HasMargin="false" Header="false" Height="4485" Protect="false" RowAddr="2" RowSpan="1" Width="6118">
                   <CELLMARGIN Bottom="141" Left="141" Right="141" Top="141"/>
                   <PARALIST LineWrap="Break" LinkListID="0" LinkListIDNext="0" TextDirection="0" VertAlign="Center">
                     <P ParaShape="110" Style="0">
                       <TEXT CharShape="3">
                 <CHAR>b</CHAR></TEXT></P></PARALIST></CELL>
-                <CELL BorderFill="{{if other13.Grade == "b"}}140{{else}}4{{end}}" ColAddr="1" ColSpan="1" Dirty="false" Editable="false" HasMargin="false" Header="false" Height="4485" Protect="false" RowAddr="2" RowSpan="1" Width="40952">
+                <CELL BorderFill="4" ColAddr="1" ColSpan="1" Dirty="false" Editable="false" HasMargin="false" Header="false" Height="4485" Protect="false" RowAddr="2" RowSpan="1" Width="40952">
                   <CELLMARGIN Bottom="141" Left="141" Right="141" Top="141"/>
                   <PARALIST LineWrap="Break" LinkListID="0" LinkListIDNext="0" TextDirection="0" VertAlign="Center">
                     <P ParaShape="55" Style="0">
@@ -860,39 +860,39 @@
                       <TEXT CharShape="3">
               <CHAR>기능성에 문제가 없어 결함 및 파손에 대해 지속적 관찰이 필요한 상태</CHAR></TEXT></P></PARALIST></CELL></ROW>
               <ROW>
-                <CELL BorderFill="{{if other13.Grade == "c"}}139{{else}}6{{end}}" ColAddr="0" ColSpan="1" Dirty="false" Editable="false" HasMargin="false" Header="false" Height="3636" Protect="false" RowAddr="3" RowSpan="1" Width="6118">
+                <CELL BorderFill="6" ColAddr="0" ColSpan="1" Dirty="false" Editable="false" HasMargin="false" Header="false" Height="3636" Protect="false" RowAddr="3" RowSpan="1" Width="6118">
                   <CELLMARGIN Bottom="141" Left="141" Right="141" Top="141"/>
                   <PARALIST LineWrap="Break" LinkListID="0" LinkListIDNext="0" TextDirection="0" VertAlign="Center">
                     <P ParaShape="110" Style="0">
                       <TEXT CharShape="3">
                 <CHAR>c</CHAR></TEXT></P></PARALIST></CELL>
-                <CELL BorderFill="{{if other13.Grade == "c"}}140{{else}}4{{end}}" ColAddr="1" ColSpan="1" Dirty="false" Editable="false" HasMargin="false" Header="false" Height="3636" Protect="false" RowAddr="3" RowSpan="1" Width="40952">
+                <CELL BorderFill="4" ColAddr="1" ColSpan="1" Dirty="false" Editable="false" HasMargin="false" Header="false" Height="3636" Protect="false" RowAddr="3" RowSpan="1" Width="40952">
                   <CELLMARGIN Bottom="141" Left="141" Right="141" Top="141"/>
                   <PARALIST LineWrap="Break" LinkListID="0" LinkListIDNext="0" TextDirection="0" VertAlign="Center">
                     <P ParaShape="55" Style="0">
                       <TEXT CharShape="3">
               <CHAR>덮개 등(지지구조 철물, 연결재, 걸침턱 등)에 결함 및 파손 등으로 기능에 일부 문제가 발생하여 보수가 필요한 상태</CHAR></TEXT></P></PARALIST></CELL></ROW>
               <ROW>
-                <CELL BorderFill="{{if other13.Grade == "d"}}139{{else}}6{{end}}" ColAddr="0" ColSpan="1" Dirty="false" Editable="false" HasMargin="false" Header="false" Height="3636" Protect="false" RowAddr="4" RowSpan="1" Width="6118">
+                <CELL BorderFill="6" ColAddr="0" ColSpan="1" Dirty="false" Editable="false" HasMargin="false" Header="false" Height="3636" Protect="false" RowAddr="4" RowSpan="1" Width="6118">
                   <CELLMARGIN Bottom="141" Left="141" Right="141" Top="141"/>
                   <PARALIST LineWrap="Break" LinkListID="0" LinkListIDNext="0" TextDirection="0" VertAlign="Center">
                     <P ParaShape="110" Style="0">
                       <TEXT CharShape="3">
                 <CHAR>d</CHAR></TEXT></P></PARALIST></CELL>
-                <CELL BorderFill="{{if other13.Grade == "d"}}140{{else}}4{{end}}" ColAddr="1" ColSpan="1" Dirty="false" Editable="false" HasMargin="false" Header="false" Height="3636" Protect="false" RowAddr="4" RowSpan="1" Width="40952">
+                <CELL BorderFill="4" ColAddr="1" ColSpan="1" Dirty="false" Editable="false" HasMargin="false" Header="false" Height="3636" Protect="false" RowAddr="4" RowSpan="1" Width="40952">
                   <CELLMARGIN Bottom="141" Left="141" Right="141" Top="141"/>
                   <PARALIST LineWrap="Break" LinkListID="0" LinkListIDNext="0" TextDirection="0" VertAlign="Center">
                     <P ParaShape="55" Style="0">
                       <TEXT CharShape="3">
               <CHAR>덮개 등(지지구조 철물, 연결재, 걸침턱 등)에 결함 및 파손 등으로 기능이 상실되어 국부적인 교체 및 보강이 필요한 상태</CHAR></TEXT></P></PARALIST></CELL></ROW>
               <ROW>
-                <CELL BorderFill="{{if other13.Grade == "e"}}139{{else}}6{{end}}" ColAddr="0" ColSpan="1" Dirty="false" Editable="false" HasMargin="false" Header="false" Height="3636" Protect="false" RowAddr="5" RowSpan="1" Width="6118">
+                <CELL BorderFill="6" ColAddr="0" ColSpan="1" Dirty="false" Editable="false" HasMargin="false" Header="false" Height="3636" Protect="false" RowAddr="5" RowSpan="1" Width="6118">
                   <CELLMARGIN Bottom="141" Left="141" Right="141" Top="141"/>
                   <PARALIST LineWrap="Break" LinkListID="0" LinkListIDNext="0" TextDirection="0" VertAlign="Center">
                     <P ParaShape="110" Style="0">
                       <TEXT CharShape="3">
                 <CHAR>e</CHAR></TEXT></P></PARALIST></CELL>
-                <CELL BorderFill="{{if other13.Grade == "e"}}140{{else}}4{{end}}" ColAddr="1" ColSpan="1" Dirty="false" Editable="false" HasMargin="false" Header="false" Height="3636" Protect="false" RowAddr="5" RowSpan="1" Width="40952">
+                <CELL BorderFill="4" ColAddr="1" ColSpan="1" Dirty="false" Editable="false" HasMargin="false" Header="false" Height="3636" Protect="false" RowAddr="5" RowSpan="1" Width="40952">
                   <CELLMARGIN Bottom="141" Left="141" Right="141" Top="141"/>
                   <PARALIST LineWrap="Break" LinkListID="0" LinkListIDNext="0" TextDirection="0" VertAlign="Center">
                     <P ParaShape="55" Style="0">

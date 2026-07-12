@@ -266,5 +266,18 @@ func GetCause(periodicdatas []models.Periodicdata, dongs []models.Aptdong, other
 		others[14] = other
 	}
 
+	// 부착물(category 16) 조사 내용 추가
+	attach := others[16]
+	if attach.Good == 1 {
+		if len(attach.Items) > 0 {
+			items[3] = append(items[3], attach.Items[0])
+		} else {
+			items[3] = append(items[3], "부착물(정착부, 연결부, 보강부 등)의 상태는 전반적으로 양호한 상태로 조사되었다.")
+		}
+	} else if len(attach.Items) > 0 {
+		items[3] = append(items[3], fmt.Sprintf("부착물 조사결과 %v 등이 확인되었다.", strings.Join(attach.Items, ", ")))
+		items[3] = append(items[3], "부착물의 결함사항은 낙하・탈락 위험이 있어 관리주체는 적절한 보수 조치가 필요할 것으로 판단된다.")
+	}
+
 	return items, others
 }

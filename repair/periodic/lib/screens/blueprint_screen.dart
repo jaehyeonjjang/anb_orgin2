@@ -12,7 +12,6 @@ import 'package:periodic/components/painter/painter_controller.dart';
 import 'package:periodic/controllers/auth_controller.dart';
 import 'package:periodic/controllers/blueprint_controller.dart';
 import 'package:periodic/controllers/image_controller.dart';
-import 'package:periodic/controllers/other_controller.dart';
 import 'package:periodic/models/blueprint.dart';
 import 'package:periodic/models/periodic.dart';
 import 'package:periodic/models/periodicimage.dart';
@@ -62,7 +61,8 @@ class BlueprintScreen extends CWidget {
             ElevatedButton(
               child: const Text('저장없이 종료'),
               onPressed: () async {
-                Navigator.pop(context2, true);
+                Navigator.pop(context2, false);
+                showExitCodeDialog(context);
               },
             )
           ],
@@ -699,15 +699,6 @@ class BlueprintScreen extends CWidget {
     c.percent = 0.0;
     c.sendError = false;
 
-    // tab16 데이터를 OtherController에서 가져오기
-    OtherController? otherController;
-    try {
-      otherController = Get.find<OtherController>();
-    } catch (e) {
-      // OtherController가 없으면 null로 설정
-      otherController = null;
-    }
-
     final LocalStorage storage = LocalStorage('periodic.json');
 
     var total = 1;
@@ -758,16 +749,6 @@ class BlueprintScreen extends CWidget {
 
       var filenames = item.offlinefilename.split(',');
       total += filenames.length;
-    }
-
-    // tab16 (부착물) 이미지 개수 추가
-    int tab16ImageCount = 0;
-    if (otherController != null) {
-      for (var rowIndex = 0; rowIndex < 8; rowIndex++) {
-        final images = otherController.getTab16Images(rowIndex);
-        tab16ImageCount += images.length;
-      }
-      total += tab16ImageCount;
     }
 
     storage.ready;
@@ -866,6 +847,7 @@ class BlueprintScreen extends CWidget {
       Periodicother item = c.periodicothers[i];
 
       if (item.offlinefilename == '') {
+        c.periodicothers[i].filename = '';
         continue;
       }
 
@@ -876,11 +858,13 @@ class BlueprintScreen extends CWidget {
       for (var j = 0; j < filenames.length; j++) {
         var image = filenames[j];
         if (File(image).existsSync() != true) {
-          break;
+          continue;
         }
 
         final ret = await UploadManager.image(image);
-        onlinefilenames.add(ret);
+        if (ret != '') {
+          onlinefilenames.add(ret);
+        }
 
         current++;
         c.percent = current / total;
@@ -889,143 +873,12 @@ class BlueprintScreen extends CWidget {
       c.periodicothers[i].filename = onlinefilenames.join(',');
     }
 
-    // tab16 (부착물) 이미지 업로드
-    Map<int, List<String>> tab16OnlineImages = {};
-    String tab16Content = '';
-
-    // OtherController가 없으면 LocalStorage에서 직접 로드
-    if (otherController == null) {
-      final LocalStorage storage16 = LocalStorage('blueprints.json');
-      await storage16.ready;
-
-      // tab16 점검내용 로드
-      final content = await storage16.getItem('other_16_content');
-      if (content != null && content.toString().isNotEmpty) {
-        tab16Content = content;
-      }
-
-      // tab16 이미지 로드
-      final images16 = await storage16.getItem('other_16_images');
-      if (images16 != null && images16 != '') {
-        final Map<String, dynamic> decoded = json.decode(images16);
-        Map<int, List<String>> tab16StorageImages = {};
-        decoded.forEach((key, value) {
-          tab16StorageImages[int.parse(key)] = List<String>.from(value);
-        });
-
-        // 각 행의 이미지 업로드
-        for (var rowIndex in tab16StorageImages.keys) {
-          final images = tab16StorageImages[rowIndex] ?? [];
-          if (images.isEmpty) continue;
-
-          List<String> uploadedPaths = [];
-          for (var imagePath in images) {
-            if (c.cancel == true) {
-              return;
-            }
-
-            if (File(imagePath).existsSync() != true) {
-              continue;
-            }
-
-            var ret = '';
-            for (var k = 0; k < 5; k++) {
-              ret = await UploadManager.image(imagePath);
-              if (ret != '') {
-                break;
-              }
-
-              if (k == 4) {
-                c.sendError = true;
-                break;
-              }
-
-              for (var j = 0; j < k + 1; j++) {
-                if (c.cancel == true) {
-                  return;
-                }
-                sleep(const Duration(seconds: 1));
-              }
-            }
-
-            if (ret != '') {
-              uploadedPaths.add(ret);
-            }
-
-            current++;
-            c.percent = current / total;
-          }
-
-          if (uploadedPaths.isNotEmpty) {
-            tab16OnlineImages[rowIndex] = uploadedPaths;
-          }
-        }
-      }
-    } else if (otherController != null) {
-      for (var rowIndex = 0; rowIndex < 8; rowIndex++) {
-        final images = otherController.getTab16Images(rowIndex);
-        if (images.isEmpty) continue;
-
-        List<String> uploadedPaths = [];
-        for (var imagePath in images) {
-          if (c.cancel == true) {
-            return;
-          }
-
-          if (File(imagePath).existsSync() != true) {
-            continue;
-          }
-
-          var ret = '';
-          for (var k = 0; k < 5; k++) {
-            ret = await UploadManager.image(imagePath);
-            if (ret != '') {
-              break;
-            }
-
-            if (k == 4) {
-              c.sendError = true;
-              break;
-            }
-
-            for (var j = 0; j < k + 1; j++) {
-              if (c.cancel == true) {
-                return;
-              }
-              sleep(const Duration(seconds: 1));
-            }
-          }
-
-          if (ret != '') {
-            uploadedPaths.add(ret);
-          }
-
-          current++;
-          c.percent = current / total;
-        }
-
-        if (uploadedPaths.isNotEmpty) {
-          tab16OnlineImages[rowIndex] = uploadedPaths;
-        }
-      }
-      // OtherController가 있으면 점검내용도 가져오기
-      tab16Content = otherController.tab16ContentController.text;
-    }
-
-    // int 키를 String 키로 변환 (JSON 인코딩 가능하도록)
-    Map<String, List<String>> tab16ImagesJson = {};
-    tab16OnlineImages.forEach((key, value) {
-      tab16ImagesJson[key.toString()] = value;
-    });
-
     Map<String, dynamic> ret = {
       'user': authController.user.id,
       'id': c.id,
       'datas': datas,
       'images': images,
       'periodicothers': c.periodicothers,
-      'tab16Images': tab16ImagesJson,
-      'tab16Content': tab16Content
     };
 
     if (c.cancel == true) {
@@ -1072,10 +925,6 @@ class BlueprintScreen extends CWidget {
     await storageBlueprint.ready;
     await storageBlueprint.setItem(
         'periodicothers', json.encode(c.periodicothers));
-    await storageBlueprint.deleteItem('other_16_content');
-    await storageBlueprint.deleteItem('other_16_images');
-
-    c.setTab16Modified(false);
 
     endProcess();
 

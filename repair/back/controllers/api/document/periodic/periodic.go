@@ -3,7 +3,6 @@ package periodic
 import (
 	"bytes"
 	"encoding/base64"
-	"encoding/json"
 	"fmt"
 	"log"
 	"os"
@@ -214,7 +213,7 @@ func Periodic0(id int64, conn *models.Connection) string {
 		models.Where{Column: "periodic", Value: id, Compare: "="},
 		models.Ordering("po_order,po_id"),
 	})
-	
+
 	// 디버깅: periodicother 데이터 로드 확인
 	log.Printf("[DEBUG] Periodic %d: Loaded %d periodicother records", id, len(others))
 
@@ -231,9 +230,9 @@ func Periodic0(id int64, conn *models.Connection) string {
 
 		otherMap[v.Category] = append(otherMap[v.Category], v)
 	}
-	
+
 	// 디버깅: 카테고리별 데이터 개수 확인
-	log.Printf("[DEBUG] Periodic %d: Category 1=%d, Category 3=%d, Category 10=%d, Category 11=%d", 
+	log.Printf("[DEBUG] Periodic %d: Category 1=%d, Category 3=%d, Category 10=%d, Category 11=%d",
 		id, len(otherMap[1]), len(otherMap[3]), len(otherMap[10]), len(otherMap[11]))
 
 	facilitycategorys := facilitycategoryManager.Find([]interface{}{
@@ -716,17 +715,23 @@ func Periodic0(id int64, conn *models.Connection) string {
 	v.Set("reportdateHalf", reportdateHalf)
 	v.Set("reportdateHalf2", strings.ReplaceAll(reportdateHalf, "년도", "년"))
 
-	if technicians != nil {
-		v.Set("technicianCount", len(technicians)+1)
-	} else {
-		v.Set("technicianCount", 1)
+	// technicians가 없을 경우 최소 3개의 빈 행 추가 (HWP 뷰어 크래시 방지)
+	if technicians == nil || len(technicians) == 0 {
+		technicians = make([]models.Periodictechnician, 3)
+		for i := 0; i < 3; i++ {
+			technicians[i].Extra = make(map[string]any)
+			technicians[i].Extra["technician"] = models.Technician{}
+		}
 	}
+	
+	v.Set("technicianCount", len(technicians)+1)
 	v.Set("technicians", technicians)
 
 	v.Set("resultTechnicianCount", len(technicians)+15)
 
 	otherData := Other(others)
 	summaryItems := GetSummary(periodic.Id, *periodic, aptdongs, periodicdatas, blueprints, periodicchanges, otherData, otherMap)
+	log.Printf("[DEBUG] Periodic %d: summaryItems count = %d", id, len(summaryItems))
 	v.Set("summarys", summaryItems)
 
 	// 강재 노후
@@ -873,7 +878,13 @@ func Periodic0(id int64, conn *models.Connection) string {
 				}
 				positions = append(positions, v.Position)
 
-				results = append(results, strings.Split(v.Status, ",")...)
+				// "상태양호"를 제외하고 results에 추가
+				statusList := strings.Split(v.Status, ",")
+				for _, status := range statusList {
+					if status != "상태양호" {
+						results = append(results, status)
+					}
+				}
 			}
 
 			if len(positions) > 0 && len(results) > 0 {
@@ -1157,6 +1168,8 @@ func Periodic0(id int64, conn *models.Connection) string {
 
 	partimages := make([]ImageInfo, 0)
 	imageCount = 0
+	log.Printf("[DEBUG] Periodic %d: Starting part images processing, total periodicimages=%d", id, len(periodicimages))
+	
 	for _, v := range periodicimages {
 		if v.Type != 3 {
 			continue
@@ -1168,6 +1181,8 @@ func Periodic0(id int64, conn *models.Connection) string {
 
 		imageCount++
 	}
+	
+	log.Printf("[DEBUG] Periodic %d: Found %d Type=3 images", id, imageCount)
 
 	if imageCount%6 > 0 {
 		for i := 0; i < 6-(imageCount%6); i++ {
@@ -1175,15 +1190,19 @@ func Periodic0(id int64, conn *models.Connection) string {
 		}
 
 		imageCount += 6 - (imageCount % 6)
+		log.Printf("[DEBUG] Periodic %d: Added padding, imageCount now=%d", id, imageCount)
 	}
 
 	if imageCount == 0 {
+		log.Printf("[DEBUG] Periodic %d: No part images, adding 6 empty.jpg", id)
 		for i := 0; i < 6; i++ {
 			partimages = append(partimages, GetImageInfo("empty.jpg"))
 		}
 
 		imageCount = 6
 	}
+	
+	log.Printf("[DEBUG] Periodic %d: Final partimages count=%d, creating %d groups", id, imageCount, imageCount/6)
 
 	groupPartimages := make([]PartImageInfo, 0)
 
@@ -1202,6 +1221,10 @@ func Periodic0(id int64, conn *models.Connection) string {
 	v.Set("grouppartimages", groupPartimages)
 	v.Set("partimages", partimages)
 	v.Set("partimageCount", imageCount)
+	
+	// 디버깅: 사진 섹션 데이터 확인 (실제 설정된 값)
+	partImageCountSet := imageCount
+	log.Printf("[DEBUG] Periodic %d: SET partimageCount=%d (Type=3 images), groupPartimages=%d groups", id, partImageCountSet, len(groupPartimages))
 
 	privateDongPages := 0
 	publicDongPages := 0
@@ -1247,68 +1270,10 @@ func Periodic0(id int64, conn *models.Connection) string {
 	v.Set("outerwall", outerwall)
 	v.Set("opinion", opinion)
 
-	// 부착물 현황 이미지 (웹 부착물 등 탭에서 등록한 이미지)
+	// 부착물 현황 이미지는 부위별 사진(partimages)에 병합되었으므로 여기서는 빈 값으로 설정
 	attachimages := make([]ImageInfo, 0)
-	if periodicotheretc.Content2 != "" {
-		attachMap := make(map[string][]string)
-		if err := json.Unmarshal([]byte(periodicotheretc.Content2), &attachMap); err == nil {
-			for _, key := range []string{"0", "2", "3", "4", "5", "6", "7"} {
-				for _, filename := range attachMap[key] {
-					if filename == "" {
-						continue
-					}
-					// 실제 파일이 존재하는 이미지만 포함 (포맷 불일치/손상 방지)
-					if _, err := os.Stat(filepath.Join(config.UploadPath, filename)); err != nil {
-						continue
-					}
-					info := GetImageInfo(filename)
-					if info.Ext != "jpg" && info.Ext != "png" {
-						info.Ext = "jpg"
-					}
-					attachimages = append(attachimages, info)
-				}
-			}
-		}
-	}
-
 	groupAttachimages := make([]AttachImageGroup, 0)
-	for i := 0; i < len(attachimages); i += 2 {
-		group := AttachImageGroup{Image1: attachimages[i], Index1: i}
-		if i+1 < len(attachimages) {
-			group.Image2 = attachimages[i+1]
-			group.HasSecond = true
-			group.Index2 = i + 1
-		}
-		groupAttachimages = append(groupAttachimages, group)
-	}
-
-	// 페이지 단위 그룹핑: 첫 페이지는 사진 2장(1행), 이후 페이지는 6장(3행)
 	attachpages := make([]AttachImagePage, 0)
-	idx := 0
-	total := len(attachimages)
-	for idx < total {
-		capacity := 6
-		if len(attachpages) == 0 {
-			capacity = 2
-		}
-		end := idx + capacity
-		if end > total {
-			end = total
-		}
-		page := AttachImagePage{}
-		for j := idx; j < end; j += 2 {
-			row := AttachImageGroup{Image1: attachimages[j], Index1: j}
-			if j+1 < end {
-				row.Image2 = attachimages[j+1]
-				row.HasSecond = true
-				row.Index2 = j + 1
-			}
-			page.Rows = append(page.Rows, row)
-		}
-		page.RowCount = len(page.Rows)
-		attachpages = append(attachpages, page)
-		idx = end
-	}
 
 	v.Set("attachimages", attachimages)
 	v.Set("attachimageCount", len(attachimages))
@@ -1316,7 +1281,7 @@ func Periodic0(id int64, conn *models.Connection) string {
 	v.Set("attachpages", attachpages)
 
 	v.Set("periodicotheretc", periodicotheretc)
-	
+
 	// others1, others2, others3 안전하게 설정 (nil 방지)
 	if others1, ok := otherMap[1]; ok && len(others1) > 0 {
 		v.Set("others1", others1)
@@ -1384,14 +1349,25 @@ func Periodic0(id int64, conn *models.Connection) string {
 	}
 
 	v.Set("namejosa", nameWithJosa)
+	
+	// 디버깅: 템플릿 실행 직전 주요 변수 확인
+	log.Printf("[DEBUG] Periodic %d: Starting template execution", id)
+	log.Printf("[DEBUG] Periodic %d: technicianCount=%d, partimageCount=%d, dongPages=%d", 
+		id, len(technicians)+1, imageCount, dongPages)
 
 	var b bytes.Buffer
 	t, err := view.GetTemplate("periodic/periodic-00.jet")
 	if err == nil {
+		log.Printf("[DEBUG] Periodic %d: Template loaded successfully, executing...", id)
 		if err = t.Execute(&b, v, nil); err != nil {
+			log.Printf("[ERROR] Periodic %d: Template execution failed: %v", id, err)
 			log.Println(err)
 			// error when executing template
+		} else {
+			log.Printf("[DEBUG] Periodic %d: Template executed successfully, output size: %d bytes", id, b.Len())
 		}
+	} else {
+		log.Printf("[ERROR] Periodic %d: Failed to load template: %v", id, err)
 	}
 
 	filename := fmt.Sprintf("periodic/periodic-00-%v-%v.hml", periodic.Id, global.UniqueId())
@@ -1791,7 +1767,7 @@ func Periodic4(id int64, conn *models.Connection) string {
 		}
 	}
 
-	otherCategorys := []int{10, 11, 12, 13, 2, 14, 1, 3}
+	otherCategorys := []int{10, 11, 12, 13, 2, 14, 16, 1, 3}
 
 	for _, category := range otherCategorys {
 		for _, v := range periodicothers {
