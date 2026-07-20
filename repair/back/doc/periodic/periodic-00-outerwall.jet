@@ -116,7 +116,7 @@
             {{if len(other14.Items) == 0}}
             <P ParaShape="55" Style="0"><TEXT CharShape="3"><CHAR> </CHAR></TEXT></P>
             {{else}}
-            {{range other14.Items}}<P ParaShape="55" Style="0"><TEXT CharShape="3"><CHAR> ※ {{.}}</CHAR></TEXT></P>{{end}}
+            {{range other14.Items}}{{if . != ""}}<P ParaShape="55" Style="0"><TEXT CharShape="3"><CHAR> ※ {{.}}</CHAR></TEXT></P>{{end}}{{end}}
             {{end}}
           </PARALIST></CELL>
       </ROW>

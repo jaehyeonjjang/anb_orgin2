@@ -94,6 +94,12 @@ func Other(datas []models.Periodicother) map[int]OtherResult {
 				}
 				strs = append(strs, fmt.Sprintf("%v - %v", v.Position, strings.ReplaceAll(v.Status, ",", ", ")))
 			}
+			
+			// 체크박스가 체크되지 않았을 경우 상태양호로 처리
+			if len(strs) == 0 {
+				strs = append(strs, "해당 대지면적 내 추락방지시설은 전반적으로 양호한 상태로 조사되었다.")
+				good = 1
+			}
 		}
 
 		ret[pos] = OtherResult{Grade: GetGrade("추락방지시설", items), Items: strs, Good: good}
@@ -117,6 +123,12 @@ func Other(datas []models.Periodicother) map[int]OtherResult {
 					continue
 				}
 				strs = append(strs, fmt.Sprintf("%v - %v", v.Position, strings.ReplaceAll(v.Status, ",", ", ")))
+			}
+			
+			// 체크박스가 체크되지 않았을 경우 상태양호로 처리
+			if len(strs) == 0 {
+				strs = append(strs, "해당 대지면적 내 도로포장은 전반적으로 양호한 상태로 조사되었다.")
+				good = 1
 			}
 		}
 
@@ -154,6 +166,16 @@ func Other(datas []models.Periodicother) map[int]OtherResult {
 					strs = append(strs, fmt.Sprintf("%v - %v", v.Position, strings.ReplaceAll(v.Status, ",", ", ")))
 
 				}
+				
+				// 체크박스가 체크되지 않았을 경우 상태양호로 처리
+				if len(strs) == 0 {
+					if work.Status == "" {
+						strs = append(strs, "신축 이음부는 전반적으로 양호한 상태로 조사되었다.")
+					} else {
+						strs = append(strs, fmt.Sprintf("신축 이음부는 %v로 시공되어 있으며 전반적으로 양호한 상태로 조사되었다.", work.Status))
+					}
+					good = 1
+				}
 			}
 		}
 
@@ -186,6 +208,16 @@ func Other(datas []models.Periodicother) map[int]OtherResult {
 
 				strs = append(strs, fmt.Sprintf("%v - %v", v.Position, strings.ReplaceAll(v.Status, ",", ", ")))
 
+			}
+			
+			// 체크박스가 체크되지 않았을 경우 상태양호로 처리
+			if len(strs) == 0 {
+				str := ""
+				if work.Status != "" {
+					str = fmt.Sprintf("(%v) ", strings.ReplaceAll(work.Status, ",", ", "))
+				}
+				strs = append(strs, fmt.Sprintf("해당 건축물 내 %v환기구의 상태는 전반적으로 양호한 상태로 조사되었다.", str))
+				good = 1
 			}
 		}
 

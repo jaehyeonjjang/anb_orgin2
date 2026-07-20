@@ -736,7 +736,11 @@ func Detail0(id int64, conn *models.Connection) string {
 		}
 
 		endStr := ""
-		if len(otherItems) == 1 {
+		if len(otherItems) == 0 {
+			// 체크박스가 모두 체크되지 않았을 경우 상태양호로 처리
+			endStr = "양호한 것으로 조사되었다."
+			strs = "부대시설 조사결과 전반적으로 양호한 상태로 "
+		} else if len(otherItems) == 1 {
 			v := otherItems[0]
 			endStr = fmt.Sprintf("%v에서 %v 조사되었다.", v.Title, Josa(v.Content, hangul.I_GA))
 		} else {

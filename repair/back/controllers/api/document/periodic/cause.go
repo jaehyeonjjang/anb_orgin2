@@ -181,7 +181,16 @@ func GetCause(periodicdatas []models.Periodicdata, dongs []models.Aptdong, other
 	other := others[14]
 
 	outerwallMaterial := GetOuterwallMaterial(otherMap)
-	if first.IsValid() || len(other.Items) > 0 {
+	
+	// 빈 문자열이 아닌 항목만 필터링
+	validOtherItems := make([]string, 0)
+	for _, item := range other.Items {
+		if item != "" {
+			validOtherItems = append(validOtherItems, item)
+		}
+	}
+	
+	if first.IsValid() || len(validOtherItems) > 0 {
 		str := ""
 
 		if outerwallMaterial != "" {
@@ -190,15 +199,15 @@ func GetCause(periodicdatas []models.Periodicdata, dongs []models.Aptdong, other
 
 		causes := first.Cause
 
-		if len(other.Items) == 0 {
+		if len(validOtherItems) == 0 {
 			str += fmt.Sprintf("%v 조사되었다", global.GetJosa(first.Results(), hangul.I_GA))
 		} else {
 			if len(first.Result()) > 0 {
 				str += fmt.Sprintf("%v 조사되었고, 또한 ", global.GetJosa(first.Results(), hangul.I_GA))
 			}
 
-			for i, v := range other.Items {
-				if i == len(other.Items)-1 {
+			for i, v := range validOtherItems {
+				if i == len(validOtherItems)-1 {
 					str += fmt.Sprintf("%v 조사되었다.", global.GetJosa(v, hangul.I_GA))
 				} else {
 					str += fmt.Sprintf("%v 조사되었고, ", global.GetJosa(v, hangul.I_GA))
@@ -219,7 +228,7 @@ func GetCause(periodicdatas []models.Periodicdata, dongs []models.Aptdong, other
 		str = fmt.Sprintf("조사된 결함은 %v 등으로 인해 발생된 것으로 판단되며,", cause)
 
 		resultFlag := false
-		if len(other.Items) > 0 && other.Position != "" {
+		if len(validOtherItems) > 0 && other.Position != "" {
 			resultFlag = true
 			str += fmt.Sprintf(" 또한 %v 도 결함사항에 대하여 적절한 보수가 이루어져야 할 것으로 판단된다.", strings.ReplaceAll(strings.ReplaceAll(other.Position, "(", ""), ")", ""))
 		}
@@ -228,7 +237,7 @@ func GetCause(periodicdatas []models.Periodicdata, dongs []models.Aptdong, other
 			resultFlag = true
 			str += " 특히 균열과 누수(흔적)를 동반한 결함부위는 침투된 수분으로 인해 발생된 것으로 판단되며, 해당 결함의 경우 장기간 방치 시 결함 확대 및 전유세대 누수로 이어지므로 적절한 보수조치가 필요한 것으로 사료된다. 또한, 향후 외벽 도장공사 진행시 해당결함이 재 발생 되지 않도록 철저한 관리감독이 이루어져야 할 것이다."
 		} else {
-			if len(other.Items) == 0 {
+			if len(validOtherItems) == 0 {
 				resultFlag = true
 				str += fmt.Sprintf(" 구조적인 문제는 없는 것으로 보이나 장기간 방치시 내구성 저하의 원인이 되므로 적절한 보수가 요구된다.")
 			}
@@ -261,7 +270,12 @@ func GetCause(periodicdatas []models.Periodicdata, dongs []models.Aptdong, other
 			}
 		}
 
-		items = append(items, other.Items...)
+		// 빈 문자열 제외하고 추가
+		for _, item := range other.Items {
+			if item != "" {
+				items = append(items, item)
+			}
+		}
 		other.Items = items
 		others[14] = other
 	}
@@ -269,14 +283,23 @@ func GetCause(periodicdatas []models.Periodicdata, dongs []models.Aptdong, other
 	// 부착물(category 16) 조사 내용 추가
 	attach := others[16]
 	if attach.Good == 1 {
-		if len(attach.Items) > 0 {
+		if len(attach.Items) > 0 && attach.Items[0] != "" {
 			items[3] = append(items[3], attach.Items[0])
 		} else {
 			items[3] = append(items[3], "부착물(정착부, 연결부, 보강부 등)의 상태는 전반적으로 양호한 상태로 조사되었다.")
 		}
 	} else if len(attach.Items) > 0 {
-		items[3] = append(items[3], fmt.Sprintf("부착물 조사결과 %v 등이 확인되었다.", strings.Join(attach.Items, ", ")))
-		items[3] = append(items[3], "부착물의 결함사항은 낙하・탈락 위험이 있어 관리주체는 적절한 보수 조치가 필요할 것으로 판단된다.")
+		// 빈 문자열 필터링
+		validAttachItems := make([]string, 0)
+		for _, item := range attach.Items {
+			if item != "" {
+				validAttachItems = append(validAttachItems, item)
+			}
+		}
+		if len(validAttachItems) > 0 {
+			items[3] = append(items[3], fmt.Sprintf("부착물 조사결과 %v 등이 확인되었다.", strings.Join(validAttachItems, ", ")))
+			items[3] = append(items[3], "부착물의 결함사항은 낙하・탈락 위험이 있어 관리주체는 적절한 보수 조치가 필요할 것으로 판단된다.")
+		}
 	}
 
 	return items, others

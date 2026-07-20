@@ -3871,9 +3871,9 @@
 <CHAR>{{if aptperiodic.Outline9 == 1}}공동주택(아파트){{end}}{{if aptperiodic.Outline9 == 2}}제 1종 근린생활시설{{end}}{{if aptperiodic.Outline9 == 3}}제 2종 근린생활시설{{end}}{{if aptperiodic.Outline9 == 4}}업무시설{{end}}{{if aptperiodic.Outline9 == 5}}{{aptperiodic.Outline9content}}{{end}}</CHAR></TEXT></P>
 <P ParaShape="68" Style="2">
 <TEXT CharShape="70">
-<CHAR>     7) 준  공  일 : </CHAR></TEXT>
+<CHAR>     7) 사용승인일 : </CHAR></TEXT>
 <TEXT CharShape="70">
-<CHAR>{{apt.Useapproval}}</CHAR></TEXT></P>
+<CHAR>{{apt.Useapproval|humandate}}</CHAR></TEXT></P>
 <P ParaShape="68" Style="2">
 <TEXT CharShape="71">
 <CHAR>   나. 과업 범위</CHAR></TEXT></P>

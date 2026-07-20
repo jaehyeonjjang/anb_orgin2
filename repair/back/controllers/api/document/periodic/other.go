@@ -81,13 +81,10 @@ func Other(datas []models.Periodicother) map[int]OtherResult {
 		typeitems := GetOtherByType(2, items)
 
 		strs := make([]string, 0)
-		allChecked := true
-		allGood := true
 
-		// 각 항목별로 체크 여부와 결함 확인
+		// 각 항목별로 결함 확인
 		for _, v := range typeitems {
 			if v.Status == "" {
-				allChecked = false
 				continue
 			}
 
@@ -102,13 +99,12 @@ func Other(datas []models.Periodicother) map[int]OtherResult {
 			}
 
 			if len(defects) > 0 {
-				allGood = false
 				strs = append(strs, fmt.Sprintf("%v - %v", v.Position, strings.Join(defects, ", ")))
 			}
 		}
 
 		good := 0
-		if allChecked && allGood {
+		if len(strs) == 0 {
 			strs = append(strs, "해당 대지면적 내 추락방지시설은 전반적으로 양호한 상태로 조사되었다.")
 			good = 1
 		}
@@ -122,13 +118,10 @@ func Other(datas []models.Periodicother) map[int]OtherResult {
 		typeitems := GetOtherByType(2, items)
 
 		strs := make([]string, 0)
-		allChecked := true
-		allGood := true
 
-		// 각 항목별로 체크 여부와 결함 확인
+		// 각 항목별로 결함 확인
 		for _, v := range typeitems {
 			if v.Status == "" {
-				allChecked = false
 				continue
 			}
 
@@ -143,13 +136,12 @@ func Other(datas []models.Periodicother) map[int]OtherResult {
 			}
 
 			if len(defects) > 0 {
-				allGood = false
 				strs = append(strs, fmt.Sprintf("%v - %v", v.Position, strings.Join(defects, ", ")))
 			}
 		}
 
 		good := 0
-		if allChecked && allGood {
+		if len(strs) == 0 {
 			strs = append(strs, "해당 대지면적 내 도로포장은 전반적으로 양호한 상태로 조사되었다.")
 			good = 1
 		}
@@ -174,13 +166,9 @@ func Other(datas []models.Periodicother) map[int]OtherResult {
 			strs = append(strs, "해당 대지면적 내 시공되어있지 않아 조사에서 제외하였다.")
 			good = 2
 		} else {
-			allChecked := true
-			allGood := true
-
-			// 각 항목별로 체크 여부와 결함 확인
+			// 각 항목별로 결함 확인
 			for _, v := range typeitems {
 				if v.Status == "" {
-					allChecked = false
 					continue
 				}
 
@@ -195,12 +183,11 @@ func Other(datas []models.Periodicother) map[int]OtherResult {
 				}
 
 				if len(defects) > 0 {
-					allGood = false
 					strs = append(strs, fmt.Sprintf("%v - %v", v.Position, strings.Join(defects, ", ")))
 				}
 			}
 
-			if allChecked && allGood {
+			if len(strs) == 0 {
 				if work.Status == "" {
 					strs = append(strs, "신축 이음부는 전반적으로 양호한 상태로 조사되었다.")
 				} else {
@@ -225,13 +212,9 @@ func Other(datas []models.Periodicother) map[int]OtherResult {
 			work = &models.Periodicother{}
 		}
 
-		allChecked := true
-		allGood := true
-
-		// 각 항목별로 체크 여부와 결함 확인
+		// 각 항목별로 결함 확인
 		for _, v := range typeitems {
 			if v.Status == "" {
-				allChecked = false
 				continue
 			}
 
@@ -246,13 +229,12 @@ func Other(datas []models.Periodicother) map[int]OtherResult {
 			}
 
 			if len(defects) > 0 {
-				allGood = false
 				strs = append(strs, fmt.Sprintf("%v - %v", v.Position, strings.Join(defects, ", ")))
 			}
 		}
 
 		good := 0
-		if allChecked && allGood {
+		if len(strs) == 0 {
 			str := ""
 			if work.Status != "" {
 				str = fmt.Sprintf("(%v) ", strings.ReplaceAll(work.Status, ",", ", "))
@@ -300,17 +282,13 @@ func Other(datas []models.Periodicother) map[int]OtherResult {
 		position := ""
 		good := 0
 
-		allChecked := true
-		allGood := true
-
-		// 각 항목별로 체크 여부와 결함 확인
+		// 각 항목별로 결함 확인
 		for _, v := range typeitems {
 			if v.Order == 141 {
 				continue
 			}
 
 			if v.Status == "" {
-				allChecked = false
 				continue
 			}
 
@@ -341,13 +319,12 @@ func Other(datas []models.Periodicother) map[int]OtherResult {
 				}
 
 				if len(defects) > 0 {
-					allGood = false
 					strs = append(strs, fmt.Sprintf("%v - %v", v.Position, strings.Join(defects, ", ")))
 				}
 			}
 		}
 
-		if allChecked && allGood {
+		if len(strs) == 0 {
 			str := ""
 			if work.Status != "" {
 				position = fmt.Sprintf("(%v 등)", strings.ReplaceAll(work.Status, ",", ", "))
@@ -366,13 +343,10 @@ func Other(datas []models.Periodicother) map[int]OtherResult {
 		typeitems := GetOtherByType(2, items)
 
 		strs := make([]string, 0)
-		allChecked := true
-		allGood := true
 
-		// 각 부재별로 체크 여부와 결함 확인
+		// 각 부재별로 결함 확인
 		for _, v := range typeitems {
 			if v.Status == "" {
-				allChecked = false
 				continue
 			}
 
@@ -387,7 +361,6 @@ func Other(datas []models.Periodicother) map[int]OtherResult {
 			}
 
 			if len(defects) > 0 {
-				allGood = false
 				// Position에서 앞쪽 중분류 제거 (예: "정착부 - 앵커 및 브라켓" → "앵커 및 브라켓")
 				position := v.Position
 				if idx := strings.Index(position, " - "); idx != -1 {
@@ -399,8 +372,8 @@ func Other(datas []models.Periodicother) map[int]OtherResult {
 		}
 
 		good := 0
-		if allChecked && allGood {
-			strs = append(strs, "해당 건축물 내 부착물 등의 상태는 전반적으로 양호한 상태로 조사되었다.")
+		if len(strs) == 0 {
+			strs = append(strs, "해당 건축물 내 부착물 등의 상태는 대체적으로 양호한 상태로 조사되었다.")
 			good = 1
 		}
 

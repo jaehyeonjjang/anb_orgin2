@@ -723,7 +723,7 @@ func Periodic0(id int64, conn *models.Connection) string {
 			technicians[i].Extra["technician"] = models.Technician{}
 		}
 	}
-	
+
 	v.Set("technicianCount", len(technicians)+1)
 	v.Set("technicians", technicians)
 
@@ -919,7 +919,11 @@ func Periodic0(id int64, conn *models.Connection) string {
 		}
 
 		endStr := ""
-		if len(otherItems) == 1 {
+		if len(otherItems) == 0 {
+			// 체크박스가 모두 체크되지 않았을 경우 상태양호로 처리
+			endStr = "양호한 것으로 조사되었다."
+			strs = "부대시설 조사결과 대체적으로 양호한 상태로 "
+		} else if len(otherItems) == 1 {
 			v := otherItems[0]
 			endStr = fmt.Sprintf("%v에서 %v 조사되었다.", v.Title, Josa(v.Content, hangul.I_GA))
 		} else {
@@ -1169,7 +1173,7 @@ func Periodic0(id int64, conn *models.Connection) string {
 	partimages := make([]ImageInfo, 0)
 	imageCount = 0
 	log.Printf("[DEBUG] Periodic %d: Starting part images processing, total periodicimages=%d", id, len(periodicimages))
-	
+
 	for _, v := range periodicimages {
 		if v.Type != 3 {
 			continue
@@ -1181,7 +1185,7 @@ func Periodic0(id int64, conn *models.Connection) string {
 
 		imageCount++
 	}
-	
+
 	log.Printf("[DEBUG] Periodic %d: Found %d Type=3 images", id, imageCount)
 
 	if imageCount%6 > 0 {
@@ -1201,7 +1205,7 @@ func Periodic0(id int64, conn *models.Connection) string {
 
 		imageCount = 6
 	}
-	
+
 	log.Printf("[DEBUG] Periodic %d: Final partimages count=%d, creating %d groups", id, imageCount, imageCount/6)
 
 	groupPartimages := make([]PartImageInfo, 0)
@@ -1221,7 +1225,7 @@ func Periodic0(id int64, conn *models.Connection) string {
 	v.Set("grouppartimages", groupPartimages)
 	v.Set("partimages", partimages)
 	v.Set("partimageCount", imageCount)
-	
+
 	// 디버깅: 사진 섹션 데이터 확인 (실제 설정된 값)
 	partImageCountSet := imageCount
 	log.Printf("[DEBUG] Periodic %d: SET partimageCount=%d (Type=3 images), groupPartimages=%d groups", id, partImageCountSet, len(groupPartimages))
@@ -1349,10 +1353,10 @@ func Periodic0(id int64, conn *models.Connection) string {
 	}
 
 	v.Set("namejosa", nameWithJosa)
-	
+
 	// 디버깅: 템플릿 실행 직전 주요 변수 확인
 	log.Printf("[DEBUG] Periodic %d: Starting template execution", id)
-	log.Printf("[DEBUG] Periodic %d: technicianCount=%d, partimageCount=%d, dongPages=%d", 
+	log.Printf("[DEBUG] Periodic %d: technicianCount=%d, partimageCount=%d, dongPages=%d",
 		id, len(technicians)+1, imageCount, dongPages)
 
 	var b bytes.Buffer
