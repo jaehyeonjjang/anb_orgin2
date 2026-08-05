@@ -47,6 +47,26 @@ type PartImageInfo struct {
 	Image6 ImageInfo
 }
 
+// 강도/탄산화 위치도 (재료시험 및 측정 결과분석) 한 장(층)당 이미지+제목
+type MaterialLocationImage struct {
+	Image      ImageInfo
+	Title      string
+	Index      int
+	OriWidth   int
+	OriHeight  int
+	DispWidth  int
+	DispHeight int
+	CenterX    int
+	CenterY    int
+}
+
+// 강도/탄산화 위치도 - 한 페이지에 2장씩 배치하기 위한 그룹
+type MaterialLocationPage struct {
+	Image1    MaterialLocationImage
+	Image2    MaterialLocationImage
+	HasSecond bool
+}
+
 type ImageDouble struct {
 	First  bool
 	Second bool
@@ -1284,6 +1304,365 @@ func Periodic0(id int64, conn *models.Connection) string {
 	v.Set("groupattachimages", groupAttachimages)
 	v.Set("attachpages", attachpages)
 
+	// 재료시험 및 측정 결과분석 - 강도 및 탄산화 위치도
+	// (fiber.go의 MakeFiberImage 가 생성한 {blueprint.Id}_300.jpg 를 층별로 삽입)
+	materialLocationImages := make([]MaterialLocationImage, 0)
+
+	for _, blueprint := range blueprints {
+		if blueprint.Upload != 1 {
+			continue
+		}
+
+		hasFiber := false
+		for _, v2 := range allPeriodicdatas {
+			if v2.Blueprint != blueprint.Id {
+				continue
+			}
+
+			if v2.Type >= 300 && v2.Type < 400 {
+				hasFiber = true
+				break
+			}
+		}
+
+		if hasFiber == false {
+			continue
+		}
+
+		var parent models.Blueprint
+		for _, v2 := range blueprints {
+			if blueprint.Parent == v2.Id {
+				parent = v2
+				break
+			}
+		}
+
+		title := fmt.Sprintf("%v %v", parent.Name, blueprint.Name)
+		if privateDong.Id > 0 {
+			for _, aptdong := range aptdongs {
+				if blueprint.Aptdong != aptdong.Id {
+					continue
+				}
+
+				if aptdong.Private == 3 {
+					title = blueprint.Name
+				}
+
+				break
+			}
+		}
+
+		filename := fmt.Sprintf("periodicresult/%v/%v_300.jpg", id, blueprint.Id)
+
+		imageInfo := GetImageInfo(filename)
+
+		pixelWidth := imageInfo.Width
+		pixelHeight := imageInfo.Height
+		if pixelWidth <= 0 {
+			pixelWidth = 1
+		}
+		if pixelHeight <= 0 {
+			pixelHeight = 1
+		}
+
+		target := float64(pixelWidth) / float64(pixelHeight)
+
+		// HWPML의 SHAPECOMPONENT OriWidth/OriHeight, IMAGERECT, IMAGECLIP는 픽셀 값이 아니라
+		// 문서 내부 단위(hwpunit) 스케일이어야 하므로, 원본 비율을 유지한 채 큰 가상 캔버스(periodic-02.jet과 동일 방식)에 맞춰 계산한다.
+		oriBoxW := 397600
+		oriBoxH := 281200
+		oriRate := float64(oriBoxW) / float64(oriBoxH)
+
+		var oriWidth, oriHeight int
+		if oriRate > target {
+			oriHeight = oriBoxH
+			oriWidth = int(float64(oriBoxH) * target)
+		} else if oriRate < target {
+			oriWidth = oriBoxW
+			oriHeight = int(float64(oriBoxW) / target)
+		} else {
+			oriWidth = oriBoxW
+			oriHeight = oriBoxH
+		}
+
+		// 한 페이지에 2장씩 들어가도록 물리적 표시 크기를 원본 비율 그대로 유지한 채 계산 (크롭 없음)
+		// periodic-02.jet(외관조사망도)와 동일한 비율의 박스를 사용해 표 안에서 사진이 작게 쪼그라들지 않도록 함
+		dispBoxW := 44807
+		dispBoxH := 28629
+		dispRate := float64(dispBoxW) / float64(dispBoxH)
+
+		var dispWidth, dispHeight int
+		if dispRate > target {
+			dispHeight = dispBoxH
+			dispWidth = int(float64(dispBoxH) * target)
+		} else if dispRate < target {
+			dispWidth = dispBoxW
+			dispHeight = int(float64(dispBoxW) / target)
+		} else {
+			dispWidth = dispBoxW
+			dispHeight = dispBoxH
+		}
+
+		materialLocationImages = append(materialLocationImages, MaterialLocationImage{
+			Image:      imageInfo,
+			Title:      title,
+			Index:      len(materialLocationImages),
+			OriWidth:   oriWidth,
+			OriHeight:  oriHeight,
+			DispWidth:  dispWidth,
+			DispHeight: dispHeight,
+			CenterX:    dispWidth / 2,
+			CenterY:    dispHeight / 2,
+		})
+	}
+
+	strengthImageCount := len(materialLocationImages)
+
+	// 재료시험 및 측정 결과분석 - 부재실측 위치도
+	// (meterial.go의 MakeMeterialImage 가 생성한 {blueprint.Id}_400.jpg 를 층별로 삽입)
+	// strengthLocationImages와 동일한 materialLocationImages 슬라이스에 이어서 담아
+	// BINITEM/BinItem 번호 체계(Index 기반)를 그대로 공유한다.
+	for _, blueprint := range blueprints {
+		if blueprint.Upload != 1 {
+			continue
+		}
+
+		hasMeterial := false
+		for _, v2 := range allPeriodicdatas {
+			if v2.Blueprint != blueprint.Id {
+				continue
+			}
+
+			if v2.Type >= 400 && v2.Type < 500 {
+				hasMeterial = true
+				break
+			}
+		}
+
+		if hasMeterial == false {
+			continue
+		}
+
+		var parent models.Blueprint
+		for _, v2 := range blueprints {
+			if blueprint.Parent == v2.Id {
+				parent = v2
+				break
+			}
+		}
+
+		title := fmt.Sprintf("%v %v", parent.Name, blueprint.Name)
+		if privateDong.Id > 0 {
+			for _, aptdong := range aptdongs {
+				if blueprint.Aptdong != aptdong.Id {
+					continue
+				}
+
+				if aptdong.Private == 3 {
+					title = blueprint.Name
+				}
+
+				break
+			}
+		}
+
+		filename := fmt.Sprintf("periodicresult/%v/%v_400.jpg", id, blueprint.Id)
+
+		imageInfo := GetImageInfo(filename)
+
+		pixelWidth := imageInfo.Width
+		pixelHeight := imageInfo.Height
+		if pixelWidth <= 0 {
+			pixelWidth = 1
+		}
+		if pixelHeight <= 0 {
+			pixelHeight = 1
+		}
+
+		target := float64(pixelWidth) / float64(pixelHeight)
+
+		// HWPML의 SHAPECOMPONENT OriWidth/OriHeight, IMAGERECT, IMAGECLIP는 픽셀 값이 아니라
+		// 문서 내부 단위(hwpunit) 스케일이어야 하므로, 원본 비율을 유지한 채 큰 가상 캔버스(periodic-02.jet과 동일 방식)에 맞춰 계산한다.
+		oriBoxW := 397600
+		oriBoxH := 281200
+		oriRate := float64(oriBoxW) / float64(oriBoxH)
+
+		var oriWidth, oriHeight int
+		if oriRate > target {
+			oriHeight = oriBoxH
+			oriWidth = int(float64(oriBoxH) * target)
+		} else if oriRate < target {
+			oriWidth = oriBoxW
+			oriHeight = int(float64(oriBoxW) / target)
+		} else {
+			oriWidth = oriBoxW
+			oriHeight = oriBoxH
+		}
+
+		// 한 페이지에 2장씩 들어가도록 물리적 표시 크기를 원본 비율 그대로 유지한 채 계산 (크롭 없음)
+		// periodic-02.jet(외관조사망도)와 동일한 비율의 박스를 사용해 표 안에서 사진이 작게 쪼그라들지 않도록 함
+		dispBoxW := 44807
+		dispBoxH := 28629
+		dispRate := float64(dispBoxW) / float64(dispBoxH)
+
+		var dispWidth, dispHeight int
+		if dispRate > target {
+			dispHeight = dispBoxH
+			dispWidth = int(float64(dispBoxH) * target)
+		} else if dispRate < target {
+			dispWidth = dispBoxW
+			dispHeight = int(float64(dispBoxW) / target)
+		} else {
+			dispWidth = dispBoxW
+			dispHeight = dispBoxH
+		}
+
+		materialLocationImages = append(materialLocationImages, MaterialLocationImage{
+			Image:      imageInfo,
+			Title:      title,
+			Index:      len(materialLocationImages),
+			OriWidth:   oriWidth,
+			OriHeight:  oriHeight,
+			DispWidth:  dispWidth,
+			DispHeight: dispHeight,
+			CenterX:    dispWidth / 2,
+			CenterY:    dispHeight / 2,
+		})
+	}
+
+	memberImageCount := len(materialLocationImages)
+
+	// 재료시험 및 측정 결과분석 - 기울기 위치도
+	// (inclination.go의 MakeInclinationImage 가 생성한 {blueprint.Id}_200.jpg 를 층별로 삽입)
+	// 동일한 materialLocationImages 슬라이스에 이어서 담아 BinItem 번호 체계를 그대로 공유한다.
+	for _, blueprint := range blueprints {
+		if blueprint.Upload != 1 {
+			continue
+		}
+
+		hasInclination := false
+		for _, v2 := range allPeriodicdatas {
+			if v2.Blueprint != blueprint.Id {
+				continue
+			}
+
+			if v2.Type >= 200 && v2.Type < 300 {
+				hasInclination = true
+				break
+			}
+		}
+
+		if hasInclination == false {
+			continue
+		}
+
+		// 배치도/배치도2 등 개별 명칭 대신 '기울기 위치도'로 캡션을 통일한다.
+		title := "기울기 위치도"
+
+		filename := fmt.Sprintf("periodicresult/%v/%v_200.jpg", id, blueprint.Id)
+		rotatedFilename := fmt.Sprintf("periodicresult/%v/%v_200_rotate.jpg", id, blueprint.Id)
+
+		// 원본은 배치도 형태(가로)로 생성되므로, 다른 위치도처럼 한 페이지에 하나씩 세로로 크게 보이도록 왼쪽으로 90도 회전한다.
+		if err := global.RotateImageLeft90(filepath.Join(config.UploadPath, filename), filepath.Join(config.UploadPath, rotatedFilename)); err != nil {
+			log.Print(err)
+		}
+
+		imageInfo := GetImageInfo(rotatedFilename)
+
+		pixelWidth := imageInfo.Width
+		pixelHeight := imageInfo.Height
+		if pixelWidth <= 0 {
+			pixelWidth = 1
+		}
+		if pixelHeight <= 0 {
+			pixelHeight = 1
+		}
+
+		target := float64(pixelWidth) / float64(pixelHeight)
+
+		oriBoxW := 397600
+		oriBoxH := 281200
+		oriRate := float64(oriBoxW) / float64(oriBoxH)
+
+		var oriWidth, oriHeight int
+		if oriRate > target {
+			oriHeight = oriBoxH
+			oriWidth = int(float64(oriBoxH) * target)
+		} else if oriRate < target {
+			oriWidth = oriBoxW
+			oriHeight = int(float64(oriBoxW) / target)
+		} else {
+			oriWidth = oriBoxW
+			oriHeight = oriBoxH
+		}
+
+		// 한 페이지에 하나씩 크게 보이도록 절반 페이지(28629)가 아닌 전체 페이지 높이를 기준으로 계산한다.
+		dispBoxW := 44807
+		dispBoxH := 60000
+		dispRate := float64(dispBoxW) / float64(dispBoxH)
+
+		var dispWidth, dispHeight int
+		if dispRate > target {
+			dispHeight = dispBoxH
+			dispWidth = int(float64(dispBoxH) * target)
+		} else if dispRate < target {
+			dispWidth = dispBoxW
+			dispHeight = int(float64(dispBoxW) / target)
+		} else {
+			dispWidth = dispBoxW
+			dispHeight = dispBoxH
+		}
+
+		materialLocationImages = append(materialLocationImages, MaterialLocationImage{
+			Image:      imageInfo,
+			Title:      title,
+			Index:      len(materialLocationImages),
+			OriWidth:   oriWidth,
+			OriHeight:  oriHeight,
+			DispWidth:  dispWidth,
+			DispHeight: dispHeight,
+			CenterX:    dispWidth / 2,
+			CenterY:    dispHeight / 2,
+		})
+	}
+
+	strengthLocationImages := materialLocationImages[:strengthImageCount]
+	memberLocationImages := materialLocationImages[strengthImageCount:memberImageCount]
+	inclinationLocationImages := materialLocationImages[memberImageCount:]
+
+	materialLocationPages := make([]MaterialLocationPage, 0)
+	for i := 0; i < len(strengthLocationImages); i += 2 {
+		page := MaterialLocationPage{Image1: strengthLocationImages[i]}
+		if i+1 < len(strengthLocationImages) {
+			page.Image2 = strengthLocationImages[i+1]
+			page.HasSecond = true
+		}
+		materialLocationPages = append(materialLocationPages, page)
+	}
+
+	memberLocationPages := make([]MaterialLocationPage, 0)
+	for i := 0; i < len(memberLocationImages); i += 2 {
+		page := MaterialLocationPage{Image1: memberLocationImages[i]}
+		if i+1 < len(memberLocationImages) {
+			page.Image2 = memberLocationImages[i+1]
+			page.HasSecond = true
+		}
+		memberLocationPages = append(memberLocationPages, page)
+	}
+
+	// 기울기 위치도는 다른 위치도와 달리 한 페이지에 하나씩만 배치한다.
+	inclinationLocationPages := make([]MaterialLocationPage, 0)
+	for i := 0; i < len(inclinationLocationImages); i++ {
+		inclinationLocationPages = append(inclinationLocationPages, MaterialLocationPage{Image1: inclinationLocationImages[i]})
+	}
+
+	v.Set("materiallocationimages", materialLocationImages)
+	v.Set("materiallocationimageCount", len(materialLocationImages))
+	v.Set("materiallocationpages", materialLocationPages)
+	v.Set("memberlocationpages", memberLocationPages)
+	v.Set("inclinationlocationpages", inclinationLocationPages)
+	v.Set("materialsectionpagecount", len(materialLocationPages)+len(memberLocationPages)+len(inclinationLocationPages))
+
 	v.Set("periodicotheretc", periodicotheretc)
 
 	// others1, others2, others3 안전하게 설정 (nil 방지)
@@ -1483,6 +1862,10 @@ func Periodic2(id int64, conn *models.Connection) string {
 
 	for _, v := range blueprints {
 		if v.Upload != 1 {
+			continue
+		}
+
+		if v.Reportexclude == 1 {
 			continue
 		}
 

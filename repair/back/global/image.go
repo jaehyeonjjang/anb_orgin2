@@ -92,6 +92,18 @@ func MakeThumbnail(w int, h int, filename string, targetFilename string) {
 	err = imaging.Save(dst, targetFilename)
 }
 
+// RotateImageLeft90 rotates the image 90 degrees counter-clockwise (to the left) and saves it to targetFilename.
+func RotateImageLeft90(filename string, targetFilename string) error {
+	src, err := imaging.Open(filename)
+	if err != nil {
+		return err
+	}
+
+	rotated := imaging.Rotate90(src)
+
+	return imaging.Save(rotated, targetFilename)
+}
+
 func ImageToRGBA(src image.Image) *image.RGBA {
 	if dst, ok := src.(*image.RGBA); ok {
 		return dst

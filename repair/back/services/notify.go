@@ -77,15 +77,15 @@ func Notify() {
 					}
 
 					if inclination == true {
-						image.MakeInclinationImage(msg.Periodic, *blueprint, periodicdatas, float64(periodicblueprintzoom.Iconzoom))
+						image.MakeInclinationImage(msg.Periodic, *blueprint, periodicdatas, float64(periodicblueprintzoom.Iconzoom), float64(periodicblueprintzoom.Numberzoom))
 					}
 
 					if fiber == true {
-						image.MakeFiberImage(msg.Periodic, *blueprint, periodicdatas, float64(periodicblueprintzoom.Iconzoom))
+						image.MakeFiberImage(msg.Periodic, *blueprint, periodicdatas, float64(periodicblueprintzoom.Iconzoom), float64(periodicblueprintzoom.Numberzoom))
 					}
 
 					if meterial == true {
-						image.MakeMeterialImage(msg.Periodic, *blueprint, periodicdatas, float64(periodicblueprintzoom.Iconzoom))
+						image.MakeMeterialImage(msg.Periodic, *blueprint, periodicdatas, float64(periodicblueprintzoom.Iconzoom), float64(periodicblueprintzoom.Numberzoom))
 					}
 				}
 

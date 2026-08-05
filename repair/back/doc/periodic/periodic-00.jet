@@ -2745,7 +2745,7 @@
 <PARABORDER BorderFill="1" Connect="false" IgnoreMargin="false"/>
 </PARASHAPE>
 <PARASHAPE Align="Justify" AutoSpaceEAsianEng="false" AutoSpaceEAsianNum="false" BreakLatinWord="KeepWord" BreakNonLatinWord="true" Condense="0" FontLineHeight="false" HeadingType="None" Id="70" KeepLines="false" KeepWithNext="false" Level="0" LineWrap="Break" PageBreakBefore="false" SnapToGrid="false" TabDef="7" VerAlign="Baseline" WidowOrphan="false">
-<PARAMARGIN Indent="0" Left="4000" LineSpacing="200" LineSpacingType="Percent" Next="0" Prev="0" Right="4000"/>
+<PARAMARGIN Indent="0" Left="4000" LineSpacing="150" LineSpacingType="Percent" Next="0" Prev="0" Right="4000"/>
 <PARABORDER BorderFill="1" Connect="false" IgnoreMargin="false"/>
 </PARASHAPE>
 <PARASHAPE Align="Justify" AutoSpaceEAsianEng="false" AutoSpaceEAsianNum="false" BreakLatinWord="KeepWord" BreakNonLatinWord="true" Condense="0" FontLineHeight="false" HeadingType="None" Id="71" KeepLines="false" KeepWithNext="false" Level="0" LineWrap="Break" PageBreakBefore="false" SnapToGrid="false" TabDef="7" VerAlign="Baseline" WidowOrphan="false">
@@ -3946,6 +3946,9 @@
 <TEXT CharShape="52">
 <CHAR>3. 결함의 발생원인 분석</CHAR></TEXT></P>
 <P ParaShape="57" Style="10">
+<TEXT CharShape="52">
+<CHAR>4. 재료시험 및 측정 결과분석</CHAR></TEXT></P>
+<P ParaShape="57" Style="10">
 <TEXT CharShape="52"/>
 </P>
 <P ColumnBreak="false" PageBreak="true" ParaShape="40" Style="1">
@@ -4810,6 +4813,7 @@
 {* {{ include "./periodic-00-vent.jet" }} *}
 {{ include "./periodic-00-incidental.jet" }}
 {{ include "./periodic-00-cause.jet" }}
+{{ include "./periodic-00-material.jet" }}
 
 <P ColumnBreak="false" PageBreak="true" ParaShape="27" Style="1">
 <TEXT CharShape="74">

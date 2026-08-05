@@ -710,7 +710,7 @@ class PainterDrawer extends CustomPainter {
 
       var offset = Offset(x, y);
       var textSpan = TextSpan(
-        text: points.number.toString(),
+        text: c.getDisplayNumber(points).toString(),
         style: TextStyle(
             fontSize: stepNumber * 1.2,
             fontWeight: FontWeight.w600,
@@ -722,7 +722,7 @@ class PainterDrawer extends CustomPainter {
         canvas.drawCircle(offset, stepNumber, paintSelect);
 
         textSpan = TextSpan(
-          text: points.number.toString(),
+          text: c.getDisplayNumber(points).toString(),
           style: TextStyle(
               fontSize: stepNumber * 1.2,
               fontWeight: FontWeight.w600,

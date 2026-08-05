@@ -117,6 +117,10 @@
 <CHAR>의 발생원인 분석 
 <TAB/>{{startDongPages+dongPages*3+1+2+10+aptusagePageCount}}</CHAR></TEXT></P>
 <P ParaShape="71" Style="25">
+<TEXT CharShape="98">
+<CHAR>4. 재료시험 및 측정 결과분석 
+<TAB/>{{startDongPages+dongPages*3+1+2+10+aptusagePageCount+1}}</CHAR></TEXT></P>
+<P ParaShape="71" Style="25">
 <TEXT CharShape="98"/>
 </P>
 <P ParaShape="70" Style="23">
@@ -124,26 +128,26 @@
 <CHAR>제 2 장  종합결론 및 건의 </CHAR></TEXT>
 <TEXT CharShape="98">
 <CHAR>
-<TAB/>{{startDongPages+dongPages*3+1+2+10+aptusagePageCount+1}}</CHAR></TEXT></P>
+<TAB/>{{startDongPages+dongPages*3+1+2+10+aptusagePageCount+1+materialsectionpagecount}}</CHAR></TEXT></P>
 <P ParaShape="70" Style="23">
 <TEXT CharShape="98"/>
 </P>
 <P ParaShape="71" Style="25">
 <TEXT CharShape="98">
 <CHAR>1. 종합결론 
-<TAB/>{{startDongPages+dongPages*3+1+2+10+aptusagePageCount+2}}</CHAR></TEXT></P>
+<TAB/>{{startDongPages+dongPages*3+1+2+10+aptusagePageCount+2+materialsectionpagecount}}</CHAR></TEXT></P>
 <P ParaShape="71" Style="25">
 <TEXT CharShape="98">
 <CHAR>2. 시설물의 사용제한의 필요성 여부 
-<TAB/>{{startDongPages+dongPages*3+1+2+10+aptusagePageCount+3}}</CHAR></TEXT></P>
+<TAB/>{{startDongPages+dongPages*3+1+2+10+aptusagePageCount+3+materialsectionpagecount}}</CHAR></TEXT></P>
 <P ParaShape="71" Style="25">
 <TEXT CharShape="98">
 <CHAR>3. 유지관리시 특별한 관리가 요구되는 사항 
-<TAB/>{{startDongPages+dongPages*3+1+2+10+aptusagePageCount+3}}</CHAR></TEXT></P>
+<TAB/>{{startDongPages+dongPages*3+1+2+10+aptusagePageCount+3+materialsectionpagecount}}</CHAR></TEXT></P>
 <P ParaShape="71" Style="25">
 <TEXT CharShape="98">
 <CHAR>4. 안전등급 지정 
-<TAB/>{{startDongPages+dongPages*3+1+2+10+aptusagePageCount+4}}</CHAR></TEXT></P>
+<TAB/>{{startDongPages+dongPages*3+1+2+10+aptusagePageCount+4+materialsectionpagecount}}</CHAR></TEXT></P>
 <P ParaShape="71" Style="25">
 <TEXT CharShape="98"/>
 </P>
@@ -152,7 +156,7 @@
 <CHAR>제 3 장  부  록 </CHAR></TEXT>
 <TEXT CharShape="98">
 <CHAR>
-<TAB/>{{startDongPages+dongPages*3+1+2+10+aptusagePageCount+5}}</CHAR></TEXT></P>
+<TAB/>{{startDongPages+dongPages*3+1+2+10+aptusagePageCount+5+materialsectionpagecount}}</CHAR></TEXT></P>
 <P ParaShape="70" Style="23">
 <TEXT CharShape="105"/>
 </P>

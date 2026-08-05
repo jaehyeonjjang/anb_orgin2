@@ -32,6 +32,7 @@ type Blueprint struct {
     Aptdong                int64 `json:"aptdong"`         
     Apt                int64 `json:"apt"`         
     Date                string `json:"date"` 
+    Reportexclude                int `json:"reportexclude"`
     
     Extra                    map[string]any `json:"extra"`
 }
@@ -130,7 +131,7 @@ func (p *BlueprintManager) GetQuery() string {
 
     var ret strings.Builder
 
-    ret.WriteString("select bp_id, bp_name, bp_level, bp_parent, bp_floortype, bp_filename, bp_upload, bp_parentorder, bp_order, bp_offlinefilename, bp_category, bp_aptdong, bp_apt, bp_date from blueprint_tb")
+    ret.WriteString("select bp_id, bp_name, bp_level, bp_parent, bp_floortype, bp_filename, bp_upload, bp_parentorder, bp_order, bp_offlinefilename, bp_category, bp_aptdong, bp_apt, bp_date, bp_reportexclude from blueprint_tb")
 
     if p.Index != "" {
         ret.WriteString(" use index(")
@@ -250,18 +251,18 @@ func (p *BlueprintManager) Insert(item *Blueprint) error {
     var err error
     if item.Id > 0 {
         if config.Database.Type == config.Postgresql {
-          query = "insert into blueprint_tb (bp_id, bp_name, bp_level, bp_parent, bp_floortype, bp_filename, bp_upload, bp_parentorder, bp_order, bp_offlinefilename, bp_category, bp_aptdong, bp_apt, bp_date) values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)"
+          query = "insert into blueprint_tb (bp_id, bp_name, bp_level, bp_parent, bp_floortype, bp_filename, bp_upload, bp_parentorder, bp_order, bp_offlinefilename, bp_category, bp_aptdong, bp_apt, bp_date, bp_reportexclude) values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)"
         } else {
-          query = "insert into blueprint_tb (bp_id, bp_name, bp_level, bp_parent, bp_floortype, bp_filename, bp_upload, bp_parentorder, bp_order, bp_offlinefilename, bp_category, bp_aptdong, bp_apt, bp_date) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+          query = "insert into blueprint_tb (bp_id, bp_name, bp_level, bp_parent, bp_floortype, bp_filename, bp_upload, bp_parentorder, bp_order, bp_offlinefilename, bp_category, bp_aptdong, bp_apt, bp_date, bp_reportexclude) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
         }
-        res, err = p.Exec(query , item.Id, item.Name, item.Level, item.Parent, item.Floortype, item.Filename, item.Upload, item.Parentorder, item.Order, item.Offlinefilename, item.Category, item.Aptdong, item.Apt, item.Date)
+        res, err = p.Exec(query , item.Id, item.Name, item.Level, item.Parent, item.Floortype, item.Filename, item.Upload, item.Parentorder, item.Order, item.Offlinefilename, item.Category, item.Aptdong, item.Apt, item.Date, item.Reportexclude)
     } else {
         if config.Database.Type == config.Postgresql {
-          query = "insert into blueprint_tb (bp_name, bp_level, bp_parent, bp_floortype, bp_filename, bp_upload, bp_parentorder, bp_order, bp_offlinefilename, bp_category, bp_aptdong, bp_apt, bp_date) values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)"
+          query = "insert into blueprint_tb (bp_name, bp_level, bp_parent, bp_floortype, bp_filename, bp_upload, bp_parentorder, bp_order, bp_offlinefilename, bp_category, bp_aptdong, bp_apt, bp_date, bp_reportexclude) values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)"
         } else {
-          query = "insert into blueprint_tb (bp_name, bp_level, bp_parent, bp_floortype, bp_filename, bp_upload, bp_parentorder, bp_order, bp_offlinefilename, bp_category, bp_aptdong, bp_apt, bp_date) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+          query = "insert into blueprint_tb (bp_name, bp_level, bp_parent, bp_floortype, bp_filename, bp_upload, bp_parentorder, bp_order, bp_offlinefilename, bp_category, bp_aptdong, bp_apt, bp_date, bp_reportexclude) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
         }
-        res, err = p.Exec(query , item.Name, item.Level, item.Parent, item.Floortype, item.Filename, item.Upload, item.Parentorder, item.Order, item.Offlinefilename, item.Category, item.Aptdong, item.Apt, item.Date)
+        res, err = p.Exec(query , item.Name, item.Level, item.Parent, item.Floortype, item.Filename, item.Upload, item.Parentorder, item.Order, item.Offlinefilename, item.Category, item.Aptdong, item.Apt, item.Date, item.Reportexclude)
     }
     
     if err == nil {
@@ -437,12 +438,12 @@ func (p *BlueprintManager) Update(item *Blueprint) error {
     var query strings.Builder
 	query.WriteString("update blueprint_tb set ")
     if config.Database.Type == config.Postgresql {
-        query.WriteString(" bp_name = $1, bp_level = $2, bp_parent = $3, bp_floortype = $4, bp_filename = $5, bp_upload = $6, bp_parentorder = $7, bp_order = $8, bp_offlinefilename = $9, bp_category = $10, bp_aptdong = $11, bp_apt = $12, bp_date = $13 where bp_id = $14")
+        query.WriteString(" bp_name = $1, bp_level = $2, bp_parent = $3, bp_floortype = $4, bp_filename = $5, bp_upload = $6, bp_parentorder = $7, bp_order = $8, bp_offlinefilename = $9, bp_category = $10, bp_aptdong = $11, bp_apt = $12, bp_date = $13, bp_reportexclude = $14 where bp_id = $15")
     } else {
-        query.WriteString(" bp_name = ?, bp_level = ?, bp_parent = ?, bp_floortype = ?, bp_filename = ?, bp_upload = ?, bp_parentorder = ?, bp_order = ?, bp_offlinefilename = ?, bp_category = ?, bp_aptdong = ?, bp_apt = ?, bp_date = ? where bp_id = ?")
+        query.WriteString(" bp_name = ?, bp_level = ?, bp_parent = ?, bp_floortype = ?, bp_filename = ?, bp_upload = ?, bp_parentorder = ?, bp_order = ?, bp_offlinefilename = ?, bp_category = ?, bp_aptdong = ?, bp_apt = ?, bp_date = ?, bp_reportexclude = ? where bp_id = ?")
     }
 
-	_, err := p.Exec(query.String() , item.Name, item.Level, item.Parent, item.Floortype, item.Filename, item.Upload, item.Parentorder, item.Order, item.Offlinefilename, item.Category, item.Aptdong, item.Apt, item.Date, item.Id)
+	_, err := p.Exec(query.String() , item.Name, item.Level, item.Parent, item.Floortype, item.Filename, item.Upload, item.Parentorder, item.Order, item.Offlinefilename, item.Category, item.Aptdong, item.Apt, item.Date, item.Reportexclude, item.Id)
 
     if err != nil {
         if p.Log {
@@ -510,6 +511,9 @@ func (p *BlueprintManager) UpdateWhere(columns []blueprint.Params, args []any) e
         initParams = append(initParams, v.Value)
          } else if v.Column == blueprint.ColumnDate {
         initQuery.WriteString("bp_date = ?")
+        initParams = append(initParams, v.Value)
+         } else if v.Column == blueprint.ColumnReportexclude {
+        initQuery.WriteString("bp_reportexclude = ?")
         initParams = append(initParams, v.Value)
         
         }
@@ -910,7 +914,7 @@ func (p *BlueprintManager) ReadRow(rows *sql.Rows) *Blueprint {
     
 
     if rows.Next() {
-        err = rows.Scan(&item.Id, &item.Name, &item.Level, &item.Parent, &item.Floortype, &item.Filename, &item.Upload, &item.Parentorder, &item.Order, &item.Offlinefilename, &item.Category, &item.Aptdong, &item.Apt, &item.Date)
+        err = rows.Scan(&item.Id, &item.Name, &item.Level, &item.Parent, &item.Floortype, &item.Filename, &item.Upload, &item.Parentorder, &item.Order, &item.Offlinefilename, &item.Category, &item.Aptdong, &item.Apt, &item.Date, &item.Reportexclude)
         
         
         
@@ -972,7 +976,7 @@ func (p *BlueprintManager) ReadRows(rows *sql.Rows) []Blueprint {
         var item Blueprint
         
     
-        err := rows.Scan(&item.Id, &item.Name, &item.Level, &item.Parent, &item.Floortype, &item.Filename, &item.Upload, &item.Parentorder, &item.Order, &item.Offlinefilename, &item.Category, &item.Aptdong, &item.Apt, &item.Date)
+        err := rows.Scan(&item.Id, &item.Name, &item.Level, &item.Parent, &item.Floortype, &item.Filename, &item.Upload, &item.Parentorder, &item.Order, &item.Offlinefilename, &item.Category, &item.Aptdong, &item.Apt, &item.Date, &item.Reportexclude)
         if err != nil {
            if p.Log {
              log.Error().Str("error", err.Error()).Msg("SQL")

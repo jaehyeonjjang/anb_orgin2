@@ -182,7 +182,7 @@ func GetCause(periodicdatas []models.Periodicdata, dongs []models.Aptdong, other
 	other := others[14]
 
 	outerwallMaterial := GetOuterwallMaterial(otherMap)
-	
+
 	// 빈 문자열이 아닌 항목만 필터링
 	validOtherItems := make([]string, 0)
 	for _, item := range other.Items {
@@ -190,7 +190,7 @@ func GetCause(periodicdatas []models.Periodicdata, dongs []models.Aptdong, other
 			validOtherItems = append(validOtherItems, item)
 		}
 	}
-	
+
 	if first.IsValid() || len(validOtherItems) > 0 {
 		str := ""
 

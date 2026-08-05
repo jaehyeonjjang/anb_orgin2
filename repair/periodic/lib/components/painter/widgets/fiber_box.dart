@@ -80,6 +80,11 @@ class FiberBox extends StatelessWidget {
 
     Point item = c.points[c.current];
 
+    var shText = '${item.shape}, ${item.length}';
+    if (item.shape == '') {
+      shText = '';
+    }
+
     return Positioned(
         bottom: 0.0,
         left: 0.0,
@@ -106,6 +111,14 @@ class FiberBox extends StatelessWidget {
                       alignment: Alignment.center,
                       padding: const EdgeInsets.all(10),
                       child: const Text('피복두께 (mm)')),
+                  Container(
+                      alignment: Alignment.center,
+                      padding: const EdgeInsets.all(10),
+                      child: const Text('SH')),
+                  Container(
+                      alignment: Alignment.center,
+                      padding: const EdgeInsets.all(10),
+                      child: const Text('N')),
                 ]),
                 TableRow(children: [
                   Container(
@@ -129,6 +142,24 @@ class FiberBox extends StatelessWidget {
                       alignment: Alignment.center,
                       padding: const EdgeInsets.all(10),
                       child: Text(item.member),
+                    ),
+                  ),
+                  GestureDetector(
+                    behavior: HitTestBehavior.translucent,
+                    onTap: () => clickDataNumber(0, 3, context),
+                    child: Container(
+                      alignment: Alignment.center,
+                      padding: const EdgeInsets.all(10),
+                      child: Text(shText),
+                    ),
+                  ),
+                  GestureDetector(
+                    behavior: HitTestBehavior.translucent,
+                    onTap: () => clickDataNumber(0, 4, context),
+                    child: Container(
+                      alignment: Alignment.center,
+                      padding: const EdgeInsets.all(10),
+                      child: Text(item.weight),
                     ),
                   ),
                 ]),
@@ -200,6 +231,19 @@ class FiberBox extends StatelessWidget {
   }
 
   clickButton(int pos, String name) {
+    if (pos == 3) {
+      if (name == '') {
+        c.setData(5, '');
+      } else {
+        try {
+          var value = int.parse(name);
+          c.setData(5, '${value + 1}');
+        } catch (e) {
+          c.setData(5, '');
+        }
+      }
+    }
+
     c.setData(pos, name);
 
     Get.back();

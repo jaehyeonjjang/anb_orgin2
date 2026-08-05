@@ -1,5 +1,6 @@
 import 'package:common_control/common_control.dart';
 import 'package:flutter/foundation.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:periodic/models/user.dart';
 
 class LoginManager {
@@ -18,7 +19,7 @@ class LoginManager {
       return user;
     } catch (e) {
       if (kDebugMode) {
-        print(e);
+        print('Login error: $e');
       }
     }
 

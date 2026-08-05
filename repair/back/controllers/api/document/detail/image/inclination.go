@@ -15,7 +15,7 @@ import (
 	"github.com/llgcode/draw2d/draw2dimg"
 )
 
-func MakeInclinationImage(periodic int64, blueprint models.Blueprint, items []models.Periodicdata, iconZoom float64) {
+func MakeInclinationImage(periodic int64, blueprint models.Blueprint, items []models.Periodicdata, iconZoom float64, numberZoom float64) {
 	draw2d.SetFontFolder("./doc")
 
 	os.Mkdir(fmt.Sprintf("%v/periodicresult/%v", config.UploadPath, periodic), 0755)
@@ -32,11 +32,16 @@ func MakeInclinationImage(periodic int64, blueprint models.Blueprint, items []mo
 	dest := global.ImageToRGBA(img)
 	gc := draw2dimg.NewGraphicContext(dest)
 
-	step := iconZoom / 2.0
+	step := numberZoom / 2.0
 
 	red := color.RGBA{0xf4, 0x43, 0x37, 0xff}
 
 	for _, v := range items {
+		// 기울기 데이터만 처리 (type 200-299)
+		if v.Type < 200 || v.Type >= 300 {
+			continue
+		}
+		
 		log.Println("type", v.Type)
 		var results []global.Offset
 		json.Unmarshal([]byte(v.Content), &results)
@@ -52,10 +57,11 @@ func MakeInclinationImage(periodic int64, blueprint models.Blueprint, items []mo
 
 		w := 4.0 * step / 50.0
 
-		if w < 1 {
-			w = 1
+		if w < 1.5 {
+			w = 1.5
 		}
 
+		w = 1.0
 		gc.SetLineWidth(w)
 
 		if v.Type == 201 || v.Type == 202 || v.Type == 203 {
@@ -90,7 +96,7 @@ func MakeInclinationImage(periodic int64, blueprint models.Blueprint, items []mo
 
 			gc.SetFillColor(red)
 
-			gc.SetFontSize(50 * iconZoom / 100)
+			gc.SetFontSize(50 * numberZoom / 100)
 			gc.SetFontData(draw2d.FontData{
 				Name:   "luxi",
 				Family: draw2d.FontFamilyMono,
@@ -142,7 +148,7 @@ func MakeInclinationImage(periodic int64, blueprint models.Blueprint, items []mo
 				}
 			}
 
-			r := (iconZoom / 2.0) * 0.4
+			r := (numberZoom / 2.0) * 0.5 / 2.0
 			zoom := 1.0
 
 			if v.Type == 202 {

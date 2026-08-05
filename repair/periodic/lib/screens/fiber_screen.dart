@@ -183,7 +183,8 @@ class FiberScreen extends CWidget {
     for (var i = 0; i < c.points.length; i++) {
       Point item = c.points[i];
 
-      if (item.icon < 300 || item.icon >= 400) {
+      // icon=300은 데이터 저장용 더미, 301-399만 표시
+      if (item.icon <= 300 || item.icon >= 400) {
         continue;
       }
 

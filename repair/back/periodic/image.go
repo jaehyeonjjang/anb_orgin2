@@ -141,6 +141,11 @@ func MakeImage(periodic int64, blueprint models.Blueprint, items []models.Period
 	violet := color.RGBA{0xa0, 0x00, 0xa0, 0xff}
 
 	for _, v := range items {
+		// 결함도는 type < 200만 처리 (기울기, 강도/탄산화, 부재는 별도 함수에서 처리)
+		if v.Type >= 200 {
+			continue
+		}
+
 		var results []global.Offset
 		json.Unmarshal([]byte(v.Content), &results)
 

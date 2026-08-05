@@ -371,6 +371,140 @@ class PainterController extends GetxController {
   int get lastUpdateTime => _lastUpdateTime.value;
   set lastUpdateTime(int value) => _lastUpdateTime.value = value;
 
+  // 부재(DrawType.material)/강도·탄산화(icon 301~399) 번호를 같은 동(parent)의
+  // 모든 층에 걸쳐 빈 번호나 중복 없이 전체 재정렬한다.
+  // (한 층에서 점을 추가/삭제하거나 층에 새로 들어올 때마다 호출)
+  Future<void> _renumberAcrossFloors(
+      bool Function(Point point) isTarget,
+      bool Function(int icon, int type) isJsonTarget,
+      {void Function(Point point)? syncPoint,
+      void Function(Map<String, dynamic> point, int number)? syncJson}) async {
+    if (blueprint.parent == 0) {
+      var localNum = 1;
+      for (var i = 0; i < points.length; i++) {
+        if (!isTarget(points[i])) {
+          continue;
+        }
+        points[i].number = localNum;
+        syncPoint?.call(points[i]);
+        localNum++;
+      }
+      updatePoints();
+      return;
+    }
+
+    final blueprintController = Get.find<BlueprintController>();
+    final LocalStorage storage = LocalStorage('periodic.json');
+    await storage.ready;
+
+    // 같은 동(parent)에 속한 층들을 목록에 표시되는 순서(위층 -> 아래층) 그대로 사용
+    final siblings = blueprintController.items
+        .where((item) => item.parent == blueprint.parent)
+        .toList();
+
+    var num = 1;
+
+    for (var s = 0; s < siblings.length; s++) {
+      final item = siblings[s];
+
+      if (item.id == blueprint.id) {
+        // 현재 층: 기존 번호 순서를 유지한 채 메모리 상의 points를 재번호
+        final targetIndexes = <int>[];
+        for (var i = 0; i < points.length; i++) {
+          if (isTarget(points[i])) {
+            targetIndexes.add(i);
+          }
+        }
+
+        targetIndexes
+            .sort((a, b) => points[a].number.compareTo(points[b].number));
+
+        for (var i = 0; i < targetIndexes.length; i++) {
+          points[targetIndexes[i]].number = num;
+          syncPoint?.call(points[targetIndexes[i]]);
+          num++;
+        }
+        continue;
+      }
+
+      final str = await storage.getItem('data_${item.id}');
+      if (str == null || str == '') {
+        continue;
+      }
+
+      try {
+        final j = json.decode(str) as Map<String, dynamic>;
+        final list = j['points'] as List<dynamic>;
+
+        final targetItems = <Map<String, dynamic>>[];
+        for (var k = 0; k < list.length; k++) {
+          final p = list[k] as Map<String, dynamic>;
+          if (!isJsonTarget(p['icon'] as int, p['type'] as int)) {
+            continue;
+          }
+          targetItems.add(p);
+        }
+
+        if (targetItems.isEmpty) {
+          continue;
+        }
+
+        targetItems.sort(
+            (a, b) => (a['number'] as int).compareTo(b['number'] as int));
+
+        var changed = false;
+        for (var k = 0; k < targetItems.length; k++) {
+          if (targetItems[k]['number'] != num) {
+            targetItems[k]['number'] = num;
+            changed = true;
+          }
+          if (syncJson != null) {
+            final before = json.encode(targetItems[k]);
+            syncJson(targetItems[k], num);
+            if (json.encode(targetItems[k]) != before) {
+              changed = true;
+            }
+          }
+          num++;
+        }
+
+        if (changed == true) {
+          await storage.setItem('data_${item.id}', json.encode(j));
+          await storage.setItem('save_${item.id}', 'y');
+          blueprintController.setModified(item.id);
+        }
+      } catch (e) {
+        continue;
+      }
+    }
+
+    updatePoints();
+  }
+
+  Future<void> renumberMaterialAcrossFloors() async {
+    await _renumberAcrossFloors(
+        (point) => point.type == DrawType.material,
+        (icon, type) => type == DrawType.material.code);
+  }
+
+  // 강도/탄산화(섬유, icon 301~399, icon=300은 데이터 저장용 더미라 제외)
+  // 다른 층 추가/삭제로 번호가 밀리면 SH/N 값도 새 번호에 맞게 다시 계산해야 한다.
+  Future<void> renumberFiberAcrossFloors() async {
+    await _renumberAcrossFloors(
+        (point) => point.icon > 300 && point.icon < 400,
+        (icon, type) => icon > 300 && icon < 400,
+        syncPoint: (point) {
+          point.shape = '${point.number * 2 - 1}';
+          point.length = '${point.number * 2}';
+          point.weight = '${point.number}';
+        },
+        syncJson: (point, number) {
+          point['shape'] = '${number * 2 - 1}';
+          point['length'] = '${number * 2}';
+          point['weight'] = '$number';
+        });
+  }
+
   // 마지막으로 설정한 폭 값 저장
   final _lastWeight = '0.2'.obs;
   String get lastWeight => _lastWeight.value;
@@ -605,34 +739,11 @@ class PainterController extends GetxController {
   late ui.Image image;
   var events = StreamController<int>();
 
-  startPoint(Offset offset) {
+  startPoint(Offset offset) async {
     var num = 0;
-    if (type == DrawType.number || type == DrawType.numberLine) {
-      for (var i = 0; i < points.length; i++) {
-        if (points[i].type != DrawType.number &&
-            points[i].type != DrawType.numberLine) {
-          continue;
-        }
-
-        if (points[i].number > num) {
-          num = points[i].number;
-        }
-      }
-
-      num++;
-    } else if (type == DrawType.material) {
-      for (var i = 0; i < points.length; i++) {
-        if (points[i].type != DrawType.material) {
-          continue;
-        }
-
-        if (points[i].number > num) {
-          num = points[i].number;
-        }
-      }
-
-      num++;
-    } else if (index >= 200 && index < 300) {
+    // 아이콘 범위 우선 체크 (결함도/기울기/섬유/재료 구분)
+    if (index >= 200 && index < 300) {
+      // 기울기 (200-299): 기울기 아이콘만 체크
       for (var i = 0; i < points.length; i++) {
         if (points[i].icon < 200 || points[i].icon >= 300) {
           continue;
@@ -645,8 +756,9 @@ class PainterController extends GetxController {
 
       num++;
     } else if (index >= 300 && index < 400) {
+      // 섬유 (300-399): 섬유 아이콘만 체크, icon=300은 데이터 저장용 더미 제외
       for (var i = 0; i < points.length; i++) {
-        if (points[i].icon < 300 || points[i].icon >= 400) {
+        if (points[i].icon <= 300 || points[i].icon >= 400) {
           continue;
         }
 
@@ -657,8 +769,40 @@ class PainterController extends GetxController {
 
       num++;
     } else if (index >= 400 && index < 500) {
+      // 재료 (400-499): 재료 아이콘만 체크
+      // (같은 동의 다른 층과의 전체 번호 재정렬은 추가 직후 renumberMaterialAcrossFloors()에서 처리)
       for (var i = 0; i < points.length; i++) {
         if (points[i].icon < 400 || points[i].icon >= 500) {
+          continue;
+        }
+
+        if (points[i].number > num) {
+          num = points[i].number;
+        }
+      }
+
+      num++;
+    } else if (type == DrawType.number || type == DrawType.numberLine) {
+      // 결함도 (100-199): number/numberLine 타입이면서 100-199 범위만 체크
+      for (var i = 0; i < points.length; i++) {
+        if (points[i].type != DrawType.number &&
+            points[i].type != DrawType.numberLine) {
+          continue;
+        }
+        // 결함도 범위만 체크 (기울기 200-299 제외)
+        if (points[i].icon >= 200 && points[i].icon < 300) {
+          continue;
+        }
+
+        if (points[i].number > num) {
+          num = points[i].number;
+        }
+      }
+
+      num++;
+    } else if (type == DrawType.material) {
+      for (var i = 0; i < points.length; i++) {
+        if (points[i].type != DrawType.material) {
           continue;
         }
 
@@ -718,6 +862,17 @@ class PainterController extends GetxController {
     point.add(offset);
     points.add(point);
 
+    if (index > 300 && index < 400) {
+      // 강도/탄산화도 부재처럼 같은 동의 모든 층이 측정위치 번호를 공유하도록
+      // 전체 재정렬하고, 그 안에서 최종 번호를 기준으로 SH/N 값도 함께 갱신한다.
+      // (undo 스냅샷을 찍기 전에 최종 값을 확정해야 undo 시 값이 비지 않는다)
+      await renumberFiberAcrossFloors();
+    }
+
+    if (type == DrawType.material) {
+      await renumberMaterialAcrossFloors();
+    }
+
     clearUndo();
     _works.add(_snapshotPoints());
     _works.refresh();
@@ -742,6 +897,8 @@ class PainterController extends GetxController {
         type != DrawType.multiline) {
       modified = true;
     }
+
+    updatePoints();
   }
 
   addPoint(Offset offset) {
@@ -1054,7 +1211,6 @@ class PainterController extends GetxController {
       setColor(LineColor.blue);
       setType(DrawType.line);
     } else if (value == inclinationLine) {
-    } else if (value == inclinationLine) {
       setColor(LineColor.red);
       setType(DrawType.line);
     } else if (value == inclinationHorizontal) {
@@ -1063,6 +1219,12 @@ class PainterController extends GetxController {
     } else if (value == inclinationVertical) {
       setColor(LineColor.red);
       setType(DrawType.line);
+    } else if (value == fiberVertical) {
+      setColor(LineColor.red);
+      setType(DrawType.icon);
+    } else if (value == fiberHorizontal) {
+      setColor(LineColor.blue);
+      setType(DrawType.icon);
     } else if (value == materialVertical) {
       setColor(LineColor.red);
       setType(DrawType.material);
@@ -1163,7 +1325,7 @@ class PainterController extends GetxController {
     updateCanvas();
   }
 
-  deleteSelection() {
+  deleteSelection() async {
     var flag = true;
     var find = false;
 
@@ -1190,6 +1352,8 @@ class PainterController extends GetxController {
     }
 
     renumberMaterial();
+    await renumberMaterialAcrossFloors();
+    await renumberFiberAcrossFloors();
     setMode(Mode.selectEnd);
     groupSort();
     _works.add(_snapshotPoints());
@@ -1201,7 +1365,31 @@ class PainterController extends GetxController {
     }
   }
 
+  // 도면(캔버스)에 그려질 번호를 계산한다.
+  // 부재(DrawType.material)는 표(측정위치)의 연속 번호와 별개로
+  // 층마다 해당 층 안에서만 1부터 다시 매긴 번호를 보여준다.
+  int getDisplayNumber(Point point) {
+    if (point.type == DrawType.material) {
+      var num = 0;
+
+      for (var i = 0; i < points.length; i++) {
+        if (points[i].type != DrawType.material) {
+          continue;
+        }
+
+        num++;
+
+        if (identical(points[i], point)) {
+          return num;
+        }
+      }
+    }
+
+    return point.number;
+  }
+
   renumberMaterial() {
+    // 기울기 재번호 (200-299)
     var num = 1;
     for (var i = 0; i < points.length; i++) {
       Point point = points[i];
@@ -1213,19 +1401,9 @@ class PainterController extends GetxController {
       num++;
     }
 
-    num = 1;
-    for (var i = 0; i < points.length; i++) {
-      Point point = points[i];
-      if (point.type != DrawType.material) {
-        continue;
-      }
-
-      points[i].number = num;
-      num++;
-    }
   }
 
-  deleteSelectionWithoutNumber() {
+  deleteSelectionWithoutNumber() async {
     var flag = true;
     var find = false;
 
@@ -1258,6 +1436,8 @@ class PainterController extends GetxController {
     materialbox = false;
 
     renumberMaterial();
+    await renumberMaterialAcrossFloors();
+    await renumberFiberAcrossFloors();
     setMode(Mode.selectEnd);
     _works.add(_snapshotPoints());
     _works.refresh();
@@ -1280,6 +1460,17 @@ class PainterController extends GetxController {
         for (var j = 0; j < points.length; j++) {
           var item2 = points[j];
 
+          // 부재(DrawType.material) 번호는 동(parent) 전체에 걸쳐 통합 관리되므로
+          // 이 층 안의 번호 압축 로직 대상에서 제외한다.
+          if (item2.type == DrawType.material) {
+            continue;
+          }
+
+          // 강도/탄산화(icon 301~399) 번호도 동(parent) 전체에 걸쳐 통합 관리되므로 제외한다.
+          if (item2.icon > 300 && item2.icon < 400) {
+            continue;
+          }
+
           if (item2.number == i + 1) {
             find = true;
             break;
@@ -1292,6 +1483,14 @@ class PainterController extends GetxController {
 
         for (var j = 0; j < points.length; j++) {
           var item2 = points[j];
+
+          if (item2.type == DrawType.material) {
+            continue;
+          }
+
+          if (item2.icon > 300 && item2.icon < 400) {
+            continue;
+          }
 
           if (item2.number > i + 1) {
             flag = true;
@@ -1554,6 +1753,8 @@ class PainterController extends GetxController {
       modified = false;
       _works.add(_snapshotPoints());
       _works.refresh();
+      await renumberMaterialAcrossFloors();
+      await renumberFiberAcrossFloors();
       return;
     }
 
@@ -1616,6 +1817,9 @@ class PainterController extends GetxController {
     _points.refresh();
     updateCanvas();
     modified = false;
+
+    await renumberMaterialAcrossFloors();
+    await renumberFiberAcrossFloors();
   }
 
   removeDataimage(pos) {
@@ -1633,8 +1837,11 @@ class PainterController extends GetxController {
     modified = true;
   }
 
-  removePoint(index) {
+  removePoint(index) async {
     points.removeAt(index);
+    renumberMaterial();
+    await renumberMaterialAcrossFloors();
+    await renumberFiberAcrossFloors();
     groupSort();
     updatePoints();
     modified = true;

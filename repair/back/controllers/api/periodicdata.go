@@ -15,19 +15,54 @@ type PeriodicdataController struct {
 
 func (c *PeriodicdataController) Post_Index(items []models.Periodicdata) {
 	for i, v := range items {
-		filename := fmt.Sprintf("%v/periodicresult/%v/%v.jpg", config.UploadPath, v.Periodic, v.Extra["blueprint"].(models.Blueprint).Id)
+		var filename string
+		var imagePath string
+		
+		// 타입에 따라 다른 이미지 파일 참조
+		if v.Type >= 200 && v.Type < 300 {
+			// 기울기
+			filename = fmt.Sprintf("%v/periodicresult/%v/%v_200.jpg", config.UploadPath, v.Periodic, v.Extra["blueprint"].(models.Blueprint).Id)
+			imagePath = fmt.Sprintf("periodicresult/%v/%v_200.jpg", v.Periodic, v.Extra["blueprint"].(models.Blueprint).Id)
+		} else if v.Type >= 300 && v.Type < 400 {
+			// 강도/탄산화
+			filename = fmt.Sprintf("%v/periodicresult/%v/%v_300.jpg", config.UploadPath, v.Periodic, v.Extra["blueprint"].(models.Blueprint).Id)
+			imagePath = fmt.Sprintf("periodicresult/%v/%v_300.jpg", v.Periodic, v.Extra["blueprint"].(models.Blueprint).Id)
+		} else if v.Type >= 400 && v.Type < 500 {
+			// 부재
+			filename = fmt.Sprintf("%v/periodicresult/%v/%v_400.jpg", config.UploadPath, v.Periodic, v.Extra["blueprint"].(models.Blueprint).Id)
+			imagePath = fmt.Sprintf("periodicresult/%v/%v_400.jpg", v.Periodic, v.Extra["blueprint"].(models.Blueprint).Id)
+		} else {
+			// 결함도 (기본)
+			filename = fmt.Sprintf("%v/periodicresult/%v/%v.jpg", config.UploadPath, v.Periodic, v.Extra["blueprint"].(models.Blueprint).Id)
+			imagePath = fmt.Sprintf("periodicresult/%v/%v.jpg", v.Periodic, v.Extra["blueprint"].(models.Blueprint).Id)
+		}
+		
 		_, error := os.Stat(filename)
 
 		if os.IsNotExist(error) {
 			items[i].AddExtra("resultimage", "")
 		} else {
-			items[i].AddExtra("resultimage", fmt.Sprintf("periodicresult/%v/%v.jpg", v.Periodic, v.Extra["blueprint"].(models.Blueprint).Id))
+			items[i].AddExtra("resultimage", imagePath)
 		}
 	}
 }
 
 func (c *PeriodicdataController) Post_Delete(item *models.Periodicdata) {
 	// 삭제 후 결함도 이미지 재생성 요청
+	if item.Periodic > 0 && item.Blueprint > 0 {
+		global.SendNotify(global.Notify{Type: global.NotifyBlueprint, Periodic: item.Periodic, Blueprint: item.Blueprint})
+	}
+}
+
+func (c *PeriodicdataController) Post_Insert(item *models.Periodicdata) {
+	// 삽입 후 이미지 재생성 요청
+	if item.Periodic > 0 && item.Blueprint > 0 {
+		global.SendNotify(global.Notify{Type: global.NotifyBlueprint, Periodic: item.Periodic, Blueprint: item.Blueprint})
+	}
+}
+
+func (c *PeriodicdataController) Post_Update(item *models.Periodicdata) {
+	// 업데이트 후 이미지 재생성 요청
 	if item.Periodic > 0 && item.Blueprint > 0 {
 		global.SendNotify(global.Notify{Type: global.NotifyBlueprint, Periodic: item.Periodic, Blueprint: item.Blueprint})
 	}

@@ -18,6 +18,7 @@ const (
     ColumnAptdong
     ColumnApt
     ColumnDate
+    ColumnReportexclude
 
 )
 

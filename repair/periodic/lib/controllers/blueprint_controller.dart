@@ -794,6 +794,8 @@ class BlueprintController extends GetxController {
           type = DrawType.numberLine;
         } else if (data.type == inclinationLine) {
           type = DrawType.line;
+        } else if (data.type == materialVertical || data.type == materialHorizontal) {
+          type = DrawType.material;
         } else if (data.type >= 100) {
           type = DrawType.icon;
         } else if (data.type >= 30 && data.type < 40) {

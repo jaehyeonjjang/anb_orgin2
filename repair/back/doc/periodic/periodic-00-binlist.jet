@@ -1,4 +1,4 @@
-<BINDATALIST Count="{{partimageCount+sightimageCount+attachimageCount+16}}">
+<BINDATALIST Count="{{partimageCount+sightimageCount+attachimageCount+materiallocationimageCount+16}}">
 <BINITEM BinData="1" Format="jpg" Type="Embedding"/>
 <BINITEM BinData="2" Format="jpg" Type="Embedding"/>
 <BINITEM BinData="3" Format="jpg" Type="Embedding"/>
@@ -20,5 +20,7 @@
 {{range i, v := sightimages}}<BINITEM BinData="{{i+17+partimageCount}}" Format="jpg" Type="Embedding"/>
 {{end}}
 {{range i, v := attachimages}}<BINITEM BinData="{{i+17+partimageCount+sightimageCount}}" Format="{{v.Ext}}" Type="Embedding"/>
+{{end}}
+{{range i, v := materiallocationimages}}<BINITEM BinData="{{i+17+partimageCount+sightimageCount+attachimageCount}}" Format="jpg" Type="Embedding"/>
 {{end}}
 </BINDATALIST>

@@ -8,12 +8,20 @@
 
       <el-button style="display:block;float:right;" size="small" type="warning" @click="clickCopyFloor">층 복사</el-button>
       <el-button style="display:block;float:right;" size="small" type="warning" @click="clickCopyDong">동 복사</el-button>
+      <el-button style="display:block;float:right;margin-right:10px;" size="small" type="warning" @click="clickCopyBlueprint">배치도 복사</el-button>
       <div style="clear:both;"></div>
     </div>
 
     <div style="overflow:auto;border:1px solid #ccc;padding:10px 10px;" :style="{height: height(190)}">
       <div v-for="(item, index) in data.items" :key="item.id" class="block" :style="{marginLeft: (item.level - 1) * 40 + 'px'}">
         <div style="flex:1;height:19px;padding-top:5px;" @click="clickPreview(item)">{{item.name}}</div>
+        <el-checkbox
+          v-if="item.upload == 1 && item.level == 1 && item.aptdong == 0"
+          v-model="item.reportexclude"
+          :true-label="1"
+          :false-label="0"
+          style="float:left;margin-right:10px;"
+        >외관조사망도 제외</el-checkbox>
         <el-upload
           v-if="item.upload == 1"
           accept="image/jpeg,image/png"
@@ -78,6 +86,23 @@
       </template>
     </el-dialog>    
 
+    <el-dialog title="배치도 복사" v-model="data.visibleCopyBlueprint">
+      <div style="margin:0px auto 10px auto;width:560px;">
+            <el-select v-model.number="data.blueprintSource" style="width:100%;">
+              <el-option v-for="item in data.blueprintSources" :key="item.key" :label="item.label" :value="item.key" />
+            </el-select>
+      </div>
+
+      <div style="margin:0px auto 10px auto;width:560px;">
+        <el-input v-model="data.blueprintName" placeholder="새 배치도 이름" />
+      </div>
+
+      <template #footer>
+        <el-button size="small" @click="data.visibleCopyBlueprint = false">취소</el-button>
+        <el-button size="small" type="primary" @click="clickSubmitCopyBlueprint">등록</el-button>
+      </template>
+    </el-dialog>
+
     <el-dialog v-model="data.visiblePreview">
     <el-image      
       :src="data.previewUrl"      
@@ -132,12 +157,16 @@ const data = reactive({
   visiblePreview: false,
   visibleCopyDong: false,
   visibleCopyFloor: false,
+  visibleCopyBlueprint: false,
   previewUrl: '',
   dong: null,
   dongs: [],
   alldongs: [],
   floor: null,
-  floors: []
+  floors: [],
+  blueprintSource: null,
+  blueprintSources: [],
+  blueprintName: ''
 })
 
 function initData() {
@@ -381,6 +410,59 @@ function clickCopyFloor() {
   data.floors = []
   data.targetfloors = []
   data.visibleCopyFloor = true
+}
+
+function clickCopyBlueprint() {
+  data.blueprintSource = null
+  data.blueprintName = ''
+
+  data.blueprintSources = data.items
+    .filter(item => item.level == 1 && item.aptdong == 0)
+    .map(item => ({ key: item.id, label: item.name }))
+
+  data.visibleCopyBlueprint = true
+}
+
+async function clickSubmitCopyBlueprint() {
+  if (data.blueprintSource == null) {
+    util.error('복사할 배치도를 선택하세요')
+    return
+  }
+
+  if (!data.blueprintName) {
+    util.error('새 배치도 이름을 입력하세요')
+    return
+  }
+
+  const source = data.items.find(item => item.id == data.blueprintSource)
+
+  if (!source) {
+    return
+  }
+
+  util.loading(true)
+
+  await Blueprint.insert({
+    name: data.blueprintName,
+    level: 1,
+    parent: 0,
+    floortype: source.floortype,
+    filename: source.filename,
+    upload: 1,
+    parentorder: source.parentorder,
+    order: source.order,
+    aptdong: 0,
+    category: 1,
+    apt: data.apt,
+    reportexclude: 1
+  })
+
+  data.visibleCopyBlueprint = false
+  util.info('복사되었습니다')
+
+  await getItems()
+
+  util.loading(false)
 }
 
 function clickCopyDong() {

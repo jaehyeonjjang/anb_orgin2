@@ -94,7 +94,7 @@ func Other(datas []models.Periodicother) map[int]OtherResult {
 				}
 				strs = append(strs, fmt.Sprintf("%v - %v", v.Position, strings.ReplaceAll(v.Status, ",", ", ")))
 			}
-			
+
 			// 체크박스가 체크되지 않았을 경우 상태양호로 처리
 			if len(strs) == 0 {
 				strs = append(strs, "해당 대지면적 내 추락방지시설은 전반적으로 양호한 상태로 조사되었다.")
@@ -124,7 +124,7 @@ func Other(datas []models.Periodicother) map[int]OtherResult {
 				}
 				strs = append(strs, fmt.Sprintf("%v - %v", v.Position, strings.ReplaceAll(v.Status, ",", ", ")))
 			}
-			
+
 			// 체크박스가 체크되지 않았을 경우 상태양호로 처리
 			if len(strs) == 0 {
 				strs = append(strs, "해당 대지면적 내 도로포장은 전반적으로 양호한 상태로 조사되었다.")
@@ -166,7 +166,7 @@ func Other(datas []models.Periodicother) map[int]OtherResult {
 					strs = append(strs, fmt.Sprintf("%v - %v", v.Position, strings.ReplaceAll(v.Status, ",", ", ")))
 
 				}
-				
+
 				// 체크박스가 체크되지 않았을 경우 상태양호로 처리
 				if len(strs) == 0 {
 					if work.Status == "" {
@@ -209,7 +209,7 @@ func Other(datas []models.Periodicother) map[int]OtherResult {
 				strs = append(strs, fmt.Sprintf("%v - %v", v.Position, strings.ReplaceAll(v.Status, ",", ", ")))
 
 			}
-			
+
 			// 체크박스가 체크되지 않았을 경우 상태양호로 처리
 			if len(strs) == 0 {
 				str := ""
