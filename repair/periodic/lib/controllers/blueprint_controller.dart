@@ -172,6 +172,73 @@ class BlueprintController extends GetxController {
     return modifiedImage;
   }
 
+  // 도면 층별 수정된 아이콘셋(1:결함도,2:기울기,3:강도/탄산화,4:부재).
+  // 사용자가 실제로 편집한 카테고리만 저장/전송 대상이 된다.
+  final _modifiedBlueprintIconsets = <int, Set<int>>{}.obs;
+  Map<int, Set<int>> get modifiedBlueprintIconsets =>
+      _modifiedBlueprintIconsets;
+
+  Set<int> getBlueprintModifiedIconsets(int blueprintId) =>
+      _modifiedBlueprintIconsets[blueprintId] ?? const <int>{};
+
+  bool isBlueprintIconsetModified(int blueprintId, int iconset) {
+    final set = _modifiedBlueprintIconsets[blueprintId];
+    return set != null && set.contains(iconset);
+  }
+
+  bool hasAnyIconsetModified(int blueprintId) {
+    final set = _modifiedBlueprintIconsets[blueprintId];
+    return set != null && set.isNotEmpty;
+  }
+
+  addBlueprintIconsetModified(int blueprintId, int iconset) {
+    final set = _modifiedBlueprintIconsets[blueprintId] ?? <int>{};
+    set.add(iconset);
+    _modifiedBlueprintIconsets[blueprintId] = set;
+    _modifiedBlueprintIconsets.refresh();
+  }
+
+  clearBlueprintIconsetModified(int blueprintId) {
+    _modifiedBlueprintIconsets.remove(blueprintId);
+    _modifiedBlueprintIconsets.refresh();
+  }
+
+  // 전송 다이얼로그에서 (blueprint, iconset) 단위 체크 상태.
+  final _checkedBlueprintIconsets = <int, Set<int>>{}.obs;
+
+  bool isBlueprintIconsetChecked(int blueprintId, int iconset) {
+    final set = _checkedBlueprintIconsets[blueprintId];
+    return set != null && set.contains(iconset);
+  }
+
+  Set<int> getBlueprintCheckedIconsets(int blueprintId) =>
+      _checkedBlueprintIconsets[blueprintId] ?? const <int>{};
+
+  bool hasAnyIconsetChecked(int blueprintId) {
+    final set = _checkedBlueprintIconsets[blueprintId];
+    return set != null && set.isNotEmpty;
+  }
+
+  setBlueprintIconsetChecked(int blueprintId, int iconset, bool value) {
+    final set = _checkedBlueprintIconsets[blueprintId] ?? <int>{};
+    if (value) {
+      set.add(iconset);
+    } else {
+      set.remove(iconset);
+    }
+    if (set.isEmpty) {
+      _checkedBlueprintIconsets.remove(blueprintId);
+    } else {
+      _checkedBlueprintIconsets[blueprintId] = set;
+    }
+    _checkedBlueprintIconsets.refresh();
+  }
+
+  clearBlueprintIconsetChecked() {
+    _checkedBlueprintIconsets.clear();
+    _checkedBlueprintIconsets.refresh();
+  }
+
   setModified(target) {
     for (var i = 0; i < items.length; i++) {
       var item = items[i];
@@ -196,6 +263,9 @@ class BlueprintController extends GetxController {
   }
 
   setCheckAll() {
+    // 층별 아이콘셋 체크 초기화: 실제로 수정된 카테고리만 자동 체크한다.
+    clearBlueprintIconsetChecked();
+
     for (var i = 0; i < items.length; i++) {
       final item = items[i];
 
@@ -221,6 +291,19 @@ class BlueprintController extends GetxController {
         } else if (item.extra['imageType'] != null) {
           isModified = isImageTypeModified(item.extra['imageType'] as int);
         }
+      }
+
+      // 도면 층: 수정된 아이콘셋만 개별 체크
+      final isFloor = item.extra['isOther'] != true &&
+          item.extra['isImage'] != true &&
+          item.upload == 1 &&
+          item.filename != '';
+      if (isFloor) {
+        final mods = getBlueprintModifiedIconsets(item.id);
+        for (final s in mods) {
+          setBlueprintIconsetChecked(item.id, s, true);
+        }
+        isModified = mods.isNotEmpty;
       }
 
       items[i].checked = isModified;
@@ -296,6 +379,9 @@ class BlueprintController extends GetxController {
     modifiedOther = false;
     _modifiedImageTypes.clear();
     _modifiedImageTypes.refresh();
+    _modifiedBlueprintIconsets.clear();
+    _modifiedBlueprintIconsets.refresh();
+    clearBlueprintIconsetChecked();
     loading = false;
     percent = 0.0;
     _imagePathsByType.clear();
@@ -333,6 +419,24 @@ class BlueprintController extends GetxController {
           }
 
           items[i].extra['modified'] = true;
+
+          // 아이콘셋 단위 수정 이력 복원 (앱 재기동 후 전송 화면에서도 유지되어야 함)
+          final iconsetStr =
+              await storage.getItem('modified_iconsets_$blueprint');
+          if (iconsetStr != null && iconsetStr != '') {
+            try {
+              final list = (json.decode(iconsetStr) as List).cast<int>();
+              for (final s in list) {
+                addBlueprintIconsetModified(blueprint, s);
+              }
+            } catch (_) {}
+          } else {
+            // 이전 버전에서 저장된 도면은 어느 아이콘셋이 수정됐는지 정보가 없으므로
+            // 4개 카테고리 모두 수정된 것으로 간주해서 사용자가 선별해 전송할 수 있게 한다.
+            for (final s in const [1, 2, 3, 4]) {
+              addBlueprintIconsetModified(blueprint, s);
+            }
+          }
         }
       } else {
         items = <Blueprint>[];
@@ -794,7 +898,8 @@ class BlueprintController extends GetxController {
           type = DrawType.numberLine;
         } else if (data.type == inclinationLine) {
           type = DrawType.line;
-        } else if (data.type == materialVertical || data.type == materialHorizontal) {
+        } else if (data.type == materialVertical ||
+            data.type == materialHorizontal) {
           type = DrawType.material;
         } else if (data.type >= 100) {
           type = DrawType.icon;

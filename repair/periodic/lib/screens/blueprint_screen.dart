@@ -284,6 +284,17 @@ class BlueprintScreen extends CWidget {
       }
     }
 
+    // 도면 층: 4개 아이콘셋(결함도/기울기/강도·탄산화/부재) 중 실제 수정된 것이 있을 때만 표시
+    // (다른 층 편집으로 인한 부재/강도 번호 재정렬 캐스케이드도 해당 아이콘셋에 정확히 반영됨)
+    final isFloor = item.extra['isOther'] != true &&
+        item.extra['isImage'] != true &&
+        item.upload == 1 &&
+        item.filename != '' &&
+        !hasChildren;
+    if (isFloor) {
+      isModified = c.hasAnyIconsetModified(item.id);
+    }
+
     return CContainer(
       border: Border.all(color: Colors.black),
       backgroundColor:
@@ -437,7 +448,29 @@ class BlueprintScreen extends CWidget {
     );
   }
 
-  Widget renderItemSend(int index) {
+  static const _iconsetNames = <int, String>{
+    1: '결함도',
+    2: '기울기',
+    3: '강도/탄산화',
+    4: '부재',
+  };
+
+  // 클라이언트 아이콘셋 → periodicdata.pd_type 범위 [min, max) 매핑
+  static List<int> _iconsetToRange(int iconset) {
+    switch (iconset) {
+      case 1:
+        return [0, 200];
+      case 2:
+        return [200, 300];
+      case 3:
+        return [300, 400];
+      case 4:
+        return [400, 500];
+    }
+    return [-1, -1];
+  }
+
+  List<Widget> renderItemSend(int index) {
     final item = c.items[index];
 
     // 하위 항목 존재 여부 확인
@@ -448,10 +481,44 @@ class BlueprintScreen extends CWidget {
       }
     }
 
+    final isOther = item.extra['isOther'] == true;
+    final isImage = item.extra['isImage'] == true;
+    final isFloor = !isOther &&
+        !isImage &&
+        item.upload == 1 &&
+        item.filename != '' &&
+        !hasChildren;
+
+    // 도면 층: 4개 아이콘셋 중 실제 수정된 항목만 하위 행으로 노출한다.
+    if (isFloor) {
+      final modifiedIconsets = c.getBlueprintModifiedIconsets(item.id);
+      if (modifiedIconsets.isEmpty) {
+        return [_sendRow(item.name, item.level, false, null, null)];
+      }
+
+      final rows = <Widget>[
+        _sendRow(item.name, item.level, false, null, null),
+      ];
+      final sorted = modifiedIconsets.toList()..sort();
+      for (final iconset in sorted) {
+        final name = _iconsetNames[iconset] ?? '기타';
+        final checked = c.isBlueprintIconsetChecked(item.id, iconset);
+        rows.add(_sendRow(
+          name,
+          item.level + 1,
+          true,
+          checked,
+          (v) =>
+              c.setBlueprintIconsetChecked(item.id, iconset, v == true),
+        ));
+      }
+      return rows;
+    }
+
     // 동적으로 수정 여부 확인 (메인 화면과 동일한 로직)
     bool isModified = item.extra["modified"] != null;
 
-    if (item.extra['isOther'] == true) {
+    if (isOther) {
       if (item.level == 1) {
         isModified = false;
       } else if (item.level == 2 && item.extra['tab'] != null) {
@@ -459,7 +526,7 @@ class BlueprintScreen extends CWidget {
       }
     }
 
-    if (item.extra['isImage'] == true) {
+    if (isImage) {
       if (item.level == 1 && hasChildren) {
         isModified = false;
       } else if (item.extra['imageType'] != null) {
@@ -475,40 +542,75 @@ class BlueprintScreen extends CWidget {
       }
     }
 
+    return [
+      CContainer(
+        border: Border.all(color: Colors.black),
+        backgroundColor: color,
+        width: double.infinity,
+        margin: EdgeInsets.only(bottom: 10, left: (item.level - 1) * 50),
+        child: Row(
+          children: [
+            if (item.level == 1 && hasChildren) ...[
+              const SizedBox(width: 10),
+              Icon(
+                item.collapsed ? Icons.chevron_right : Icons.expand_more,
+                size: 30,
+              ),
+            ],
+            Expanded(
+              child: CText(
+                item.name,
+                margin: item.level == 1 && hasChildren
+                    ? const EdgeInsets.fromLTRB(5, 20, 20, 20)
+                    : const EdgeInsets.all(20),
+              ),
+            ),
+            isModified
+                ? Checkbox(
+                    onChanged: (value) => c.setCheck(index, value),
+                    value: item.checked)
+                : const SizedBox(width: 10),
+          ],
+        ),
+        onTap: () {
+          if (item.level == 1 && hasChildren) {
+            c.toggleCollapse(index);
+          }
+        },
+      )
+    ];
+  }
+
+  // 전송 다이얼로그의 공통 행 UI. checkbox 가 null 이면 표시하지 않는다.
+  Widget _sendRow(String name, int level, bool modified, bool? checked,
+      ValueChanged<bool?>? onChanged) {
+    Color color = Colors.white;
+    if (modified) {
+      color = const Color.fromRGBO(255, 200, 200, 1.0);
+      if (checked == false) {
+        color = const Color.fromRGBO(220, 220, 220, 1.0);
+      }
+    }
+
     return CContainer(
       border: Border.all(color: Colors.black),
       backgroundColor: color,
       width: double.infinity,
-      margin: EdgeInsets.only(bottom: 10, left: (item.level - 1) * 50),
+      margin: EdgeInsets.only(bottom: 10, left: (level - 1) * 50),
       child: Row(
         children: [
-          if (item.level == 1 && hasChildren) ...[
-            const SizedBox(width: 10),
-            Icon(
-              item.collapsed ? Icons.chevron_right : Icons.expand_more,
-              size: 30,
-            ),
-          ],
           Expanded(
             child: CText(
-              item.name,
-              margin: item.level == 1 && hasChildren
-                  ? const EdgeInsets.fromLTRB(5, 20, 20, 20)
-                  : const EdgeInsets.all(20),
+              name,
+              margin: const EdgeInsets.all(20),
             ),
           ),
-          isModified
-              ? Checkbox(
-                  onChanged: (value) => c.setCheck(index, value),
-                  value: item.checked)
-              : const SizedBox(width: 10),
+          if (checked != null && onChanged != null)
+            Checkbox(onChanged: onChanged, value: checked)
+          else
+            const SizedBox(width: 10),
         ],
       ),
-      onTap: () {
-        if (item.level == 1 && hasChildren) {
-          c.toggleCollapse(index);
-        }
-      },
     );
   }
 
@@ -578,7 +680,7 @@ class BlueprintScreen extends CWidget {
                   }
                   return CColumn(
                       children: visibleIndexes
-                          .map((idx) => renderItemSend(idx))
+                          .expand<Widget>((idx) => renderItemSend(idx))
                           .toList());
                 }))),
             const SizedBox(height: 40),
@@ -710,11 +812,27 @@ class BlueprintScreen extends CWidget {
     List<dynamic> datas = [];
 
     for (var i = 0; i < c.items.length; i++) {
-      if (c.items[i].checked == false) {
-        continue;
+      final rawItem = c.items[i];
+      final isOther = rawItem.extra['isOther'] == true;
+      final isImage = rawItem.extra['isImage'] == true;
+      final isFloor = !isOther &&
+          !isImage &&
+          rawItem.upload == 1 &&
+          rawItem.filename != '';
+
+      // 도면 층: (blueprint, iconset) 단위 체크 상태를 사용한다.
+      // 아이콘셋 하나 이상 체크되어 있어야 전송 대상이 되고, 체크된 아이콘셋의 점들만 필터링해 전송한다.
+      if (isFloor) {
+        if (!c.hasAnyIconsetChecked(rawItem.id)) {
+          continue;
+        }
+      } else {
+        if (rawItem.checked == false) {
+          continue;
+        }
       }
 
-      final blueprint = c.items[i].id;
+      final blueprint = rawItem.id;
 
       await storage.ready;
       final data = await storage.getItem('data_$blueprint');
@@ -729,6 +847,23 @@ class BlueprintScreen extends CWidget {
       }
 
       final item = json.decode(data);
+
+      if (isFloor) {
+        final checkedIconsets = c.getBlueprintCheckedIconsets(blueprint).toList()
+          ..sort();
+        final ranges = checkedIconsets.map(_iconsetToRange).toList();
+        final rawPoints = item['points'] as List<dynamic>? ?? [];
+        final filtered = rawPoints.where((p) {
+          final icon = (p['icon'] ?? 0) as int;
+          for (final r in ranges) {
+            if (icon >= r[0] && icon < r[1]) return true;
+          }
+          return false;
+        }).toList();
+        item['points'] = filtered;
+        item['iconsets'] = checkedIconsets;
+      }
+
       datas.add(item);
 
       final pointsPtr = item['points'];

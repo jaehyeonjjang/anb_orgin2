@@ -17,6 +17,34 @@ type PeriodicController struct {
 	controllers.Controller
 }
 
+// iconsetsToRanges 는 클라이언트 아이콘셋(1~4) 목록을 periodicdata.pd_type 범위로 변환한다.
+// 잘못된 값은 무시된다.
+func iconsetsToRanges(iconsets []int) [][2]int {
+	ranges := make([][2]int, 0, len(iconsets))
+	for _, s := range iconsets {
+		switch s {
+		case 1:
+			ranges = append(ranges, [2]int{0, 200})
+		case 2:
+			ranges = append(ranges, [2]int{200, 300})
+		case 3:
+			ranges = append(ranges, [2]int{300, 400})
+		case 4:
+			ranges = append(ranges, [2]int{400, 500})
+		}
+	}
+	return ranges
+}
+
+func typeInRanges(t int, ranges [][2]int) bool {
+	for _, r := range ranges {
+		if t >= r[0] && t < r[1] {
+			return true
+		}
+	}
+	return false
+}
+
 func (c *PeriodicController) Pre_Insert(item *models.Periodic) {
 	if item.Category == 1 {
 		item.Result1 = 2
@@ -332,18 +360,33 @@ func (c *PeriodicController) Upload(item *models.Data) {
 
 		blueprints[v.Id] = make([]models.Periodicdata, 0)
 
+		// 클라이언트가 아이콘셋 단위로 부분 업로드하면 해당 범위만 소프트 삭제하고 재삽입한다.
+		// (구버전 클라이언트처럼 Iconsets 가 비어있으면 기존과 동일하게 전체 갱신)
+		iconsetRanges := iconsetsToRanges(v.Iconsets)
+
 		periodicdatas := periodicdataManager.Find([]any{
 			models.Where{Column: "periodic", Value: item.Id, Compare: "="},
 			models.Where{Column: "blueprint", Value: v.Id, Compare: "="},
 		})
 
-		for _, v2 := range periodicdatas {
-			//periodicdataimageManager.DeleteByPeriodicdata(v2.Id)
-			periodicdataimageManager.FakeDelete(item.Id, v2.Id)
-		}
+		if len(iconsetRanges) == 0 {
+			for _, v2 := range periodicdatas {
+				//periodicdataimageManager.DeleteByPeriodicdata(v2.Id)
+				periodicdataimageManager.FakeDelete(item.Id, v2.Id)
+			}
 
-		//periodicdataManager.DeleteByPeriodicBlueprint(item.Id, v.Id)
-		periodicdataManager.FakeDelete(item.Id, v.Id)
+			//periodicdataManager.DeleteByPeriodicBlueprint(item.Id, v.Id)
+			periodicdataManager.FakeDelete(item.Id, v.Id)
+		} else {
+			for _, v2 := range periodicdatas {
+				if !typeInRanges(v2.Type, iconsetRanges) {
+					continue
+				}
+				periodicdataimageManager.FakeDelete(item.Id, v2.Id)
+			}
+
+			periodicdataManager.FakeDeleteByTypeRanges(item.Id, v.Id, iconsetRanges)
+		}
 
 		for j, v2 := range v.Points {
 			count := global.Atoi(v2.Count)

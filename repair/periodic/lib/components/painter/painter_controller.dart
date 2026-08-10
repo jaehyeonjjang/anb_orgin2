@@ -363,6 +363,11 @@ class PainterController extends GetxController {
 
   final _modified = false.obs;
 
+  // 이번 편집 세션에서 실제로 수정된 아이콘셋(1:결함도,2:기울기,3:강도/탄산화,4:부재).
+  // `modified = true` 가 호출된 시점의 현재 iconset 을 기록해 두었다가 save() 에서
+  // BlueprintController 에 넘겨 화면/전송 단위로 사용한다.
+  final _modifiedIconsets = <int>{}.obs;
+
   final _toolboxPosition = 0.0.obs;
 
   final _iconset = 1.obs;
@@ -374,11 +379,11 @@ class PainterController extends GetxController {
   // 부재(DrawType.material)/강도·탄산화(icon 301~399) 번호를 같은 동(parent)의
   // 모든 층에 걸쳐 빈 번호나 중복 없이 전체 재정렬한다.
   // (한 층에서 점을 추가/삭제하거나 층에 새로 들어올 때마다 호출)
-  Future<void> _renumberAcrossFloors(
-      bool Function(Point point) isTarget,
+  Future<void> _renumberAcrossFloors(bool Function(Point point) isTarget,
       bool Function(int icon, int type) isJsonTarget,
       {void Function(Point point)? syncPoint,
-      void Function(Map<String, dynamic> point, int number)? syncJson}) async {
+      void Function(Map<String, dynamic> point, int number)? syncJson,
+      required int iconset}) async {
     if (blueprint.parent == 0) {
       var localNum = 1;
       for (var i = 0; i < points.length; i++) {
@@ -449,8 +454,8 @@ class PainterController extends GetxController {
           continue;
         }
 
-        targetItems.sort(
-            (a, b) => (a['number'] as int).compareTo(b['number'] as int));
+        targetItems
+            .sort((a, b) => (a['number'] as int).compareTo(b['number'] as int));
 
         var changed = false;
         for (var k = 0; k < targetItems.length; k++) {
@@ -472,6 +477,19 @@ class PainterController extends GetxController {
           await storage.setItem('data_${item.id}', json.encode(j));
           await storage.setItem('save_${item.id}', 'y');
           blueprintController.setModified(item.id);
+
+          // 재정렬로 실제 데이터가 바뀐 층은 해당 아이콘셋만 수정됨으로 표시한다.
+          final prev = await storage.getItem('modified_iconsets_${item.id}');
+          final Set<int> merged = <int>{};
+          if (prev != null && prev != '') {
+            try {
+              merged.addAll((json.decode(prev) as List).cast<int>());
+            } catch (_) {}
+          }
+          merged.add(iconset);
+          await storage.setItem(
+              'modified_iconsets_${item.id}', json.encode(merged.toList()));
+          blueprintController.addBlueprintIconsetModified(item.id, iconset);
         }
       } catch (e) {
         continue;
@@ -482,27 +500,24 @@ class PainterController extends GetxController {
   }
 
   Future<void> renumberMaterialAcrossFloors() async {
-    await _renumberAcrossFloors(
-        (point) => point.type == DrawType.material,
-        (icon, type) => type == DrawType.material.code);
+    await _renumberAcrossFloors((point) => point.type == DrawType.material,
+        (icon, type) => type == DrawType.material.code,
+        iconset: 4);
   }
 
   // 강도/탄산화(섬유, icon 301~399, icon=300은 데이터 저장용 더미라 제외)
   // 다른 층 추가/삭제로 번호가 밀리면 SH/N 값도 새 번호에 맞게 다시 계산해야 한다.
   Future<void> renumberFiberAcrossFloors() async {
-    await _renumberAcrossFloors(
-        (point) => point.icon > 300 && point.icon < 400,
-        (icon, type) => icon > 300 && icon < 400,
-        syncPoint: (point) {
-          point.shape = '${point.number * 2 - 1}';
-          point.length = '${point.number * 2}';
-          point.weight = '${point.number}';
-        },
-        syncJson: (point, number) {
-          point['shape'] = '${number * 2 - 1}';
-          point['length'] = '${number * 2}';
-          point['weight'] = '$number';
-        });
+    await _renumberAcrossFloors((point) => point.icon > 300 && point.icon < 400,
+        (icon, type) => icon > 300 && icon < 400, syncPoint: (point) {
+      point.shape = '${point.number * 2 - 1}';
+      point.length = '${point.number * 2}';
+      point.weight = '${point.number}';
+    }, syncJson: (point, number) {
+      point['shape'] = '${number * 2 - 1}';
+      point['length'] = '${number * 2}';
+      point['weight'] = '$number';
+    }, iconset: 3);
   }
 
   // 마지막으로 설정한 폭 값 저장
@@ -619,6 +634,7 @@ class PainterController extends GetxController {
     _modified.value = value;
 
     if (value == true) {
+      _modifiedIconsets.add(iconset);
       if (_autosave == true) {
         runSave++;
 
@@ -1400,7 +1416,6 @@ class PainterController extends GetxController {
       points[i].number = num;
       num++;
     }
-
   }
 
   deleteSelectionWithoutNumber() async {
@@ -1720,6 +1735,18 @@ class PainterController extends GetxController {
       try {
         await storage.setItem('data_${blueprint.id}', str);
         await storage.setItem('save_${blueprint.id}', 'y');
+
+        // 이번 세션에서 실제로 수정된 아이콘셋을 기존 목록과 합쳐 저장한다.
+        final prev = await storage.getItem('modified_iconsets_${blueprint.id}');
+        final Set<int> merged = <int>{};
+        if (prev != null && prev != '') {
+          try {
+            merged.addAll((json.decode(prev) as List).cast<int>());
+          } catch (_) {}
+        }
+        merged.addAll(_modifiedIconsets);
+        await storage.setItem(
+            'modified_iconsets_${blueprint.id}', json.encode(merged.toList()));
       } catch (e) {
         //print(e);
       }
@@ -1730,6 +1757,10 @@ class PainterController extends GetxController {
     modified = false;
     final blueprintController = Get.find<BlueprintController>();
     blueprintController.setModified(blueprint.id);
+    for (final s in _modifiedIconsets) {
+      blueprintController.addBlueprintIconsetModified(blueprint.id, s);
+    }
+    _modifiedIconsets.clear();
     blueprintController.modified = true;
 
     if (_autosave == false) {

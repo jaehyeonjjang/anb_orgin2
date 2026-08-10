@@ -41,7 +41,7 @@ func MakeInclinationImage(periodic int64, blueprint models.Blueprint, items []mo
 		if v.Type < 200 || v.Type >= 300 {
 			continue
 		}
-		
+
 		log.Println("type", v.Type)
 		var results []global.Offset
 		json.Unmarshal([]byte(v.Content), &results)

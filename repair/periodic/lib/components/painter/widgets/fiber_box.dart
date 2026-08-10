@@ -265,8 +265,7 @@ class FiberBox extends StatelessWidget {
         });
   }
 
-
-clickDataNumber(int index, int pos, context) {
+  clickDataNumber(int index, int pos, context) {
     showDialog(
         context: context,
         barrierDismissible: true, // 바깥 영역 터치시 닫을지 여부
@@ -283,17 +282,21 @@ clickDataNumber(int index, int pos, context) {
   }
 
   numberButton(text, index, pos) {
-    return Expanded(child : CContainer(
+    return Expanded(
+      child: CContainer(
         onTap: () => clickNumber(text, index, pos),
-                  padding:const EdgeInsets.all(10),
-                  decoration: BoxDecoration(
-                    shape: BoxShape.rectangle,
-                    border: const Border(
-                      right: BorderSide(color: Colors.black),
-                      bottom: BorderSide(color: Colors.black),
-                    )),
-                  child: Text(text, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold), textAlign: TextAlign.center),
-              ),);
+        padding: const EdgeInsets.all(10),
+        decoration: BoxDecoration(
+            shape: BoxShape.rectangle,
+            border: const Border(
+              right: BorderSide(color: Colors.black),
+              bottom: BorderSide(color: Colors.black),
+            )),
+        child: Text(text,
+            style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            textAlign: TextAlign.center),
+      ),
+    );
   }
 
   drawButtonsNumber(int index, int pos) {
@@ -322,69 +325,82 @@ clickDataNumber(int index, int pos, context) {
     c.tempText = text;
 
     return Column(children: [
-        const SizedBox(height: 20),
-        Row(children: [
-        Expanded(child: Container(
-          decoration: BoxDecoration(
-            color: Colors.white,
-            border: Border.all(color: Colors.black),
+      const SizedBox(height: 20),
+      Row(children: [
+        Expanded(
+          child: Container(
+            decoration: BoxDecoration(
+              color: Colors.white,
+              border: Border.all(color: Colors.black),
+            ),
+            padding: const EdgeInsets.all(10),
+            child: Obx(
+              () => Text(c.tempText,
+                  textAlign: TextAlign.end,
+                  style: const TextStyle(
+                      fontSize: 20, fontWeight: FontWeight.bold)),
+            ),
           ),
-          padding: const EdgeInsets.all(10),
-          child: Obx(() => Text(c.tempText,
-            textAlign: TextAlign.end,
-            style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-          ),),),
-          ]),
-          const SizedBox(height: 10),
-        Container(
-          decoration: BoxDecoration(
+        ),
+      ]),
+      const SizedBox(height: 10),
+      Container(
+        decoration: BoxDecoration(
             color: Colors.white,
-                    shape: BoxShape.rectangle,
-                    border: const Border(
-                      top: BorderSide(color: Colors.black),
-                      left: BorderSide(color: Colors.black)
-                    )),
-          child : Column(children: [
-            Row(children: [
+            shape: BoxShape.rectangle,
+            border: const Border(
+                top: BorderSide(color: Colors.black),
+                left: BorderSide(color: Colors.black))),
+        child: Column(
+          children: [
+            Row(
+              children: [
                 numberButton('1', index, pos),
                 numberButton('2', index, pos),
                 numberButton('3', index, pos),
-            ],),
-            Row(children: [
+              ],
+            ),
+            Row(
+              children: [
                 numberButton('4', index, pos),
                 numberButton('5', index, pos),
                 numberButton('6', index, pos),
-            ],),
-            Row(children: [
+              ],
+            ),
+            Row(
+              children: [
                 numberButton('7', index, pos),
                 numberButton('8', index, pos),
                 numberButton('9', index, pos),
-            ],),
-            Row(children: [
+              ],
+            ),
+            Row(
+              children: [
                 numberButton('0', index, pos),
                 numberButton('.', index, pos),
                 numberButton('<', index, pos),
-            ],)
-        ],),),
-        const SizedBox(height: 20),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.end,
-          children: [
-            ElevatedButton(
+              ],
+            )
+          ],
+        ),
+      ),
+      const SizedBox(height: 20),
+      Row(mainAxisAlignment: MainAxisAlignment.end, children: [
+        ElevatedButton(
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.white,
               foregroundColor: Colors.black,
             ),
             onPressed: () => Get.back(),
             child: const Text('취소', style: TextStyle(color: Colors.black))),
-          const SizedBox(width: 10),
+        const SizedBox(width: 10),
         ElevatedButton(
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.grey[700], // Background color
             ),
             onPressed: () => clickSubmit(index, pos),
             child: const Text('확인', style: TextStyle(color: Colors.white))),
-          ]),
+      ]),
     ]);
   }
 

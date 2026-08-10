@@ -34,6 +34,9 @@ type DataItem struct {
 	Iconzoom   float64 `json:"iconzoom"`
 	Numberzoom float64 `json:"numberzoom"`
 	Crackzoom  float64 `json:"crackzoom"`
+	// 이번 업로드에서 갱신할 아이콘셋 목록 (1:결함도, 2:기울기, 3:강도/탄산화, 4:부재).
+	// 비어있으면(구버전 클라이언트) 전체 갱신 – 기존 동작 유지.
+	Iconsets []int `json:"iconsets"`
 }
 
 type Data struct {

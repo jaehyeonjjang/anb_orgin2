@@ -17,7 +17,7 @@ func (c *PeriodicdataController) Post_Index(items []models.Periodicdata) {
 	for i, v := range items {
 		var filename string
 		var imagePath string
-		
+
 		// 타입에 따라 다른 이미지 파일 참조
 		if v.Type >= 200 && v.Type < 300 {
 			// 기울기
@@ -36,7 +36,7 @@ func (c *PeriodicdataController) Post_Index(items []models.Periodicdata) {
 			filename = fmt.Sprintf("%v/periodicresult/%v/%v.jpg", config.UploadPath, v.Periodic, v.Extra["blueprint"].(models.Blueprint).Id)
 			imagePath = fmt.Sprintf("periodicresult/%v/%v.jpg", v.Periodic, v.Extra["blueprint"].(models.Blueprint).Id)
 		}
-		
+
 		_, error := os.Stat(filename)
 
 		if os.IsNotExist(error) {
